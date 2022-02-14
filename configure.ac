@@ -91,6 +91,11 @@ AH_VERBATIM([COMPILING_FOR_DEVICE],
 #endif
 )
 
+if test "$CXX" == nvcc
+then
+	CPPFLAGS="-dc --expt-relaxed-constexpr --expt-extended-lambda -x cu $CPPFLAGS"
+fi
+
 #AX_CXXFLAGS_WARN_ALL
 AC_MSG_CHECKING(whether compiler understands -Wall)
 OLD_CXXFLAGS="$CXXFLAGS"
