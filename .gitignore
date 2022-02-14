@@ -1,0 +1,14 @@
+/configure
+/autom4te.cache/
+/aclocal.m4
+/config/depcomp
+/config/install-sh
+/config/missing
+/config/config.sub
+/config/config.guess
+/config/compile
+/Makefile.in
+/src/Makefile.in
+/src/config.hpp.in
+/build*
+/src/config.hpp.in~
