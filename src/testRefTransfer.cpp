@@ -21,7 +21,8 @@ template <typename F>
 __global__
 void cuda_generic_kernel(F f)
 {
-  f();
+  dev=234235;
+  //  f();
 }
 
 inline void thread_barrier_internal()
