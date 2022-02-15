@@ -91,9 +91,23 @@ AH_VERBATIM([COMPILING_FOR_DEVICE],
 #endif
 )
 
-if test "$CXX" == nvcc
+#cuda code
+AC_ARG_ENABLE(cuda-code,
+	AS_HELP_STRING([--enable-cuda-code],[Enable cuda code]),
+	enable_cuda_code="${enableval}",
+	enable_cuda_code="no")
+AM_CONDITIONAL([CUDA_CODE],[test "$enable_cuda_code" == "yes" ],[true],[false])
+AC_MSG_RESULT([enabling cuda code... $enable_cuda_code])
+SUMMARY_RESULT="$SUMMARY_RESULT
+Cuda code      : $enable_cuda_code"
+
+if test "$enable_cuda_code" = "yes"
 then
-	CPPFLAGS="-dc --expt-relaxed-constexpr --expt-extended-lambda -x cu $CPPFLAGS"
+     case "$CXX" in
+     	  nvcc) CPPFLAGS="-dc --expt-relaxed-constexpr --expt-extended-lambda -x cu $CPPFLAGS";;
+     	  clang++) CPPFLAGS="-xcuda $CPPFLAGS";;
+     	  *) AC_MSG_ERROR(["Unkwnown how to compile cuda code with $CXX"])
+     esac
 fi
 
 #AX_CXXFLAGS_WARN_ALL
