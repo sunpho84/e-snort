@@ -178,21 +178,17 @@ struct DynamicVariable :
   
   DynamicVariable()
   {
-#ifdef __CUDA_ARCH__
     if(execSpace()==EXEC_DEVICE)
       cudaMalloc(&ptr,sizeof(T));
     else
-#endif
       ptr=new T;
   }
   
   ~DynamicVariable()
   {
-#ifdef __CUDA_ARCH__
     if(execSpace()==EXEC_DEVICE)
       cudaFree(ptr);
     else
-#endif
       delete ptr;
   }
   
