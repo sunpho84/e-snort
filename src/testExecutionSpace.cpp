@@ -141,8 +141,6 @@ struct Expr :
     
     Assign<lhsExecSpace,rhsExecSpace,whichSideToChange>::exec(lhs,rhs);
     
-    this->crtp()()=u.crtp()();
-    
     return this->crtp();
   }
 };
