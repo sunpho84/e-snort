@@ -130,7 +130,7 @@ struct Assign<EXEC_DEVICE,EXEC_HOST,CHANGE_EXEC_SPACE_RHS_SIDE>
   {
     auto deviceRhs=rhs.template changeExecSpaceTo<EXEC_DEVICE>();
     
-    printf("Copyting to device");
+    printf("Copyting to device\n");
     
     //Assign<EXEC_DEVICE,EXEC_DEVICE,CHANGE_EXEC_SPACE_RHS_SIDE>::exec(std::forward<Lhs>(lhs),deviceRhs);
   }
@@ -200,13 +200,24 @@ struct DynamicVariable :
       ptr=new T;
   }
   
+  DynamicVariable(const DynamicVariable&) =delete;
+
+  DynamicVariable(DynamicVariable&& oth)
+  {
+    ptr=oth.ptr;
+    oth.ptr=nullptr;
+  }
+  
   ~DynamicVariable() __host__ __device__
   {
 #ifndef __CUDA_ARCH__
-    if(execSpace()==EXEC_DEVICE)
-      cudaFree(ptr);
-    else
-      delete ptr;
+    if(ptr)
+      {
+	if(execSpace()==EXEC_DEVICE)
+	  cudaFree(ptr);
+	else
+	  delete ptr;
+      }
 #endif
   }
   
