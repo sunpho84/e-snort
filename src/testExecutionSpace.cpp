@@ -184,10 +184,12 @@ struct DynamicVariable :
   
   ~DynamicVariable()
   {
+#ifndef __CUDA_ARCH__
     if(execSpace()==EXEC_DEVICE)
       cudaFree(ptr);
     else
       delete ptr;
+#endif
   }
   
   template <ExecutionSpace OthExecSpace>
