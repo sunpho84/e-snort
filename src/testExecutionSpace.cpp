@@ -76,8 +76,8 @@ struct Assign<EXEC_HOST,EXEC_HOST,W>
 {
   template <typename Lhs,
 	    typename Rhs>
-  static void exec(Lhs&& lhs,
-		   Rhs&& rhs) __host__
+  static void exec(Lhs& lhs,
+		   const Rhs& rhs) __host__
   {
     lhs()=rhs();
   }
@@ -88,8 +88,8 @@ struct Assign<EXEC_DEVICE,EXEC_DEVICE,W>
 {
   template <typename Lhs,
 	    typename Rhs>
-  static void exec(Lhs&& lhs,
-		   Rhs&& rhs) __host__
+  static void exec(Lhs& lhs,
+		   const Rhs& rhs) __host__
   {
 // #ifndef __CUDA_ARCH__
 //     fprintf(stderr,"");
@@ -113,8 +113,8 @@ struct Assign<EXEC_HOST,EXEC_DEVICE,CHANGE_EXEC_SPACE_RHS_SIDE>
 {
   template <typename Lhs,
 	    typename Rhs>
-  static void exec(Lhs&& lhs,
-		   Rhs&& rhs) __host__
+  static void exec(Lhs& lhs,
+		   const Rhs& rhs) __host__
   {
     lhs()=rhs.template changeExecSpaceTo<EXEC_HOST>()();
   }
