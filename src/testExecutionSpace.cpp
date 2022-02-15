@@ -130,7 +130,9 @@ struct Assign<EXEC_DEVICE,EXEC_HOST,CHANGE_EXEC_SPACE_RHS_SIDE>
   {
     auto deviceRhs=rhs.template changeExecSpaceTo<EXEC_DEVICE>();
     
-    Assign<EXEC_DEVICE,EXEC_DEVICE,CHANGE_EXEC_SPACE_RHS_SIDE>::exec(std::forward<Lhs>(lhs),deviceRhs);
+    printf("Copyting to device");
+    
+    //Assign<EXEC_DEVICE,EXEC_DEVICE,CHANGE_EXEC_SPACE_RHS_SIDE>::exec(std::forward<Lhs>(lhs),deviceRhs);
   }
 };
 
