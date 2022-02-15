@@ -182,7 +182,7 @@ struct DynamicVariable :
       ptr=new T;
   }
   
-  ~DynamicVariable()
+  ~DynamicVariable() __host__ __device__
   {
 #ifndef __CUDA_ARCH__
     if(execSpace()==EXEC_DEVICE)
