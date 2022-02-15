@@ -2,6 +2,7 @@
 # include <config.hpp>
 #endif
 
+#include <cstdarg>
 #include <cstdio>
 #include <unistd.h>
 
