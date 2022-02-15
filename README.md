@@ -128,3 +128,27 @@ ref.value points to the host copy.
 No, we still refer to the host quantity.  This means that before
 executing an expression tree, we need to prepare it for the correct
 execution space
+
+Assigning across different execution spaces
+---
+The dominant execution space is that of lhs since the ultimate goal is
+to modify it. The lhs must have a clearly defined execution space.
+
+The rhs might not have a well defined execution space, e.g host or
+device, what we care is that
+* we can check if a certain execution space can be enforced,
+* we can quantify the cost of the change of execution space,
+* we can change the execution space to a specific one.
+
+Four scenarios are possible
+
+in two cases, lhs is on the same execution space than rhs
+
+
+Correct execution space
+---
+The excution space for a stacked tensor can be changed from host to
+device by allocating a dynamic tensor on the device and memcopying to
+it.
+
+The execution space for a lhs stacked tensor

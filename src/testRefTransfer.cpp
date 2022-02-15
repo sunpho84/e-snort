@@ -3,21 +3,6 @@
 
 int host;
 
-struct IncapsInt
-{
-  int value;
-};
-
-struct RefToIncapsulatedInt
-{
-  const IncapsInt& value;
-  
-  RefToIncapsulatedInt(const IncapsInt& value) :
-    value(value)
-  {
-  }
-};
-
 template <typename F>
 __global__
 void cuda_generic_kernel(F f)
@@ -66,6 +51,21 @@ void init_cuda()
   decript_cuda_error(cudaSetDevice(0),"Unable to set the device");
 }
 
+struct IncapsInt
+{
+  int value;
+};
+
+struct RefToIncapsulatedInt
+{
+  const IncapsInt& value;
+  
+  RefToIncapsulatedInt(const IncapsInt& value) :
+    value(value)
+  {
+  }
+};
+
 int main()
 {
   IncapsInt value{2354};
@@ -91,4 +91,32 @@ int main()
   cudaFree(dev);
   
   return 0;
+}
+
+struct A
+{
+#ifdef __NVCC__
+  #ifndef __CUDA_ARCH__
+__host__ static constexpr std::integral_constant<bool,false> isOnDevice() { return {}; }
+  #else
+__device__ static constexpr std::integral_constant<bool,true> isOnDevice() { return {}; }
+  #endif
+#else
+__host__ static constexpr std::integral_constant<bool,false> isOnDevice() { return {}; }
+__device__ static constexpr std::integral_constant<bool,true> isOnDevice() { return {}; }
+#endif
+};
+
+void testHost()
+{
+#ifndef __CUDA_ARCH__
+  static_assert(not A::isOnDevice(),"We are issuing A on the host");
+#endif
+}
+
+__device__ void testDevice()
+{
+#ifdef __CUDA_ARCH__
+  static_assert(A::isOnDevice(),"We are issuing A on the device");
+#endif
 }
