@@ -32,6 +32,21 @@ inline void thread_barrier_internal()
 #endif
 }
 
+void decript_cuda_error(cudaError_t rc,const char *templ,...)
+{
+  if(rc!=cudaSuccess)
+    {
+      va_list ap;
+      va_start(ap,templ);
+      char mess[1024];
+      vsprintf(mess,templ,ap);
+      va_end(ap);
+      
+      fprintf(stderr,"%s, cuda raised error: %s\n",mess,cudaGetErrorString(rc));
+      exit(1);
+    }
+}
+
 void init_cuda()
 {
   int nDevices;
@@ -48,7 +63,7 @@ void init_cuda()
         printf(" CUDA Enabled device %d/%d: %d.%d\n",i,nDevices,deviceProp.major,deviceProp.minor);
       }
   
-  cudaSetDevice(0);
+  decript_cuda_error(cudaSetDevice(0),"Unable to set the device");
 }
 
 int main()
@@ -69,7 +84,7 @@ int main()
   
   int host;
   
-  cudaMemcpy(&host,&dev,sizeof(int),cudaMemcpyDeviceToHost);
+  decript_cuda_error(cudaMemcpy(&host,&dev,sizeof(int),cudaMemcpyDeviceToHost),"Unable to copy");
   
   printf("%d\n",host);
   
