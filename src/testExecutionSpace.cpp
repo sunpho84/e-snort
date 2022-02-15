@@ -265,10 +265,10 @@ int main()
   
   DynamicVariable<int,EXEC_DEVICE> c;
   c=a;
-  StackedVariable<int> b;
-  b=c;
-  auto d=c.changeExecSpaceTo<EXEC_HOST>();
-  c.changeExecSpaceTo<EXEC_HOST>();
+  // StackedVariable<int> b;
+  // b=c;
+  // auto d=c.changeExecSpaceTo<EXEC_HOST>();
+  // c.changeExecSpaceTo<EXEC_HOST>();
   
   return 0;
 }
