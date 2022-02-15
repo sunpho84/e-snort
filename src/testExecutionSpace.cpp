@@ -12,6 +12,21 @@ void cuda_generic_kernel(F f)
   f();
 }
 
+void decript_cuda_error(cudaError_t rc,const char *templ,...)
+{
+  if(rc!=cudaSuccess)
+    {
+      va_list ap;
+      va_start(ap,templ);
+      char mess[1024];
+      vsprintf(mess,templ,ap);
+      va_end(ap);
+      
+      fprintf(stderr,"%s, cuda raised error: %s\n",mess,cudaGetErrorString(rc));
+      exit(1);
+    }
+}
+
 enum ExecutionSpace{EXEC_HOST,EXEC_DEVICE,EXEC_UNDEFINED};
 enum ExecutionSpaceChangeCost{EXEC_SPACE_CHANGE_COSTS_NOTHING,EXEC_SPACE_CHANGE_COSTS_LITTLE,EXEC_SPACE_CHANGE_COSTS_ALOT};
 
@@ -81,7 +96,7 @@ struct Assign<EXEC_DEVICE,EXEC_DEVICE,W>
 // #else
     const dim3 block_dimension(1);
     const dim3 grid_dimension(1);
-    cuda_generic_kernel<<<grid_dimension,block_dimension>>>([lhs,rhs] __device__ () mutable
+    cuda_generic_kernel<<<grid_dimension,block_dimension>>>([lhs,rhs] __host__ __device__ () mutable
     {
 #ifdef __CUDA_ARCH__
       lhs()=rhs();
