@@ -1,7 +1,8 @@
 #include <cstdarg>
 #include <cstdio>
 
-__device__ int dev;
+int* dev;
+int host;
 
 struct IncapsInt
 {
@@ -22,8 +23,7 @@ template <typename F>
 __global__
 void cuda_generic_kernel(F f)
 {
-  dev=234235;
-  //  f();
+  f();
 }
 
 inline void thread_barrier_internal()
@@ -77,17 +77,18 @@ int main()
   
   init_cuda();
   
+  cudaMalloc(&dev,sizeof(int));
   cuda_generic_kernel<<<grid_dimension,block_dimension>>>([=] __device__ ()
   {
-    dev=2343;
+    (*dev)=2343;
   });
   cudaDeviceSynchronize();
   
-  int host;
-  
-  decript_cuda_error(cudaMemcpy(&host,&dev,sizeof(int),cudaMemcpyDefault),"Unable to copy");
+  decript_cuda_error(cudaMemcpy(&host,dev,sizeof(int),cudaMemcpyDeviceToHost),"Unable to copy");
   
   printf("%d\n",host);
+  
+  cudaFree(dev);
   
   return 0;
 }
