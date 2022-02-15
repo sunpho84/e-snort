@@ -1,3 +1,4 @@
+#include <cstdarg>
 #include <cstdio>
 
 __device__ int dev;
