@@ -85,7 +85,7 @@ int main()
   
   int host;
   
-  decript_cuda_error(cudaMemcpy(&host,&dev,sizeof(int),cudaMemcpyDeviceToHost),"Unable to copy");
+  decript_cuda_error(cudaMemcpy(&host,&dev,sizeof(int),cudaMemcpyDefault),"Unable to copy");
   
   printf("%d\n",host);
   
