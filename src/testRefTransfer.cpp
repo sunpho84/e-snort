@@ -1,7 +1,6 @@
 #include <cstdarg>
 #include <cstdio>
 
-int* dev;
 int host;
 
 struct IncapsInt
@@ -77,8 +76,9 @@ int main()
   
   init_cuda();
   
+  int* dev;
   cudaMalloc(&dev,sizeof(int));
-  cuda_generic_kernel<<<grid_dimension,block_dimension>>>([=] __device__ ()
+  cuda_generic_kernel<<<grid_dimension,block_dimension>>>([=] __device__ __host__ ()
   {
     (*dev)=2343;
   });
