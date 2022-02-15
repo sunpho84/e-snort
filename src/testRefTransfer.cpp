@@ -57,7 +57,7 @@ int main()
   RefToIncapsulatedInt ref(value);
   
   const dim3 block_dimension(128);
-  const dim3 grid_dimension(1);
+  const dim3 grid_dimension(128);
   
   init_cuda();
   
@@ -65,6 +65,7 @@ int main()
   {
     dev=2343;
   });
+  cudaDeviceSynchronize();
   
   int host;
   
