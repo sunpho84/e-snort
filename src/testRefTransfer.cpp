@@ -80,7 +80,7 @@ int main()
   cudaMalloc(&dev,sizeof(int));
   cuda_generic_kernel<<<grid_dimension,block_dimension>>>([=] __device__ __host__ ()
   {
-    (*dev)=value.value;
+    (*dev)=ref.value.value;
   });
   cudaDeviceSynchronize();
   
