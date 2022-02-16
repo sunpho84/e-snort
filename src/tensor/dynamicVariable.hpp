@@ -42,7 +42,7 @@ namespace esnort
     
     DynamicVariable()
     {
-#ifdef ENABLE_CUDA_CODE
+#if ENABLE_CUDA_CODE
       if(execSpace()==EXEC_DEVICE)
 	cudaMalloc(&ptr,sizeof(T));
       else
@@ -63,7 +63,7 @@ namespace esnort
     {
       if(ptr)
 	{
-#ifdef ENABLE_CUDA_CODE
+#if ENABLE_CUDA_CODE
 	  if(execSpace()==EXEC_DEVICE)
 	    freeCuda(ptr);
 	  else
@@ -75,7 +75,7 @@ namespace esnort
     template <ExecutionSpace OthExecSpace>
     decltype(auto) changeExecSpaceTo() const
     {
-#ifdef ENABLE_CUDA_CODE
+#if ENABLE_CUDA_CODE
       if constexpr(OthExecSpace!=execSpace())
 	{
 	  DynamicVariable<T,OthExecSpace> res;

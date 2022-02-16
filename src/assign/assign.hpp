@@ -8,7 +8,7 @@
 #include <cstdio>
 #include <utility>
 
-#ifdef ENABLE_CUDA_CODE
+#if ENABLE_CUDA_CODE
 # include <cuda/cuda.hpp>
 #endif
 #include <expr/executionSpace.hpp>
@@ -40,7 +40,7 @@ namespace esnort
     static void exec(Lhs&& lhs,
 		     Rhs&& rhs) CUDA_HOST
     {
-#ifndef ENABLE_CUDA_CODE
+#if !ENABLE_CUDA_CODE
       Assign<EXEC_HOST,EXEC_HOST,CHANGE_EXEC_SPACE_LHS_SIDE>::exec(std::forward<Lhs>(lhs),std::forward<Rhs>(rhs));
 #else
       printf("Launching the kernel\n");

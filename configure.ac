@@ -102,13 +102,16 @@ AC_ARG_ENABLE(cuda-code,
 AM_CONDITIONAL([CUDA_CODE],[test "$enable_cuda_code" == "yes" ],[true],[false])
 if test "$enable_cuda_code" == "yes"
 then
-	AC_DEFINE([ENABLE_CUDA_CODE],1,[Enable cuda code])
+	ENABLE_CUDA_CODE=1
 	CUDA_MANAGED=__managed__
 	CUDA_HOST="__host__"
 	CUDA_GLOBAL="__global__"
 	CUDA_DEVICE="__device__"
 	CUDA_HOST_DEVICE="__host__ __device__"
+else
+	ENABLE_CUDA_CODE=0
 fi
+AC_DEFINE_UNQUOTED([ENABLE_CUDA_CODE],${ENABLE_CUDA_CODE},[Enable cuda code])
 AC_DEFINE_UNQUOTED([CUDA_MANAGED],${CUDA_MANAGED},[Whether to use managed memory])
 AC_DEFINE_UNQUOTED([CUDA_GLOBAL],${CUDA_GLOBAL},[Whether this function is GLOBAL])
 AC_DEFINE_UNQUOTED([CUDA_HOST],${CUDA_HOST},[Whether this function is HOST only])
