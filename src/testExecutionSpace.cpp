@@ -23,6 +23,10 @@ __global__ void kernel(const int min,const int max,Function f)
   printf("value = %d\n", f(i));
 }
 
+struct Test
+{
+};
+
 int main()
 {
   cuda_init();
@@ -38,8 +42,9 @@ int main()
   const auto devA=a.changeExecSpaceTo<EXEC_DEVICE>();
   auto tmpA=devA.getRef();
 
-  int b=0;
-  auto lam1 = [=] __device__ (const int& i){ return b; };
+  Test test;
+  
+  auto lam1 = [=] __device__ (const int& i){ return test; };
   cuda_generic_kernel<<<1,1>>>(0,2,lam1);
   cudaDeviceSynchronize();
     return 0;
