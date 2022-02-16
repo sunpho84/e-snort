@@ -6,15 +6,22 @@
 #include <cstdio>
 #include <unistd.h>
 
+#if ENABLE_CUDA_CODE
+# include <cuda/cuda.hpp>
+#endif
+
 #include <expr/executionSpace.hpp>
 #include <expr/expr.hpp>
-
 #include <tensor/stackedVariable.hpp>
 
 using namespace esnort;
 
 int main()
 {
+#if ENABLE_CUDA_CODE
+  cuda_init();
+#endif
+  
   StackedVariable<int> a;
   a()=1;
   

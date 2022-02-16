@@ -14,7 +14,7 @@ namespace esnort
     f();
   }
   
-  inline void decript_cuda_error(cudaError_t rc,const char *templ,...)
+  inline void decrypt_cuda_error(cudaError_t rc,const char *templ,...)
   {
     if(rc!=cudaSuccess)
       {
@@ -31,7 +31,26 @@ namespace esnort
   
   inline void freeCuda(void* ptr)
   {
-    decript_cuda_error(cudaFree(ptr),"");
+    decrypt_cuda_error(cudaFree(ptr),"");
+  }
+  
+  inline void cuda_init()
+  {
+    int nDevices;
+    if(cudaGetDeviceCount(&nDevices)!=cudaSuccess)
+      {
+	fprintf(stderr,"no CUDA enabled device\n");
+	exit(0);
+      }
+    
+    for(int i=0;i<nDevices;i++)
+      {
+	cudaDeviceProp deviceProp;
+        cudaGetDeviceProperties(&deviceProp,i);
+        printf(" CUDA Enabled device %d/%d: %d.%d\n",i,nDevices,deviceProp.major,deviceProp.minor);
+      }
+    
+    decrypt_cuda_error(cudaSetDevice(0),"Unable to set the device");
   }
 }
 
