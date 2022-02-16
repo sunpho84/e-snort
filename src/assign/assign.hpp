@@ -47,7 +47,7 @@ namespace esnort
       
       const dim3 block_dimension(1);
       const dim3 grid_dimension(1);
-      auto f=[lhs=lhs.getRef(),rhs=rhs.getRef(),*this] CUDA_DEVICE ()
+      auto f=[lhs=lhs.getRef(),rhs=rhs.getRef()] CUDA_DEVICE ()
       {
 	//lhs()=rhs();
       };
