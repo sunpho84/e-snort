@@ -26,11 +26,11 @@ namespace esnort
     }
     
     template <ExecutionSpace OthExecSpace>
-    decltype(auto) changeExecSpaceTo() const
+    DynamicVariable<T,OthExecSpace> changeExecSpaceTo() const
     {
-#ifdef ENABLE_CUDA_CODE
-      if constexpr(OthExecSpace!=execSpace())
-	{
+// #ifdef ENABLE_CUDA_CODE
+//       if constexpr(OthExecSpace!=execSpace())
+// 	{
 	  DynamicVariable<T,OthExecSpace> res;
 	  cudaMemcpy(res.ptr,
 		     &value,
@@ -40,10 +40,10 @@ namespace esnort
 		     cudaMemcpyDeviceToHost);
 	  
 	  return res;
-	}
-      else
-#endif
-	return *this;
+	// }
+//       else
+// #endif
+// 	return *this;
     }
     
     T value;
