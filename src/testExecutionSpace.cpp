@@ -17,7 +17,11 @@ using namespace esnort;
 #include <cstdio>
 
 template <typename Function>
-__global__ void kernel(Function f) { printf("value = %d\n", f()); }
+__global__ void kernel(const int min,const int max,Function f)
+{
+    const auto i=min+blockIdx.x*blockDim.x+threadIdx.x;
+  printf("value = %d\n", f(i));
+}
 
 int main()
 {
@@ -28,7 +32,7 @@ int main()
 #endif
   
   auto lam1 = [=] __device__ (const int& i){ return i; };
-  cuda_generic_kernel<<<1,1>>>(0,2,lam1);
+  kernel<<<1,1>>>(0,2,lam1);
   cudaDeviceSynchronize();
     return 0;
 
