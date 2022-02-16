@@ -16,6 +16,9 @@ using namespace esnort;
 
 #include <cstdio>
 
+template <typename Function>
+__global__ void kernel(Function f) { printf("value = %d", f()); }
+
 int main()
 {
   cuda_init();
@@ -24,8 +27,12 @@ int main()
   static_assert(StackedVariable<int>::execSpace()==esnort::EXEC_HOST,"We are issuing A on the host");
 #endif
   
-  
-  DynamicVariable<int,EXEC_DEVICE> c;
+    auto lam1 = [=] __device__ { return 1; };
+    kernel<<<1,1>>>(lam1);
+    
+    return 0;
+
+    DynamicVariable<int,EXEC_DEVICE> c;
   
   StackedVariable<int> a;
   a()=1;
