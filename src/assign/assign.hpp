@@ -54,7 +54,7 @@ namespace esnort
       
       static_assert(__nv_is_extended_device_lambda_closure_type(decltype(f)),"");
       
-      cuda_generic_kernel<<<grid_dimension,block_dimension>>>(f);
+      cuda_generic_kernel<<<grid_dimension,block_dimension>>>(0,1,f);
       
       cudaDeviceSynchronize();
       // #endif

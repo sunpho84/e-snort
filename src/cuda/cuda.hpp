@@ -7,11 +7,17 @@
 
 namespace esnort
 {
-  template <typename F>
+  template <typename IMin,
+	    typename IMax,
+	    typename F>
   CUDA_GLOBAL
-  void cuda_generic_kernel(const F& f)
+  void cuda_generic_kernel(const IMin min,
+			   const IMax max,
+			   F f)
   {
-    f();
+    const auto i=min+blockIdx.x*blockDim.x+threadIdx.x;
+    if(i<max)
+      f(i);
   }
   
   inline void decrypt_cuda_error(cudaError_t rc,const char *templ,...)
