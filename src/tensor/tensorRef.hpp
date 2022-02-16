@@ -39,10 +39,10 @@ namespace esnort
     {
     }
     
-    TensorRef(const T* ptr) CUDA_HOST CUDA_DEVICE:
-      ptr(ptr)
-    {
-    }
+    // TensorRef(const T* ptr) CUDA_HOST CUDA_DEVICE:
+    //   ptr(ptr)
+    // {
+    // }
     
     TensorRef(const TensorRef& oth) CUDA_HOST CUDA_DEVICE :
       ptr(oth.ptr)
