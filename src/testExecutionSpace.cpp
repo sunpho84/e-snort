@@ -67,8 +67,6 @@ int main()
 #endif
   
 #if !COMPILING_FOR_DEVICE
-  DynamicVariable<int,EXEC_DEVICE> c;
-  
       const dim3 block_dimension(1);
       const dim3 grid_dimension(1);
       
@@ -85,7 +83,9 @@ int main()
       
       cudaDeviceSynchronize();
   
-  c=a;
+  DynamicVariable<int,EXEC_DEVICE> c;
+  
+  //c=a;
 #endif
   
   // StackedVariable<int> b;
