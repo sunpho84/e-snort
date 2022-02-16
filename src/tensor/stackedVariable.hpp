@@ -57,7 +57,7 @@ namespace esnort
     {
       [[ maybe_unused ]]
       static constexpr bool hasToChange=
-	OthExecSpace==execSpace();
+	OthExecSpace!=execSpace();
       
       return
 #if ENABLE_CUDA_CODE
