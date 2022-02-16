@@ -63,7 +63,6 @@ int main()
   static_assert(StackedVariable<int>::execSpace()==esnort::EXEC_HOST,"We are issuing A on the host");
 #endif
   
-#if !COMPILING_FOR_DEVICE
       const dim3 block_dimension(1);
       const dim3 grid_dimension(1);
       
