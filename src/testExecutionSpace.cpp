@@ -79,6 +79,7 @@ int main()
       
       cudaDeviceSynchronize();
   
+#if !COMPILING_FOR_DEVICE
   DynamicVariable<int,EXEC_DEVICE> c;
   
   StackedVariable<int> a;
