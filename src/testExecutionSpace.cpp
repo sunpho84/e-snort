@@ -17,7 +17,7 @@ using namespace esnort;
 #include <cstdio>
 
 template <typename Function>
-__global__ void kernel(Function f) { printf("value = %d", f()); }
+__global__ void kernel(Function f) { printf("value = %d\n", f()); }
 
 int main()
 {
