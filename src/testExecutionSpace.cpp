@@ -38,7 +38,7 @@ int main()
   const auto devA=a.changeExecSpaceTo<EXEC_DEVICE>();
   const auto tmpA=devA.getRef();
   
-  auto lam1 = [=] __device__ (const int& i){ return i; };
+  auto lam1 = [=] __device__ (const int& i){ return tmpA(); };
   cuda_generic_kernel<<<1,1>>>(0,2,lam1);
   cudaDeviceSynchronize();
     return 0;
