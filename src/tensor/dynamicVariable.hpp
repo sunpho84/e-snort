@@ -101,7 +101,6 @@ namespace esnort
     {
       return ptr;
     }
-    
   };
 }
 

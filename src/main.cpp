@@ -115,7 +115,10 @@ int main()
   A j;
   
   Ref ref(j);
-  
+   
+ #if not COMPILING_FOR_DEVICE
+  static_assert(not A::isOnDevice(),"We are issuing A on the host");
+#endif
   printf("%d\n",A::isOnDevice()());
   
 //   auto e=std::integral_constant<bool,A::isOnDevice()>{};

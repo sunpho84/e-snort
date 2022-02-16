@@ -85,9 +85,12 @@ AX_CHECK_CUDA
 AH_VERBATIM([COMPILING_FOR_DEVICE],
 #ifdef __CUDA_ARCH__
  
- /// A convenient macro to detect that we are compiling on device
-# define COMPILING_FOR_DEVICE
- 
+# define COMPILING_FOR_DEVICE 1
+
+#else 
+
+# define COMPILING_FOR_DEVICE 0
+
 #endif
 )
 
