@@ -25,25 +25,48 @@ namespace esnort
       return EXEC_SPACE_CHANGE_COSTS_LITTLE;
     }
     
+    template <bool B>
+    using ExecSpaceChangeDiscriminer=
+      std::integral_constant<bool,B>;
+
+#ifdef ENABLE_CUDA_CODE
     template <ExecutionSpace OthExecSpace>
-    DynamicVariable<T,OthExecSpace> changeExecSpaceTo() const
+    StackedVariable _changeExecSpaceTo(ExecSpaceChangeDiscriminer<false>) const
     {
-// #ifdef ENABLE_CUDA_CODE
-//       if constexpr(OthExecSpace!=execSpace())
-// 	{
-	  DynamicVariable<T,OthExecSpace> res;
-	  cudaMemcpy(res.ptr,
-		     &value,
-		     sizeof(T),
-		     OthExecSpace==EXEC_DEVICE?
-		     cudaMemcpyHostToDevice:
-		     cudaMemcpyDeviceToHost);
-	  
-	  return res;
-	// }
-//       else
-// #endif
-// 	return *this;
+      return *this;
+    }
+    
+    template <ExecutionSpace OthExecSpace>
+    DynamicVariable<T,OthExecSpace> _changeExecSpaceTo(ExecSpaceChangeDiscriminer<true>) const
+    {
+      DynamicVariable<T,OthExecSpace> res;
+      
+      cudaMemcpy(res.ptr,
+		 &value,
+		 sizeof(T),
+		 OthExecSpace==EXEC_DEVICE?
+		 cudaMemcpyHostToDevice:
+		 cudaMemcpyDeviceToHost);
+      
+      return res;
+    }
+#endif
+    
+    template <ExecutionSpace OthExecSpace>
+    decltype(auto) changeExecSpaceTo() const
+    {
+      [[ maybe_unused ]]
+      static constexpr bool hasToChange=
+	OthExecSpace==execSpace();
+      
+      return
+#ifdef ENABLE_CUDA_CODE
+      _changeExecSpaceTo<OthExecSpace>(ExecExecSpaceChangeDiscriminer<hasToChange>{})
+#else
+	*this
+#endif
+	;
+      
     }
     
     T value;
