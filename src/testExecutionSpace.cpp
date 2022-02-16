@@ -61,7 +61,7 @@ int main()
       const dim3 grid_dimension(1);
       
       auto f=[// lhs=lhs.getRef(),rhs=rhs.getRef()
-	      ] CUDA_DEVICE (const int&) 
+	      ] CUDA_DEVICE (const int&)
       {
 	return 1;
 	//lhs()=rhs();
@@ -83,7 +83,7 @@ int main()
   
 #if !COMPILING_FOR_DEVICE
   DynamicVariable<int,EXEC_DEVICE> c;
-  //c=a;
+  c=a;
   
   
 #endif
