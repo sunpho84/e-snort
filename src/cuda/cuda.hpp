@@ -9,7 +9,7 @@ namespace esnort
 {
   template <typename F>
   CUDA_GLOBAL
-  void cuda_generic_kernel(F f)
+  void cuda_generic_kernel(const F& f)
   {
     f();
   }
