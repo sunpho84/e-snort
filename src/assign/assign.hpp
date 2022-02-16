@@ -47,7 +47,7 @@ namespace esnort
       
       const dim3 block_dimension(1);
       const dim3 grid_dimension(1);
-      cuda_generic_kernel<<<grid_dimension,block_dimension>>>([lhs,rhs] CUDA_DEVICE () mutable
+      cuda_generic_kernel<<<grid_dimension,block_dimension>>>([lhs=lhs.getRef(),rhs=rhs.getRef()] CUDA_DEVICE () mutable
       {
 	lhs()=rhs();
       });
@@ -82,7 +82,7 @@ namespace esnort
       
       printf("Copying to device\n");
       
-      //Assign<EXEC_DEVICE,EXEC_DEVICE,CHANGE_EXEC_SPACE_RHS_SIDE>::exec(std::forward<Lhs>(lhs),deviceRhs);
+      Assign<EXEC_DEVICE,EXEC_DEVICE,CHANGE_EXEC_SPACE_RHS_SIDE>::exec(std::forward<Lhs>(lhs),deviceRhs);
     }
   };
 }
