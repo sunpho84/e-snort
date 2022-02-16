@@ -59,9 +59,6 @@ int main()
   
   // return 0;
   
-  StackedVariable<int> a;
-  a()=1;
-  
 #if !COMPILING_FOR_DEVICE
   static_assert(StackedVariable<int>::execSpace()==esnort::EXEC_HOST,"We are issuing A on the host");
 #endif
@@ -84,6 +81,9 @@ int main()
       cudaDeviceSynchronize();
   
   DynamicVariable<int,EXEC_DEVICE> c;
+  
+  StackedVariable<int> a;
+  a()=1;
   
   //c=a;
 #endif
