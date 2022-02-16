@@ -1,0 +1,33 @@
+#ifndef _CUDA_HPP
+#define _CUDA_HPP
+
+#ifdef HAVE_CONFIG_H
+# include <config.hpp>
+#endif
+
+namespace esnort
+{
+  template <typename F>
+  CUDA_GLOBAL
+  void cuda_generic_kernel(F f)
+  {
+    f();
+  }
+  
+  void decript_cuda_error(cudaError_t rc,const char *templ,...)
+  {
+    if(rc!=cudaSuccess)
+      {
+	va_list ap;
+	va_start(ap,templ);
+	char mess[1024];
+	vsprintf(mess,templ,ap);
+	va_end(ap);
+	
+	fprintf(stderr,"%s, cuda raised error: %s\n",mess,cudaGetErrorString(rc));
+	exit(1);
+      }
+  }
+}
+
+#endif

@@ -8,21 +8,23 @@
 template <typename IMin,
 	  typename IMax,
 	  typename F>
-__global__
+CUDA_GLOBAL
 void cuda_generic_kernel(const IMin min,
 			 const IMax max,
 			 F f)
 {
+#ifdef ENABLE_CUDA_CODE
   const auto i=
     min+blockIdx.x*blockDim.x+threadIdx.x;
   
   if(i<max)
     f(i);
+#endif
 }
 
 inline void thread_barrier_internal()
 {
-#ifdef COMPILING_FOR_DEVICE
+#ifdef ENABLE_CUDA_CODE
   cudaDeviceSynchronize();
 #endif
 }
@@ -36,6 +38,7 @@ void cuda_parallel_for(const int line,
 		       const IMax max,
 		       F f)
 {
+#ifdef ENABLE_CUDA_CODE
   const auto length=(max-min);
   const dim3 block_dimension(128);
   int i=(length+block_dimension.x-1)/block_dimension.x;
@@ -44,47 +47,56 @@ void cuda_parallel_for(const int line,
   extern int verbosity_lv;
   printf("at line %d of file %s launching kernel on loop [%ld,%ld) using blocks of size %d and grid of size %d\n",
 	 line,file,(int64_t)min,(int64_t)max,block_dimension.x,grid_dimension.x);
-  
+
   cuda_generic_kernel<<<grid_dimension,block_dimension>>>(min,max,std::forward<F>(f));
   thread_barrier_internal();
   
   printf(" finished\n");
+#endif
 }
 
 #ifdef __NVCC__
   #ifndef __CUDA_ARCH__
-__host__ constexpr std::integral_constant<bool,false> isOnDevice() { return {}; }
+CUDA_HOST constexpr std::integral_constant<bool,false> isOnDevice() { return {}; }
   #else
-__device__ constexpr std::integral_constant<bool,true> isOnDevice() { return {}; }
+CUDA_DEVICE constexpr std::integral_constant<bool,true> isOnDevice() { return {}; }
   #endif
 #else
-__host__ constexpr std::integral_constant<bool,false> isOnDevice() { return {}; }
-__device__ constexpr std::integral_constant<bool,true> isOnDevice() { return {}; }
+# ifdef ENABLE_CUDA_CODE
+CUDA_HOST constexpr std::integral_constant<bool,false> isOnDevice() { return {}; }
+CUDA_DEVICE constexpr std::integral_constant<bool,true> isOnDevice() { return {}; }
+# else
+  static constexpr std::integral_constant<bool,false> isOnDevice() { return {}; }
+# endif
 #endif
 
 struct A
 {
   double data[3]={};
-  
+
 #ifdef __NVCC__
   #ifndef __CUDA_ARCH__
-__host__ static constexpr std::integral_constant<bool,false> isOnDevice() { return {}; }
+CUDA_HOST static constexpr std::integral_constant<bool,false> isOnDevice() { return {}; }
   #else
-__device__ static constexpr std::integral_constant<bool,true> isOnDevice() { return {}; }
+CUDA_DEVICE static constexpr std::integral_constant<bool,true> isOnDevice() { return {}; }
   #endif
 #else
-__host__ static constexpr std::integral_constant<bool,false> isOnDevice() { return {}; }
-__device__ static constexpr std::integral_constant<bool,true> isOnDevice() { return {}; }
+# ifdef ENABLE_CUDA_CODE
+  CUDA_HOST static constexpr std::integral_constant<bool,false> isOnDevice() { return {}; }
+  CUDA_DEVICE static constexpr std::integral_constant<bool,true> isOnDevice() { return {}; }
+# else
+  static constexpr std::integral_constant<bool,false> isOnDevice() { return {}; }
+# endif
 #endif
-  //   static constexpr auto isOnDevice() __host__ __device__
+  //   static constexpr auto isOnDevice() CUDA_HOST CUDA_DEVICE
   // {
   //   return ::isOnDevice();
   // }
 };
 
-//__managed__
+//_CUDA_MANAGED
 template <typename I>
-static __managed__ int iss;
+static CUDA_MANAGED int iss;
 
 template <typename T>
 struct Ref
@@ -114,7 +126,7 @@ int main()
 //  #ifndef __CUDA_ARCH__
 //     int* r=(decltype(j)::isOnDevice());
 // #endif
-    cuda_parallel_for(__LINE__,__FILE__,0,12,[ref]  __device__ (const int i)
+    cuda_parallel_for(__LINE__,__FILE__,0,12,[ref]  CUDA_DEVICE (const int i)
   {
     //int* r=(std::decay_t<decltype(ref.t)>::isOnDevice());
     // auto e=std::integral_constant<bool,A::isOnDevice()>{};

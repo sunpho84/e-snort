@@ -1,8 +1,14 @@
+#ifdef HAVE_CONFIG_H
+# include <config.hpp>
+#endif
+
 #include <cstdarg>
 #include <cstdio>
+#include <type_traits>
 
 int host;
 
+#ifdef ENABLE_CUDA_CODE
 template <typename F>
 __global__
 void cuda_generic_kernel(F f)
@@ -12,9 +18,7 @@ void cuda_generic_kernel(F f)
 
 inline void thread_barrier_internal()
 {
-#ifdef COMPILING_FOR_DEVICE
   cudaDeviceSynchronize();
-#endif
 }
 
 void decript_cuda_error(cudaError_t rc,const char *templ,...)
@@ -50,6 +54,7 @@ void init_cuda()
   
   decript_cuda_error(cudaSetDevice(0),"Unable to set the device");
 }
+#endif
 
 struct IncapsInt
 {
@@ -71,6 +76,7 @@ int main()
   IncapsInt value{2354};
   RefToIncapsulatedInt ref(value);
   
+#ifdef ENABLE_CUDA_CODE
   const dim3 block_dimension(128);
   const dim3 grid_dimension(128);
   
@@ -78,7 +84,7 @@ int main()
   
   int* dev;
   cudaMalloc(&dev,sizeof(int));
-  cuda_generic_kernel<<<grid_dimension,block_dimension>>>([=] __device__ __host__ ()
+  cuda_generic_kernel<<<grid_dimension,block_dimension>>>([=] CUDA_DEVICE CUDA_HOST ()
   {
     (*dev)=ref.value.value;
   });
@@ -89,7 +95,7 @@ int main()
   printf("%d\n",host);
   
   cudaFree(dev);
-  
+#endif
   return 0;
 }
 
@@ -97,13 +103,17 @@ struct A
 {
 #ifdef __NVCC__
   #ifndef __CUDA_ARCH__
-__host__ static constexpr std::integral_constant<bool,false> isOnDevice() { return {}; }
+CUDA_HOST static constexpr std::integral_constant<bool,false> isOnDevice() { return {}; }
   #else
-__device__ static constexpr std::integral_constant<bool,true> isOnDevice() { return {}; }
+CUDA_DEVICE static constexpr std::integral_constant<bool,true> isOnDevice() { return {}; }
   #endif
 #else
-__host__ static constexpr std::integral_constant<bool,false> isOnDevice() { return {}; }
-__device__ static constexpr std::integral_constant<bool,true> isOnDevice() { return {}; }
+# ifdef ENABLE_CUDA_CODE
+  CUDA_HOST static constexpr std::integral_constant<bool,false> isOnDevice() { return {}; }
+  CUDA_DEVICE static constexpr std::integral_constant<bool,true> isOnDevice() { return {}; }
+# else
+  static constexpr std::integral_constant<bool,false> isOnDevice() { return {}; }
+# endif
 #endif
 };
 
@@ -114,7 +124,7 @@ void testHost()
 #endif
 }
 
-__device__ void testDevice()
+CUDA_DEVICE void testDevice()
 {
 #ifdef __CUDA_ARCH__
   static_assert(A::isOnDevice(),"We are issuing A on the device");

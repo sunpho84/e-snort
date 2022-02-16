@@ -9,3 +9,7 @@ rm -fr \
 
 aclocal
 autoreconf --verbose --install --force
+for i in depcomp
+do
+    patch -p1 config/$i < config/patch_$i
+done

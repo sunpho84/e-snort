@@ -97,6 +97,28 @@ AC_ARG_ENABLE(cuda-code,
 	enable_cuda_code="${enableval}",
 	enable_cuda_code="no")
 AM_CONDITIONAL([CUDA_CODE],[test "$enable_cuda_code" == "yes" ],[true],[false])
+if test "$enable_cuda_code" == "yes"
+then
+	AC_DEFINE([ENABLE_CUDA_CODE],1,[Enable cuda code])
+	CUDA_MANAGED=__managed__
+	CUDA_HOST="__host__"
+	CUDA_GLOBAL="__global__"
+	CUDA_DEVICE="__device__"
+	CUDA_HOST_DEVICE="__host__ __device__"
+fi
+AC_DEFINE_UNQUOTED([CUDA_MANAGED],${CUDA_MANAGED},[Whether to use managed memory])
+AC_DEFINE_UNQUOTED([CUDA_GLOBAL],${CUDA_GLOBAL},[Whether this function is GLOBAL])
+AC_DEFINE_UNQUOTED([CUDA_HOST],${CUDA_HOST},[Whether this function is HOST only])
+AC_DEFINE_UNQUOTED([CUDA_DEVICE],${CUDA_DEVICE},[Whether to duplicate functions for DEVICE only])
+AC_DEFINE_UNQUOTED([CUDA_HOST_DEVICE],${CUDA_HOST_DEVICE},[Whether to duplicate functions for host and device])
+AH_VERBATIM([COMPILING_FOR_DEVICE],
+#ifdef __CUDA_ARCH__
+ 
+ /// A convenient macro to detect that we are compiling on device
+# define COMPILING_FOR_DEVICE
+ 
+#endif
+)
 AC_MSG_RESULT([enabling cuda code... $enable_cuda_code])
 SUMMARY_RESULT="$SUMMARY_RESULT
 Cuda code      : $enable_cuda_code"
