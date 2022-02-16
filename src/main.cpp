@@ -116,7 +116,7 @@ int main()
   
   Ref ref(j);
    
- #if !COMPILING_FOR_DEVICE
+#if (not COMPILING_FOR_DEVICE)
   static_assert(not A::isOnDevice(),"We are issuing A on the host");
 #endif
   printf("%d\n",A::isOnDevice()());

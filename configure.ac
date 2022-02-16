@@ -120,9 +120,12 @@ AC_DEFINE_UNQUOTED([CUDA_HOST_DEVICE],${CUDA_HOST_DEVICE},[Whether to duplicate 
 AH_VERBATIM([COMPILING_FOR_DEVICE],
 #ifdef __CUDA_ARCH__
  
- /// A convenient macro to detect that we are compiling on device
-# define COMPILING_FOR_DEVICE
- 
+# define COMPILING_FOR_DEVICE 1
+
+#else
+
+# define COMPILING_FOR_DEVICE 0
+
 #endif
 )
 AC_MSG_RESULT([enabling cuda code... $enable_cuda_code])
