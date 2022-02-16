@@ -7,6 +7,7 @@
 
 #include <expr/executionSpace.hpp>
 #include <expr/expr.hpp>
+#include <tensor/tensorRef.hpp>
 
 namespace esnort
 {
@@ -89,6 +90,17 @@ namespace esnort
 #endif
 	return *this;
     }
+    
+    TensorRef<T,ExecSpace> getRef() const
+    {
+      return ptr;
+    }
+    
+    TensorRef<T,ExecSpace> getRef()
+    {
+      return ptr;
+    }
+    
   };
 }
 

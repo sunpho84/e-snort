@@ -43,10 +43,8 @@ namespace esnort
 #ifndef ENABLE_CUDA_CODE
       Assign<EXEC_HOST,EXEC_HOST,CHANGE_EXEC_SPACE_LHS_SIDE>::exec(std::forward<Lhs>(lhs),std::forward<Rhs>(rhs));
 #else
-      // #ifndef __CUDA_ARCH__
-      //     fprintf(stderr,"");
-      //     exit(1);
-      // #else
+      printf("Launching the kernel\n");
+      
       const dim3 block_dimension(1);
       const dim3 grid_dimension(1);
       cuda_generic_kernel<<<grid_dimension,block_dimension>>>([lhs,rhs] CUDA_DEVICE () mutable

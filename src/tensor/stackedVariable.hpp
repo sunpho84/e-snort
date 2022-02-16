@@ -56,8 +56,17 @@ namespace esnort
     {
       return value;
     }
+    
+    TensorRef<T,execSpace()> getRef() const
+    {
+      return &value;
+    }
+    
+    TensorRef<T,execSpace()> getRef()
+    {
+      return &value;
+    }
   };
-  
 }
 
 #endif

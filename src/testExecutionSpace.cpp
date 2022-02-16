@@ -19,7 +19,8 @@ int main()
   a()=1;
   
   DynamicVariable<int,EXEC_DEVICE> c;
-  c=a;
+  auto aGpu=a.changeExecSpaceTo<EXEC_DEVICE>();
+  c.getRef()=aGpu.getRef();
   // StackedVariable<int> b;
   // b=c;
   // auto d=c.changeExecSpaceTo<EXEC_HOST>();
