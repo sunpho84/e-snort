@@ -31,16 +31,20 @@ int main()
   static_assert(StackedVariable<int>::execSpace()==esnort::EXEC_HOST,"We are issuing A on the host");
 #endif
   
-  auto lam1 = [=] __device__ (const int& i){ return i; };
+  StackedVariable<int> a;
+  a()=1;
+  DynamicVariable<int,EXEC_DEVICE> c;
+  
+  const auto devA=a.changeExecSpaceTo<EXEC_DEVICE>();
+  const auto tmpA=devA.getRef();
+  
+  auto lam1 = [tmpA] __device__ (const int& i){ return i; };
   cuda_generic_kernel<<<1,1>>>(0,2,lam1);
   cudaDeviceSynchronize();
     return 0;
 
   
-  StackedVariable<int> a;
-  a()=1;
   
-    DynamicVariable<int,EXEC_DEVICE> c;
   c=a;
   
   // StackedVariable<int> b;
