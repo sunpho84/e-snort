@@ -19,17 +19,22 @@ using namespace esnort;
 #include <cstdio>
 
 template <typename Function>
-__global__ void kernel(Function f) { printf("value = %d", f()); }
+__global__ void kernel(Function f)
+{
+  printf("value = %d", f());
+}
 
-struct Wrapper {
+struct Wrapper
+{
   int x;
-  Wrapper() : x(10) { };
-  void doWork() {
+  Wrapper() : x(10)
+  {
+  };
+  
+  void doWork()
+  {
     // ‘*this’ capture mode tells compiler to make a copy
     // of the object
-    auto lam1 = [=, *this] __device__ { return x+1; };
-    kernel<<<1,1>>>(lam1);
-    cudaDeviceSynchronize();
   };
 };
 
@@ -45,8 +50,13 @@ int main()
 #if ENABLE_CUDA_CODE
   cuda_init();
 #endif
-  
+
+  int x=10;
+  auto lam1 = [=] __device__ { return x+1; };
+  kernel<<<1,1>>>(lam1);
+  cudaDeviceSynchronize();
   emin();
+  
   return 0;
   
   StackedVariable<int> a;
