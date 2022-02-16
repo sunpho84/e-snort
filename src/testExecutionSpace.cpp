@@ -32,15 +32,15 @@ int main()
 #endif
   
   auto lam1 = [=] __device__ (const int& i){ return i; };
-  kernel<<<1,1>>>(0,2,lam1);
+  cuda_generic_kernel<<<1,1>>>(0,2,lam1);
   cudaDeviceSynchronize();
     return 0;
 
-    DynamicVariable<int,EXEC_DEVICE> c;
   
   StackedVariable<int> a;
   a()=1;
   
+    DynamicVariable<int,EXEC_DEVICE> c;
   c=a;
   
   // StackedVariable<int> b;
