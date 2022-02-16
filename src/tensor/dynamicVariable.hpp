@@ -52,11 +52,11 @@ namespace esnort
     
     //DynamicVariable(const DynamicVariable&) =delete;
     
-    // DynamicVariable(DynamicVariable&& oth)
-    // {
-    //   ptr=oth.ptr;
-    //   oth.ptr=nullptr;
-    // }
+    DynamicVariable(DynamicVariable&& oth)
+    {
+      ptr=oth.ptr;
+      oth.ptr=nullptr;
+    }
     
     ~DynamicVariable() CUDA_HOST
     {
