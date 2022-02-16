@@ -51,13 +51,13 @@ int main()
   cuda_init();
 #endif
 
-  int x=10;
-  auto lam1 = [=] __device__ { return x+1; };
-  kernel<<<1,1>>>(lam1);
-  cudaDeviceSynchronize();
-  emin();
+  // int x=10;
+  // auto lam1 = [=] __device__ { return x+1; };
+  // kernel<<<1,1>>>(lam1);
+  // cudaDeviceSynchronize();
+  // emin();
   
-  return 0;
+  // return 0;
   
   StackedVariable<int> a;
   a()=1;
