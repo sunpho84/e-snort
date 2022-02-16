@@ -71,7 +71,7 @@ int main()
       const dim3 grid_dimension(1);
       
       auto f=[// lhs=lhs.getRef(),rhs=rhs.getRef()
-	      ] CUDA_DEVICE (const int&)
+	      ] CUDA_DEVICE ()
       {
 	return 1;
 	//lhs()=rhs();
@@ -79,7 +79,7 @@ int main()
       
       static_assert(__nv_is_extended_device_lambda_closure_type(decltype(f)),"");
       
-      cuda_generic_kernel<<<grid_dimension,block_dimension>>>( 0,1,f);
+      kernel<<<grid_dimension,block_dimension>>>(f);
       
       cudaDeviceSynchronize();
   
