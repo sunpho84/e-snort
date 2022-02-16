@@ -58,13 +58,13 @@ namespace esnort
     //   oth.ptr=nullptr;
     // }
     
-    ~DynamicVariable() CUDA_HOST CUDA_DEVICE
+    ~DynamicVariable() CUDA_HOST
     {
       if(ptr)
 	{
 #ifdef ENABLE_CUDA_CODE
 	  if(execSpace()==EXEC_DEVICE)
-	    cudaFree(ptr);
+	    freeCuda(ptr);
 	  else
 #endif
 	    delete ptr;
