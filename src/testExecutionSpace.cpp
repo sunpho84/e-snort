@@ -27,8 +27,8 @@ int main()
   static_assert(StackedVariable<int>::execSpace()==esnort::EXEC_HOST,"We are issuing A on the host");
 #endif
   
-    auto lam1 = [=] __device__ { return 1; };
-    kernel<<<1,1>>>(lam1);
+  auto lam1 = [=] __device__ (const int& i){ return i; };
+  cuda_generic_kernel<<<1,1>>>(0,2,lam1);
     
     return 0;
 
