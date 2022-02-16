@@ -47,9 +47,9 @@ namespace esnort
       
       const dim3 block_dimension(1);
       const dim3 grid_dimension(1);
-      cuda_generic_kernel<<<grid_dimension,block_dimension>>>([lhs=lhs.getRef(),rhs=rhs.getRef()] CUDA_DEVICE () mutable
+      cuda_generic_kernel<<<grid_dimension,block_dimension>>>([lhs=lhs.getRef(),rhs=rhs.getRef()] CUDA_DEVICE ()
       {
-	lhs()=rhs();
+	//lhs()=rhs();
       });
       
       cudaDeviceSynchronize();
