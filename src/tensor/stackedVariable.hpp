@@ -61,7 +61,7 @@ namespace esnort
       
       return
 #ifdef ENABLE_CUDA_CODE
-      _changeExecSpaceTo<OthExecSpace>(ExecExecSpaceChangeDiscriminer<hasToChange>{})
+      _changeExecSpaceTo<OthExecSpace>(ExecSpaceChangeDiscriminer<hasToChange>{})
 #else
 	*this
 #endif
