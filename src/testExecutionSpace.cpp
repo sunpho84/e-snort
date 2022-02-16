@@ -21,7 +21,7 @@ using namespace esnort;
 template <typename Function>
 __global__ void kernel(Function f)
 {
-  printf("value = %d", f());
+  printf("value = %d\n", f());
 }
 
 struct Wrapper
@@ -61,8 +61,9 @@ int main()
       const dim3 grid_dimension(1);
       
       auto f=[// lhs=lhs.getRef(),rhs=rhs.getRef()
-	      ] CUDA_DEVICE (auto&&...)
+	      ] CUDA_DEVICE () 
       {
+	return 1;
 	//lhs()=rhs();
       };
       
