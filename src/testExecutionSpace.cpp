@@ -46,6 +46,9 @@ int main()
   cuda_init();
 #endif
   
+  emin();
+  return 0;
+  
   StackedVariable<int> a;
   a()=1;
   
