@@ -47,9 +47,9 @@ namespace esnort
       
       const dim3 block_dimension(1);
       const dim3 grid_dimension(1);
-      auto f=[lhs=lhs.getRef(),rhs=rhs.getRef()] CUDA_DEVICE (const int& i)
+      auto f=[lhs=lhs.getRef(),rhs=rhs.getRef()] CUDA_DEVICE (const int& i) mutable
       {
-	//lhs()=rhs();
+	lhs()=rhs();
       };
       
       static_assert(__nv_is_extended_device_lambda_closure_type(decltype(f)),"");

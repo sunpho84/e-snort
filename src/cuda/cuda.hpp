@@ -15,11 +15,14 @@ namespace esnort
 			   const IMax max,
 			   F f)
   {
+#if ENABLE_CUDA_CODE
     const auto i=min+blockIdx.x*blockDim.x+threadIdx.x;
     if(i<max)
       f(i);
+#endif
   }
   
+#if ENABLE_CUDA_CODE
   inline void decrypt_cuda_error(cudaError_t rc,const char *templ,...)
   {
     if(rc!=cudaSuccess)
@@ -34,14 +37,18 @@ namespace esnort
 	exit(1);
       }
   }
+#endif
   
   inline void freeCuda(void* ptr)
   {
+#if ENABLE_CUDA_CODE
     decrypt_cuda_error(cudaFree(ptr),"");
+#endif
   }
   
   inline void cuda_init()
   {
+#if ENABLE_CUDA_CODE
     int nDevices;
     if(cudaGetDeviceCount(&nDevices)!=cudaSuccess)
       {
@@ -57,6 +64,7 @@ namespace esnort
       }
     
     decrypt_cuda_error(cudaSetDevice(0),"Unable to set the device");
+#endif
   }
 }
 

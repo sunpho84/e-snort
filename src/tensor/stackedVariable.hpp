@@ -28,7 +28,7 @@ namespace esnort
     template <bool B>
     using ExecSpaceChangeDiscriminer=
       std::integral_constant<bool,B>;
-
+    
 #if ENABLE_CUDA_CODE
     template <ExecutionSpace OthExecSpace>
     StackedVariable _changeExecSpaceTo(ExecSpaceChangeDiscriminer<false>) const
@@ -81,12 +81,12 @@ namespace esnort
       return value;
     }
     
-    TensorRef<T,execSpace()> getRef() const
+    TensorRef<T,execSpace(),true> getRef() const
     {
       return &value;
     }
     
-    TensorRef<T,execSpace()> getRef()
+    TensorRef<T,execSpace(),false> getRef()
     {
       return &value;
     }

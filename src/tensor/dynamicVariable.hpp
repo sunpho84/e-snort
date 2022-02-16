@@ -92,12 +92,12 @@ namespace esnort
 	return *this;
     }
     
-    TensorRef<T,ExecSpace> getRef() const
+    TensorRef<T,ExecSpace,true> getRef() const
     {
       return ptr;
     }
     
-    TensorRef<T,ExecSpace> getRef()
+    TensorRef<T,ExecSpace,false> getRef()
     {
       return ptr;
     }
