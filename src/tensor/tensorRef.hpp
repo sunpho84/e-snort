@@ -34,12 +34,12 @@ namespace esnort
       return *ptr;
     }
     
-    TensorRef(T* ptr) :
+    TensorRef(T* ptr) CUDA_HOST CUDA_DEVICE:
       ptr(ptr)
     {
     }
     
-    TensorRef(const T* ptr) :
+    TensorRef(const T* ptr) CUDA_HOST CUDA_DEVICE:
       ptr(ptr)
     {
     }
