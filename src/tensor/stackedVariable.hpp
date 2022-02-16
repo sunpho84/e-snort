@@ -38,6 +38,7 @@ namespace esnort
 		     OthExecSpace==EXEC_DEVICE?
 		     cudaMemcpyHostToDevice:
 		     cudaMemcpyDeviceToHost);
+	  
 	  return res;
 	}
       else

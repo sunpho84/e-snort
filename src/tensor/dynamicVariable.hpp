@@ -54,6 +54,7 @@ namespace esnort
     
     DynamicVariable(DynamicVariable&& oth)
     {
+      printf("A move was made\n");
       ptr=oth.ptr;
       oth.ptr=nullptr;
     }
