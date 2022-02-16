@@ -83,12 +83,12 @@ namespace esnort
     
     TensorRef<T,execSpace(),true> getRef() const
     {
-      return {};//&value;
+      return &value;
     }
     
     TensorRef<T,execSpace(),false> getRef()
     {
-      return {};//&value;
+      return &value;
     }
   };
 }
