@@ -44,7 +44,7 @@ namespace esnort
     {
     }
     
-    TensorRef(const TensorRef& oth) :
+    TensorRef(const TensorRef& oth) CUDA_HOST CUDA_DEVICE :
       ptr(oth.ptr)
     {
     }
