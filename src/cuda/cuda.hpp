@@ -55,7 +55,7 @@ namespace esnort
 #endif
   }
   
-  inline void cuda_init()
+  inline void cuda_init(const int& iDevice)
   {
 #if ENABLE_CUDA_CODE
     int nDevices;
@@ -72,7 +72,7 @@ namespace esnort
         printf(" CUDA Enabled device %d/%d: %d.%d\n",i,nDevices,deviceProp.major,deviceProp.minor);
       }
     
-    decrypt_cuda_error(cudaSetDevice(0),"Unable to set the device");
+    decrypt_cuda_error(cudaSetDevice(iDevice),"Unable to set the device");
     decrypt_cuda_error(cudaDeviceSynchronize(),"Unable to synchronize the device");
 #endif
   }

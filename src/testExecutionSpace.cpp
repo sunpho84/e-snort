@@ -23,9 +23,17 @@ __global__ void kernel(const int min,const int max,Function f)
   printf("value = %d\n", f(i));
 }
 
-int main()
+int main(int narg,char** arg)
 {
-  cuda_init();
+  int iDevice;
+  if(narg==1)
+    iDevice=0;
+  else
+    sscanf(arg[1],"%d",&iDevice);
+  
+  printf("Using device: %d\n",iDevice);
+  
+  cuda_init(iDevice);
 
 #if !COMPILING_FOR_DEVICE
   static_assert(StackedVariable<int>::execSpace()==esnort::EXEC_HOST,"We are issuing A on the host");
