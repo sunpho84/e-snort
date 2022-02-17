@@ -49,7 +49,7 @@ namespace esnort
       const dim3 grid_dimension(1);
       
       auto devLhs=lhs.getRef();
-      const auto devRhs=rhs.getRef()
+      const auto devRhs=rhs.getRef();
       
       auto f=[=] CUDA_DEVICE (const int& i) mutable
       {
