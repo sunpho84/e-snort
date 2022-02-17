@@ -13,3 +13,4 @@
 /build*
 /src/config.hpp.in~
 /compile_commands.json
+/Makefile
