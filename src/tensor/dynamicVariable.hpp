@@ -35,7 +35,7 @@ namespace esnort
       return EXEC_SPACE_CHANGE_COSTS_LITTLE;
     }
     
-    T* ptr;
+    T* ptr{nullptr};
     
     const T& operator()() const CUDA_HOST CUDA_DEVICE
     {
@@ -54,11 +54,11 @@ namespace esnort
 	{
 	  printf("Allocating on gpu!\n");
 	  mallocCuda(ptr,1);
-	  printf("Allocated %p\n",ptr);
 	}
       else
 #endif
 	ptr=new T;
+	  printf("Allocated %p\n",ptr);
     }
     
     //DynamicVariable(const DynamicVariable&) =delete;
