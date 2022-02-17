@@ -37,11 +37,11 @@ namespace esnort
   {
     template <typename Lhs,
 	      typename Rhs>
-    static void exec(Lhs&& lhs,
-		     Rhs&& rhs) CUDA_HOST
+    static void exec(Lhs& lhs,
+		     const Rhs& rhs) CUDA_HOST
     {
 #if !ENABLE_CUDA_CODE
-      Assign<EXEC_HOST,EXEC_HOST,CHANGE_EXEC_SPACE_LHS_SIDE>::exec(std::forward<Lhs>(lhs),std::forward<Rhs>(rhs));
+      Assign<EXEC_HOST,EXEC_HOST,CHANGE_EXEC_SPACE_LHS_SIDE>::exec(lhs,rhs);
 #else
       printf("Launching the kernel\n");
       
@@ -73,8 +73,8 @@ namespace esnort
   {
     template <typename Lhs,
 	      typename Rhs>
-    static void exec(Lhs&& lhs,
-		     Rhs&& rhs) CUDA_HOST
+    static void exec(Lhs& lhs,
+		     const Rhs& rhs) CUDA_HOST
     {
       printf("Copying to host the rhs\n");
       
@@ -90,15 +90,15 @@ namespace esnort
   {
     template <typename Lhs,
 	      typename Rhs>
-    static void exec(Lhs&& lhs,
-		     Rhs&& rhs)
+    static void exec(Lhs& lhs,
+		     const Rhs& rhs)
     {
       const auto deviceRhs=
 	rhs.template changeExecSpaceTo<EXEC_DEVICE>();
       
       printf("Copying to device the rhs\n");
       
-      Assign<EXEC_DEVICE,EXEC_DEVICE,CHANGE_EXEC_SPACE_RHS_SIDE>::exec(std::forward<Lhs>(lhs),deviceRhs);
+      Assign<EXEC_DEVICE,EXEC_DEVICE,CHANGE_EXEC_SPACE_RHS_SIDE>::exec(lhs,deviceRhs);
     }
   };
 }
