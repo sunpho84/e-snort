@@ -73,6 +73,7 @@ namespace esnort
       }
     
     decrypt_cuda_error(cudaSetDevice(0),"Unable to set the device");
+    decrypt_cuda_error(cudaDeviceSynchronize(),"Unable to synchronize the device");
 #endif
   }
 }
