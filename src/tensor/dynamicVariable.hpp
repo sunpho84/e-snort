@@ -20,7 +20,8 @@ namespace esnort
     
     DynamicVariable& operator=(const DynamicVariable& oth)
     {
-      Expr<DynamicVariable>(*this)=Expr<DynamicVariable>(oth);
+      (*static_cast<Expr<DynamicVariable>*>(this))=
+	(*static_cast<const Expr<DynamicVariable>*>(&oth));
       
       return *this;
     }
