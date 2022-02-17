@@ -58,7 +58,10 @@ int main(int narg,char** arg)
   
   /////////////////////////////////////////////////////////////////
   //c=a;
-        Assign<EXEC_DEVICE,EXEC_HOST,CHANGE_EXEC_SPACE_RHS_SIDE>::exec(c,a);
+             const auto deviceRhs=
+	a.template changeExecSpaceTo<EXEC_DEVICE>();
+      
+	     Assign<EXEC_DEVICE,EXEC_DEVICE,CHANGE_EXEC_SPACE_RHS_SIDE>::exec(c,deviceRhs);
 
   StackedVariable<int> b;
   // auto lhsc=c.changeExecSpaceTo<EXEC_HOST>();
