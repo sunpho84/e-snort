@@ -39,12 +39,7 @@ namespace esnort
 		  CHANGE_EXEC_SPACE_LHS_SIDE:
       CHANGE_EXEC_SPACE_RHS_SIDE;
       
-      // Assign<>::
-      exec(lhs,
-	   rhs,
-	   std::integral_constant<ExecutionSpace,lhsExecSpace>{},
-	   std::integral_constant<ExecutionSpace,rhsExecSpace>{},
-	   std::integral_constant<WhichSideToChange,whichSideToChange>{});
+      Assign<lhsExecSpace,rhsExecSpace,whichSideToChange>::exec(lhs,rhs);
       
       return this->crtp();
     }
