@@ -48,7 +48,7 @@ int main()
 
   
   /////////////////////////////////////////////////////////////////
-  c=a;
+  //c=a;
   StackedVariable<int> b;
   auto lhsc=c.changeExecSpaceTo<EXEC_HOST>();
   b=lhsc;
