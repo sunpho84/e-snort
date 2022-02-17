@@ -70,6 +70,8 @@ namespace esnort
     static void exec(Lhs&& lhs,
 		     Rhs&& rhs) CUDA_HOST
     {
+      printf("Copying to host the rhs\n");
+      
       lhs()=rhs.template changeExecSpaceTo<EXEC_HOST>()();
     }
   };
@@ -84,7 +86,7 @@ namespace esnort
     {
       auto deviceRhs=rhs.template changeExecSpaceTo<EXEC_DEVICE>();
       
-      printf("Copying to device\n");
+      printf("Copying to device the rhs\n");
       
       Assign<EXEC_DEVICE,EXEC_DEVICE,CHANGE_EXEC_SPACE_RHS_SIDE>::exec(std::forward<Lhs>(lhs),deviceRhs);
     }

@@ -49,6 +49,8 @@ int main()
   
   
   c=a;
+  StackedVariable<int> b;
+  b=c;
   
   // StackedVariable<int> b;
   // b=c;
