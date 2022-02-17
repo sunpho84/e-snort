@@ -37,6 +37,7 @@ namespace esnort
     TensorRef(std::conditional_t<IsConst,const T*,T*> ptr) CUDA_HOST CUDA_DEVICE:
       ptr(ptr)
     {
+      printf("%p associated to ref\n",ptr);
     }
     
     // TensorRef(const T* ptr) CUDA_HOST CUDA_DEVICE:
