@@ -17,7 +17,7 @@ namespace esnort
     
     static constexpr ExecutionSpace execSpace()
     {
-      return currentExecSpace();
+      return EXEC_HOST;//currentExecSpace();
     }
     
     static constexpr ExecutionSpaceChangeCost execSpaceChangeCost()
