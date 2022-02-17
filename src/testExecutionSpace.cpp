@@ -61,6 +61,8 @@ int main(int narg,char** arg)
   auto lhsc=c.changeExecSpaceTo<EXEC_HOST>();
   b=lhsc;
   
+  printf("Result: %d -> %d\n",a(),b());
+  
   // StackedVariable<int> b;
   // b=c;
   // auto d=c.changeExecSpaceTo<EXEC_HOST>();
