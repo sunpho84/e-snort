@@ -33,6 +33,7 @@ namespace esnort
 		  (Rhs::execSpaceChangeCost()>Lhs::execSpaceChangeCost())?
 		  CHANGE_EXEC_SPACE_LHS_SIDE:
       CHANGE_EXEC_SPACE_RHS_SIDE;
+
       
       Assign<lhsExecSpace,rhsExecSpace,whichSideToChange>::exec(lhs,rhs);
       

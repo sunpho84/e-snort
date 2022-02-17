@@ -57,6 +57,7 @@ int main(int narg,char** arg)
 #endif
   
   /////////////////////////////////////////////////////////////////
+  printf("going to issue the assignment\n");
   c=a;
         //      const auto deviceA=
 	// a.template changeExecSpaceTo<EXEC_DEVICE>();
