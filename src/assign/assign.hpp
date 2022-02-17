@@ -15,33 +15,47 @@
 
 namespace esnort
 {
-  template <ExecutionSpace LhsSpace,
-	    ExecutionSpace RhsSpace,
-	    WhichSideToChange WhichSide>
-  struct Assign;
+  // template <ExecutionSpace LhsSpace,
+  // 	    ExecutionSpace RhsSpace,
+  // 	    WhichSideToChange WhichSide>
+  // struct Assign;
   
-  template <WhichSideToChange W>
-  struct Assign<EXEC_HOST,EXEC_HOST,W>
+  // template <WhichSideToChange W>
+  // struct Assign<EXEC_HOST,EXEC_HOST,W>
+  // {
+  using ExecHost=std::integral_constant<ExecutionSpace,EXEC_HOST>;
+  using ExecDevice=std::integral_constant<ExecutionSpace,EXEC_DEVICE>;
+  using ChangeLhsSide=std::integral_constant<WhichSideToChange,CHANGE_EXEC_SPACE_LHS_SIDE>;
+  using ChangeRhsSide=std::integral_constant<WhichSideToChange,CHANGE_EXEC_SPACE_RHS_SIDE>;
+  
+  template <typename Lhs,
+	    typename Rhs,
+	    typename...W>
+  static void exec(Lhs&& lhs,
+		   Rhs&& rhs,
+		   ExecHost,
+		   ExecHost,
+		   W...)
   {
-    template <typename Lhs,
-	      typename Rhs>
-    static void exec(Lhs&& lhs,
-		     Rhs&& rhs)
-    {
       lhs()=rhs();
     }
-  };
+  // };
   
-  template <WhichSideToChange W>
-  struct Assign<EXEC_DEVICE,EXEC_DEVICE,W>
-  {
+  // template <WhichSideToChange W>
+  // struct Assign<EXEC_DEVICE,EXEC_DEVICE,W>
+  // {
     template <typename Lhs,
-	      typename Rhs>
+	      typename Rhs,
+	      typename...W>
     static void exec(Lhs&& lhs,
-		     Rhs&& rhs)
+		     Rhs&& rhs,
+		     ExecDevice,
+		     ExecDevice,
+		     W...)
     {
 #if !ENABLE_CUDA_CODE
-      Assign<EXEC_HOST,EXEC_HOST,CHANGE_EXEC_SPACE_LHS_SIDE>::exec(std::forward<Lhs>(lhs),std::forward<Rhs>(rhs));
+      // Assign<EXEC_HOST,EXEC_HOST,CHANGE_EXEC_SPACE_LHS_SIDE>::
+      exec(std::forward<Lhs>(lhs),std::forward<Rhs>(rhs),ExecHost{},ExecHost{},ChangeLhsSide{});
 #else
       printf("Launching the kernel D to D\n");
       
@@ -66,15 +80,18 @@ namespace esnort
       // #endif
 #endif
     }
-  };
+  // };
   
-  template <>
-  struct Assign<EXEC_HOST,EXEC_DEVICE,CHANGE_EXEC_SPACE_RHS_SIDE>
-  {
+  // template <>
+  // struct Assign<EXEC_HOST,EXEC_DEVICE,CHANGE_EXEC_SPACE_RHS_SIDE>
+  // {
     template <typename Lhs,
 	      typename Rhs>
     static void exec(Lhs&& lhs,
-		     Rhs&& rhs)
+		     Rhs&& rhs,
+		     ExecHost,
+		     ExecDevice,
+		     ChangeRhsSide)
     {
       printf("Copying to host the rhs\n");
       
@@ -83,15 +100,18 @@ namespace esnort
       
       lhs()=hostRhs();
     }
-  };
+  // };
   
-  template <>
-  struct Assign<EXEC_DEVICE,EXEC_HOST,CHANGE_EXEC_SPACE_RHS_SIDE>
-  {
+  // template <>
+  // struct Assign<EXEC_DEVICE,EXEC_HOST,CHANGE_EXEC_SPACE_RHS_SIDE>
+  // {
     template <typename Lhs,
 	      typename Rhs>
     static void exec(Lhs&& lhs,
-		     Rhs&& rhs)
+		     Rhs&& rhs,
+		     ExecDevice,
+		     ExecHost,
+		     ChangeRhsSide)
     {
       printf("Copying to device the rhs\n");
       
@@ -126,7 +146,7 @@ namespace esnort
 //       cudaDeviceSynchronize();
 
     }
-  };
+  // };
 }
 
 #endif
