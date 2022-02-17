@@ -57,11 +57,11 @@ int main(int narg,char** arg)
 #endif
   
   /////////////////////////////////////////////////////////////////
-  //c=a;
-             const auto deviceA=
-	a.template changeExecSpaceTo<EXEC_DEVICE>();
+  c=a;
+        //      const auto deviceA=
+	// a.template changeExecSpaceTo<EXEC_DEVICE>();
       
-	     Assign<EXEC_DEVICE,EXEC_DEVICE,CHANGE_EXEC_SPACE_RHS_SIDE>::exec(c,deviceA);
+	     // Assign<EXEC_DEVICE,EXEC_DEVICE,CHANGE_EXEC_SPACE_RHS_SIDE>::exec(c,deviceA);
 #if 0
 	     const dim3 block_dimension(1);
       const dim3 grid_dimension(1);
