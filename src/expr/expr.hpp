@@ -17,6 +17,11 @@ namespace esnort
   struct Expr :
     Crtp<T>
   {
+    Expr& operator=(const Expr& oth)
+    {
+      return this->operator=<T>(oth);
+    }
+    
     template <typename U>
     T& operator=(const Expr<U>& u)
     {
