@@ -47,9 +47,13 @@ namespace esnort
       
       const dim3 block_dimension(1);
       const dim3 grid_dimension(1);
-      auto f=[lhs=lhs.getRef(),rhs=rhs.getRef()] CUDA_DEVICE (const int& i) mutable
+      
+      auto devLhs=lhs.getRef();
+      const auto devRhs=rhs.getRef()
+      
+      auto f=[=] CUDA_DEVICE (const int& i) mutable
       {
-	lhs()=rhs();
+	return devLhs()=devRhs();
       };
 
 #ifdef __NVCC__
@@ -89,7 +93,7 @@ namespace esnort
     static void exec(Lhs&& lhs,
 		     Rhs&& rhs)
     {
-      auto deviceRhs=
+      const auto deviceRhs=
 	rhs.template changeExecSpaceTo<EXEC_DEVICE>();
       
       printf("Copying to device the rhs\n");
