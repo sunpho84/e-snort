@@ -43,16 +43,16 @@ int main(int narg,char** arg)
   a()=1;
   DynamicVariable<int,EXEC_DEVICE> c;
   
-  // const auto devA=a.changeExecSpaceTo<EXEC_DEVICE>();
-  // auto rhs=devA.getRef();
+  const auto devA=a.changeExecSpaceTo<EXEC_DEVICE>();
+  auto rhs=devA.getRef();
 
-  // auto lhs=c.getRef();
+  auto lhs=c.getRef();
 
-  // auto lam1 = [=] __device__ (const int& i) mutable{ return lhs()=rhs(); };
-  // cuda_generic_kernel<<<1,1>>>(0,2,lam1);
-  // cudaDeviceSynchronize();
+  auto lam1 = [=] __device__ (const int& i) mutable{ return lhs()=rhs(); };
+  cuda_generic_kernel<<<1,1>>>(0,2,lam1);
+  cudaDeviceSynchronize();
   
-  // return 0;
+  return 0;
 
   
   /////////////////////////////////////////////////////////////////
