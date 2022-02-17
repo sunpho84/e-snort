@@ -61,7 +61,9 @@ int main(int narg,char** arg)
              const auto deviceA=
 	a.template changeExecSpaceTo<EXEC_DEVICE>();
       
-      const dim3 block_dimension(1);
+	     Assign<EXEC_DEVICE,EXEC_DEVICE,CHANGE_EXEC_SPACE_RHS_SIDE>::exec(c,deviceA);
+#if 0
+	     const dim3 block_dimension(1);
       const dim3 grid_dimension(1);
       
       auto devLhs=c.getRef();
@@ -75,7 +77,7 @@ int main(int narg,char** arg)
       cuda_generic_kernel<<<grid_dimension,block_dimension>>>(0,1,f);
       
       cudaDeviceSynchronize();
-
+#endif
   StackedVariable<int> b;
   // auto lhsc=c.changeExecSpaceTo<EXEC_HOST>();
   // b=lhsc;
