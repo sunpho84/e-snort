@@ -51,7 +51,11 @@ namespace esnort
     {
 #if ENABLE_CUDA_CODE
       if(execSpace()==EXEC_DEVICE)
-	mallocCuda(ptr,1);
+	{
+	  printf("Allocating on gpu!\n");
+	  mallocCuda(ptr,1);
+	  printf("Allocated %p\n",ptr);
+	}
       else
 #endif
 	ptr=new T;
