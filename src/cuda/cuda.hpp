@@ -1,6 +1,7 @@
 #ifndef _CUDA_HPP
 #define _CUDA_HPP
 
+#include <cstddef>
 #ifdef HAVE_CONFIG_H
 # include <config.hpp>
 #endif
@@ -43,6 +44,14 @@ namespace esnort
   {
 #if ENABLE_CUDA_CODE
     decrypt_cuda_error(cudaFree(ptr),"");
+#endif
+  }
+
+  template <typename  T>
+  inline void mallocCuda(T& ptr,const size_t& sizeInUnit)
+  {
+#if ENABLE_CUDA_CODE
+    decrypt_cuda_error(cudaMalloc(&ptr,sizeInUnit*sizeof(T)),"");
 #endif
   }
   

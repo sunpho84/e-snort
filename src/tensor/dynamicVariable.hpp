@@ -44,7 +44,7 @@ namespace esnort
     {
 #if ENABLE_CUDA_CODE
       if(execSpace()==EXEC_DEVICE)
-	cudaMalloc(&ptr,sizeof(T));
+	mallocCuda(ptr,sizeof(T));
       else
 #endif
 	ptr=new T;
