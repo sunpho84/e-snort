@@ -43,6 +43,7 @@ int main(int narg,char** arg)
   a()=1;
   DynamicVariable<int,EXEC_DEVICE> c;
   
+#if 0
   const auto devA=a.changeExecSpaceTo<EXEC_DEVICE>();
   auto rhs=devA.getRef();
 
@@ -53,10 +54,12 @@ int main(int narg,char** arg)
   cudaDeviceSynchronize();
   
   return 0;
-
+#endif
   
   /////////////////////////////////////////////////////////////////
-  c=a;
+  //c=a;
+        Assign<EXEC_DEVICE,EXEC_HOST,CHANGE_EXEC_SPACE_RHS_SIDE>::exec(c,a);
+
   StackedVariable<int> b;
   // auto lhsc=c.changeExecSpaceTo<EXEC_HOST>();
   // b=lhsc;
