@@ -72,7 +72,10 @@ namespace esnort
     {
       printf("Copying to host the rhs\n");
       
-      lhs()=rhs.template changeExecSpaceTo<EXEC_HOST>()();
+      auto hostRhs=
+	rhs.template changeExecSpaceTo<EXEC_HOST>();
+      
+      lhs()=hostRhs();
     }
   };
   
@@ -84,7 +87,8 @@ namespace esnort
     static void exec(Lhs&& lhs,
 		     Rhs&& rhs)
     {
-      auto deviceRhs=rhs.template changeExecSpaceTo<EXEC_DEVICE>();
+      auto deviceRhs=
+	rhs.template changeExecSpaceTo<EXEC_DEVICE>();
       
       printf("Copying to device the rhs\n");
       
