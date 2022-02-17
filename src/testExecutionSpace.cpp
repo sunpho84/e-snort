@@ -44,13 +44,14 @@ int main()
   cuda_generic_kernel<<<1,1>>>(0,2,lam1);
   cudaDeviceSynchronize();
   
-  return 0;
+  // return 0;
 
   
-  
+  /////////////////////////////////////////////////////////////////
   c=a;
   StackedVariable<int> b;
-  b=c;
+  auto lhsc=c.changeExecSpaceTo<EXEC_HOST>();
+  b=lhsc;
   
   // StackedVariable<int> b;
   // b=c;
