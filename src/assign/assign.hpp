@@ -26,7 +26,7 @@ namespace esnort
     template <typename Lhs,
 	      typename Rhs>
     static void exec(Lhs&& lhs,
-		     Rhs&& rhs) CUDA_HOST
+		     Rhs&& rhs)
     {
       lhs()=rhs();
     }
@@ -38,7 +38,7 @@ namespace esnort
     template <typename Lhs,
 	      typename Rhs>
     static void exec(Lhs&& lhs,
-		     Rhs&& rhs) CUDA_HOST
+		     Rhs&& rhs)
     {
 #if !ENABLE_CUDA_CODE
       Assign<EXEC_HOST,EXEC_HOST,CHANGE_EXEC_SPACE_LHS_SIDE>::exec(std::forward<Lhs>(lhs),std::forward<Rhs>(rhs));
@@ -74,7 +74,7 @@ namespace esnort
     template <typename Lhs,
 	      typename Rhs>
     static void exec(Lhs&& lhs,
-		     Rhs&& rhs) CUDA_HOST
+		     Rhs&& rhs)
     {
       printf("Copying to host the rhs\n");
       
