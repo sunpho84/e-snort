@@ -18,6 +18,13 @@ namespace esnort
   {
     using Expr<DynamicVariable<T,ExecSpace>>::operator=;
     
+    DynamicVariable& operator=(const DynamicVariable& oth)
+    {
+      Expr<DynamicVariable>(*this)=Expr<DynamicVariable>(oth);
+      
+      return *this;
+    }
+    
     static constexpr ExecutionSpace execSpace()
     {
       return ExecSpace;
