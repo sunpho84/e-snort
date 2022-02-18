@@ -12,7 +12,7 @@ namespace esnort
   {
     using Expr<TensorRef<T,ExecSpace,IsConst>>::operator=;
     
-    static constexpr ExecutionSpace execSpace()
+    static constexpr ExecutionSpace _execSpace()
     {
       return ExecSpace;
     }

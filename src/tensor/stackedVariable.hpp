@@ -15,9 +15,9 @@ namespace esnort
   {
     using Expr<StackedVariable<T>>::operator=;
     
-    static constexpr ExecutionSpace execSpace()
+    static constexpr ExecutionSpace _execSpace()
     {
-      return currentExecSpace();
+      return EXEC_WHERE_LIVING;
     }
     
     static constexpr ExecutionSpaceChangeCost execSpaceChangeCost()
@@ -53,11 +53,11 @@ namespace esnort
 #endif
     
     template <ExecutionSpace OthExecSpace>
-    decltype(auto) changeExecSpaceTo() const
+    decltype(auto) changeExecSpaceTo() const CUDA_HOST
     {
       [[ maybe_unused ]]
       static constexpr bool hasToChange=
-	OthExecSpace!=execSpace();
+	OthExecSpace!=EXEC_HOST;
       
       return
 #if ENABLE_CUDA_CODE
@@ -81,12 +81,12 @@ namespace esnort
       return value;
     }
     
-    TensorRef<T,execSpace(),true> getRef() const
+    TensorRef<T,EXEC_WHERE_LIVING,true> getRef() const
     {
       return &value;
     }
     
-    TensorRef<T,execSpace(),false> getRef()
+    TensorRef<T,EXEC_WHERE_LIVING,false> getRef()
     {
       return &value;
     }

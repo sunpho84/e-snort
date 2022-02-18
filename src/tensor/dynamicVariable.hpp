@@ -26,7 +26,7 @@ namespace esnort
       return *this;
     }
     
-    static constexpr ExecutionSpace execSpace()
+    static constexpr ExecutionSpace _execSpace()
     {
       return ExecSpace;
     }
@@ -51,7 +51,7 @@ namespace esnort
     DynamicVariable()
     {
 #if ENABLE_CUDA_CODE
-      if(execSpace()==EXEC_DEVICE)
+      if(_execSpace()==EXEC_DEVICE)
 	{
 	  printf("Allocating on gpu!\n");
 	  mallocCuda(ptr,1);
@@ -76,7 +76,7 @@ namespace esnort
       if(ptr)
 	{
 #if ENABLE_CUDA_CODE
-	  if(execSpace()==EXEC_DEVICE)
+	  if(_execSpace()==EXEC_DEVICE)
 	    freeCuda(ptr);
 	  else
 #endif
@@ -88,7 +88,7 @@ namespace esnort
     decltype(auto) changeExecSpaceTo() const
     {
 #if ENABLE_CUDA_CODE
-      if constexpr(OthExecSpace!=execSpace())
+      if constexpr(OthExecSpace!=_execSpace())
 	{
 	  DynamicVariable<T,OthExecSpace> res;
 	  cudaMemcpy(res.ptr,

@@ -36,7 +36,7 @@ int main(int narg,char** arg)
   cuda_init(iDevice);
 
 #if !COMPILING_FOR_DEVICE
-  static_assert(StackedVariable<int>::execSpace()==esnort::EXEC_HOST,"We are issuing A on the host");
+  static_assert(execSpace<StackedVariable<int>>()==esnort::EXEC_HOST,"We are issuing A on the host");
 #endif
   
   StackedVariable<int> a;
