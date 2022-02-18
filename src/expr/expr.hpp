@@ -31,8 +31,8 @@ namespace esnort
       using Lhs=std::decay_t<decltype(lhs)>;
       using Rhs=std::decay_t<decltype(rhs)>;
       
-      constexpr ExecutionSpace lhsExecSpace=execSpace<Lhs>();
-      constexpr ExecutionSpace rhsExecSpace=execSpace<Rhs>();
+      constexpr ExecutionSpace lhsExecSpace=Lhs::execSpace();
+      constexpr ExecutionSpace rhsExecSpace=Rhs::execSpace();
       
       constexpr WhichSideToChange whichSideToChange=
 		  (Rhs::execSpaceChangeCost()>Lhs::execSpaceChangeCost())?

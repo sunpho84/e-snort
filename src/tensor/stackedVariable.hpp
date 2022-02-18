@@ -15,9 +15,9 @@ namespace esnort
   {
     using Expr<StackedVariable<T>>::operator=;
     
-    static constexpr ExecutionSpace _execSpace()
+    static constexpr ExecutionSpace execSpace()
     {
-      return EXEC_WHERE_LIVING;
+      return EXEC_HOST;
     }
     
     static constexpr ExecutionSpaceChangeCost execSpaceChangeCost()
@@ -81,12 +81,12 @@ namespace esnort
       return value;
     }
     
-    TensorRef<T,EXEC_WHERE_LIVING,true> getRef() const
+    TensorRef<T,EXEC_HOST,true> getRef() const
     {
       return &value;
     }
     
-    TensorRef<T,EXEC_WHERE_LIVING,false> getRef()
+    TensorRef<T,EXEC_HOST,false> getRef()
     {
       return &value;
     }
