@@ -36,8 +36,8 @@ namespace esnort
       
       constexpr WhichSideToChange whichSideToChange=
 		  (Rhs::execSpaceChangeCost()>Lhs::execSpaceChangeCost())?
-		  CHANGE_EXEC_SPACE_LHS_SIDE:
-      CHANGE_EXEC_SPACE_RHS_SIDE;
+		  (WhichSideToChange::LHS):
+      (WhichSideToChange::RHS);
       
       Assign<lhsExecSpace,rhsExecSpace,whichSideToChange>::exec(lhs,rhs);
       

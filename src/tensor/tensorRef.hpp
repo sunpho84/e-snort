@@ -19,7 +19,7 @@ namespace esnort
     
     static constexpr ExecutionSpaceChangeCost execSpaceChangeCost()
     {
-      return EXEC_SPACE_CHANGE_COSTS_LITTLE;
+      return ExecutionSpaceChangeCost::LITTLE;
     }
     
     std::conditional_t<IsConst,const T*,T*> ptr;

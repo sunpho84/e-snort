@@ -33,7 +33,7 @@ namespace esnort
     
     static constexpr ExecutionSpaceChangeCost execSpaceChangeCost()
     {
-      return EXEC_SPACE_CHANGE_COSTS_LITTLE;
+      return ExecutionSpaceChangeCost::LITTLE;
     }
     
     T* ptr{nullptr};
@@ -51,7 +51,7 @@ namespace esnort
     DynamicVariable()
     {
 #if ENABLE_CUDA_CODE
-      if(execSpace()==EXEC_DEVICE)
+      if(execSpace()==ExecutionSpace::DEVICE)
 	{
 	  printf("Allocating on gpu!\n");
 	  mallocCuda(ptr,1);
@@ -76,7 +76,7 @@ namespace esnort
       if(ptr)
 	{
 #if ENABLE_CUDA_CODE
-	  if(execSpace()==EXEC_DEVICE)
+	  if(execSpace()==ExecutionSpace::DEVICE)
 	    freeCuda(ptr);
 	  else
 #endif
@@ -94,7 +94,7 @@ namespace esnort
 	  cudaMemcpy(res.ptr,
 		     ptr,
 		     sizeof(T),
-		     OthExecSpace==EXEC_DEVICE?
+		     (OthExecSpace==ExecutionSpace::DEVICE)?
 		     cudaMemcpyHostToDevice:
 		     cudaMemcpyDeviceToHost);
 	  return res;

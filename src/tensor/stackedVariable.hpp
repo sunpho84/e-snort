@@ -17,12 +17,12 @@ namespace esnort
     
     static constexpr ExecutionSpace execSpace()
     {
-      return EXEC_HOST;
+      return ExecutionSpace::HOST;
     }
     
     static constexpr ExecutionSpaceChangeCost execSpaceChangeCost()
     {
-      return EXEC_SPACE_CHANGE_COSTS_LITTLE;
+      return ExecutionSpaceChangeCost::LITTLE;
     }
     
     template <bool B>
@@ -44,7 +44,7 @@ namespace esnort
       cudaMemcpy(res.ptr,
 		 &value,
 		 sizeof(T),
-		 OthExecSpace==EXEC_DEVICE?
+		 OthExecSpace==ExecutionSpace::DEVICE?
 		 cudaMemcpyHostToDevice:
 		 cudaMemcpyDeviceToHost);
       
@@ -57,7 +57,7 @@ namespace esnort
     {
       [[ maybe_unused ]]
       static constexpr bool hasToChange=
-	OthExecSpace!=EXEC_HOST;
+	OthExecSpace!=ExecutionSpace::HOST;
       
       return
 #if ENABLE_CUDA_CODE
@@ -81,12 +81,12 @@ namespace esnort
       return value;
     }
     
-    TensorRef<T,EXEC_HOST,true> getRef() const
+    TensorRef<T,ExecutionSpace::HOST,true> getRef() const
     {
       return &value;
     }
     
-    TensorRef<T,EXEC_HOST,false> getRef()
+    TensorRef<T,ExecutionSpace::HOST,false> getRef()
     {
       return &value;
     }

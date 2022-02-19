@@ -36,59 +36,22 @@ int main(int narg,char** arg)
   cuda_init(iDevice);
 
 #if !COMPILING_FOR_DEVICE
-  static_assert(StackedVariable<int>::execSpace()==esnort::EXEC_HOST,"We are issuing A on the host");
+  static_assert(StackedVariable<int>::execSpace()==esnort::ExecutionSpace::HOST,"We are issuing A on the host");
 #endif
   
   StackedVariable<int> a;
   a()=1;
-  DynamicVariable<int,EXEC_DEVICE> c;
   
-#if 0
-  const auto devA=a.changeExecSpaceTo<EXEC_DEVICE>();
-  auto rhs=devA.getRef();
-
-  auto lhs=c.getRef();
-
-  auto lam1 = [=] __device__ (const int& i) mutable{ return lhs()=rhs(); };
-  cuda_generic_kernel<<<1,1>>>(0,2,lam1);
-  cudaDeviceSynchronize();
-  
-  return 0;
-#endif
-  
-  /////////////////////////////////////////////////////////////////
   printf("going to issue the assignment\n");
-  c=a;
-        //      const auto deviceA=
-	// a.template changeExecSpaceTo<EXEC_DEVICE>();
-      
-	     // Assign<EXEC_DEVICE,EXEC_DEVICE,CHANGE_EXEC_SPACE_RHS_SIDE>::exec(c,deviceA);
-#if 0
-	     const dim3 block_dimension(1);
-      const dim3 grid_dimension(1);
-      
-      auto devLhs=c.getRef();
-      const auto devRhs=deviceA.getRef();
-      
-      auto f=[=] CUDA_DEVICE (const int& i) mutable
-      {
-	return devLhs()=devRhs();
-      };
-
-      cuda_generic_kernel<<<grid_dimension,block_dimension>>>(0,1,f);
-      
-      cudaDeviceSynchronize();
-#endif
-  StackedVariable<int> b;
-  // auto lhsc=c.changeExecSpaceTo<EXEC_HOST>();
-  // b=lhsc;
-  b=c;
-  printf("Result: %d -> %d\n",a(),b());
+  DynamicVariable<int,ExecutionSpace::DEVICE> b;
+  b=a;
   
-  // StackedVariable<int> b;
-  // b=c;
-  // auto d=c.changeExecSpaceTo<EXEC_HOST>();
-  // c.changeExecSpaceTo<EXEC_HOST>();
+  DynamicVariable<int,ExecutionSpace::DEVICE> c;
+  c=b;
+  
+  StackedVariable<int> d;
+  d=c;
+  printf("Result: %d -> %d\n",a(),d());
   
   return 0;
 }

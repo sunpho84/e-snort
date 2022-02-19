@@ -21,7 +21,7 @@ namespace esnort
   struct Assign;
   
   template <WhichSideToChange W>
-  struct Assign<EXEC_HOST,EXEC_HOST,W>
+  struct Assign<ExecutionSpace::HOST,ExecutionSpace::HOST,W>
   {
     template <typename Lhs,
 	      typename Rhs>
@@ -33,7 +33,7 @@ namespace esnort
   };
   
   template <WhichSideToChange W>
-  struct Assign<EXEC_DEVICE,EXEC_DEVICE,W>
+  struct Assign<ExecutionSpace::DEVICE,ExecutionSpace::DEVICE,W>
   {
     template <typename Lhs,
 	      typename Rhs>
@@ -41,7 +41,7 @@ namespace esnort
 		     Rhs&& rhs)
     {
 #if !ENABLE_CUDA_CODE
-      Assign<EXEC_HOST,EXEC_HOST,CHANGE_EXEC_SPACE_LHS_SIDE>::exec(std::forward<Lhs>(lhs),std::forward<Rhs>(rhs));
+      Assign<ExecutionSpace::HOST,ExecutionSpace::HOST,WhichSideToChange::LHS>::exec(std::forward<Lhs>(lhs),std::forward<Rhs>(rhs));
 #else
       printf("Launching the kernel D to D\n");
       
@@ -69,7 +69,7 @@ namespace esnort
   };
   
   template <>
-  struct Assign<EXEC_HOST,EXEC_DEVICE,CHANGE_EXEC_SPACE_RHS_SIDE>
+  struct Assign<ExecutionSpace::HOST,ExecutionSpace::DEVICE,WhichSideToChange::RHS>
   {
     template <typename Lhs,
 	      typename Rhs>
@@ -79,14 +79,14 @@ namespace esnort
       printf("Copying to host the rhs\n");
       
       auto hostRhs=
-	rhs.template changeExecSpaceTo<EXEC_HOST>();
+	rhs.template changeExecSpaceTo<ExecutionSpace::HOST>();
       
       lhs()=hostRhs();
     }
   };
   
   template <>
-  struct Assign<EXEC_DEVICE,EXEC_HOST,CHANGE_EXEC_SPACE_RHS_SIDE>
+  struct Assign<ExecutionSpace::DEVICE,ExecutionSpace::HOST,WhichSideToChange::RHS>
   {
     template <typename Lhs,
 	      typename Rhs>
@@ -96,12 +96,12 @@ namespace esnort
       printf("Copying to device the rhs\n");
       
       const auto deviceRhs=
-	rhs.template changeExecSpaceTo<EXEC_DEVICE>();
+	rhs.template changeExecSpaceTo<ExecutionSpace::DEVICE>();
       
       lhs=deviceRhs;
       
       //       #if 0
-//       Assign<EXEC_DEVICE,EXEC_DEVICE,CHANGE_EXEC_SPACE_RHS_SIDE>::exec(std::forward<Lhs>(lhs),deviceRhs);
+//       Assign<ExecutionSpace::DEVICE,ExecutionSpace::DEVICE,CHANGE_EXEC_SPACE_RHS_SIDE>::exec(std::forward<Lhs>(lhs),deviceRhs);
 //       #endif
 
 //             printf("Launching the kernel\n");
