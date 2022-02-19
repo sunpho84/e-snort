@@ -8,7 +8,17 @@ We put two memory manager, the correct one is automatically chosen
 
 Stacked tensor
 ------------
-Is automatically captured? yes
+Is automatically captured? Well that's tricky, really tricky. If we were to capture it directly, no problem:
+
+```
+StackedVariable<int> a;
+
+cuda_generic_kernel<<<grid_dimension,block_dimension>>>(0,1,[a] __device__ (const int&){});
+
+```
+
+this would work, because the copy is taken directly. But suppose we take a refernce to `a`, that would *not* work, because the reference would point to the host object. We need to track this across the expression tree. In other words we need to *compile* the tree before launching the kernel, remapping the stacked variable to a dynamic one on the gpu, see below for next step.
+
 
 Dynamic sized tensor
 --------------------
@@ -22,6 +32,9 @@ onHost()
 ```
 onDevice()
 ```
+
+To avoid copying when passing by value we need to create a reference. Is this actually needed? Yes because going out of scope, a direct copy of a dynamic tensor would delete the intenral array.
+
 
 Mirrored data
 -------------
