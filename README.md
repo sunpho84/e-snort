@@ -155,8 +155,14 @@ device, what we care is that
 
 Four scenarios are possible
 
-in two cases, lhs is on the same execution space than rhs
+in two cases, lhs is on the same execution space than rhs.
 
+Opportunity to change the lhs or rhs execution space
+---
+To decide whether the lhs or rhs should change the execution space, we
+compare some estimates at compile time. If the two costs are the same,
+we will change the execution space of rhs, since ultimately the lhs
+must be stored on its execution space.
 
 Correct execution space
 ---
@@ -164,4 +170,18 @@ The excution space for a stacked tensor can be changed from host to
 device by allocating a dynamic tensor on the device and memcopying to
 it.
 
-The execution space for a lhs stacked tensor
+The execution space for a lhs stacked tensor is definitevely the CPU
+
+Availability of other execution spaces
+---
+How should we treat the device code when not compiling for device?
+* We should directly avoid defining the DEVICE execution space?
+* Or should we leave all the functionality defined, but shortcircuit
+the action of all the device code to alias the non-device versions?
+
+The first case would forbid usign the DEVICE execution space, would
+this cause problem in writing generic code?
+
+TODO
+---
+Logging

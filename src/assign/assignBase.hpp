@@ -5,6 +5,10 @@
 # include <config.hpp>
 #endif
 
+/// \file assign/assignBase.hpp
+///
+/// \brief Forward declaration of assignment
+
 #include <cstdio>
 #include <utility>
 
@@ -15,6 +19,9 @@
 
 namespace esnort
 {
+  /// Structure to decide the correct path of assignement
+  ///
+  /// Forward declaration
   template <ExecutionSpace LhsSpace,
 	    ExecutionSpace RhsSpace,
 	    WhichSideToChange WhichSide>
