@@ -94,24 +94,24 @@ AH_VERBATIM([COMPILING_FOR_DEVICE],
 #endif
 )
 
-#cuda code
-AC_ARG_ENABLE(cuda-code,
-	AS_HELP_STRING([--enable-cuda-code],[Enable cuda code]),
-	enable_cuda_code="${enableval}",
-	enable_cuda_code="no")
-AM_CONDITIONAL([CUDA_CODE],[test "$enable_cuda_code" == "yes" ],[true],[false])
-if test "$enable_cuda_code" == "yes"
+#device code
+AC_ARG_ENABLE(device-code,
+	AS_HELP_STRING([--enable-device-code],[Enable device code]),
+	enable_device_code="${enableval}",
+	enable_device_code="no")
+AM_CONDITIONAL([DEVICE_CODE],[test "$enable_device_code" == "yes" ],[true],[false])
+if test "$enable_device_code" == "yes"
 then
-	ENABLE_CUDA_CODE=1
+	ENABLE_DEVICE_CODE=1
 	CUDA_MANAGED=__managed__
 	CUDA_HOST="__host__"
 	CUDA_GLOBAL="__global__"
 	CUDA_DEVICE="__device__"
 	CUDA_HOST_DEVICE="__host__ __device__"
 else
-	ENABLE_CUDA_CODE=0
+	ENABLE_DEVICE_CODE=0
 fi
-AC_DEFINE_UNQUOTED([ENABLE_CUDA_CODE],${ENABLE_CUDA_CODE},[Enable cuda code])
+AC_DEFINE_UNQUOTED([ENABLE_DEVICE_CODE],${ENABLE_DEVICE_CODE},[Enable device code])
 AC_DEFINE_UNQUOTED([CUDA_MANAGED],${CUDA_MANAGED},[Whether to use managed memory])
 AC_DEFINE_UNQUOTED([CUDA_GLOBAL],${CUDA_GLOBAL},[Whether this function is GLOBAL])
 AC_DEFINE_UNQUOTED([CUDA_HOST],${CUDA_HOST},[Whether this function is HOST only])
@@ -128,16 +128,16 @@ AH_VERBATIM([COMPILING_FOR_DEVICE],
 
 #endif
 )
-AC_MSG_RESULT([enabling cuda code... $enable_cuda_code])
+AC_MSG_RESULT([enabling device code... $enable_device_code])
 SUMMARY_RESULT="$SUMMARY_RESULT
-Cuda code      : $enable_cuda_code"
+Device code      : $enable_device_code"
 
-if test "$enable_cuda_code" = "yes"
+if test "$enable_device_code" = "yes"
 then
      case "$CXX" in
      	  nvcc) CPPFLAGS="-dc --expt-relaxed-constexpr --expt-extended-lambda -x cu $CPPFLAGS";;
      	  clang++) CPPFLAGS="-xcuda $CPPFLAGS";;
-     	  *) AC_MSG_ERROR(["Unkwnown how to compile cuda code with $CXX"])
+     	  *) AC_MSG_ERROR(["Unkwnown how to compile device code with $CXX"])
      esac
 fi
 

@@ -14,15 +14,6 @@
 
 using namespace esnort;
 
-#include <cstdio>
-
-template <typename Function>
-__global__ void kernel(const int min,const int max,Function f)
-{
-    const auto i=min+blockIdx.x*blockDim.x+threadIdx.x;
-  printf("value = %d\n", f(i));
-}
-
 int main(int narg,char** arg)
 {
   int iDevice;

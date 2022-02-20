@@ -16,14 +16,14 @@ namespace esnort
 			   const IMax max,
 			   F f)
   {
-#if ENABLE_CUDA_CODE
+#if ENABLE_DEVICE_CODE
     const auto i=min+blockIdx.x*blockDim.x+threadIdx.x;
     if(i<max)
       f(i);
 #endif
   }
   
-#if ENABLE_CUDA_CODE
+#if ENABLE_DEVICE_CODE
   inline void decrypt_cuda_error(cudaError_t rc,const char *templ,...)
   {
     if(rc!=cudaSuccess)
@@ -42,7 +42,7 @@ namespace esnort
   
   inline void freeCuda(void* ptr)
   {
-#if ENABLE_CUDA_CODE
+#if ENABLE_DEVICE_CODE
     decrypt_cuda_error(cudaFree(ptr),"");
 #endif
   }
@@ -50,14 +50,14 @@ namespace esnort
   template <typename  T>
   inline void mallocCuda(T& ptr,const size_t& sizeInUnit)
   {
-#if ENABLE_CUDA_CODE
+#if ENABLE_DEVICE_CODE
     decrypt_cuda_error(cudaMalloc(&ptr,sizeInUnit*sizeof(T)),"");
 #endif
   }
   
   inline void cuda_init(const int& iDevice)
   {
-#if ENABLE_CUDA_CODE
+#if ENABLE_DEVICE_CODE
     int nDevices;
     if(cudaGetDeviceCount(&nDevices)!=cudaSuccess)
       {

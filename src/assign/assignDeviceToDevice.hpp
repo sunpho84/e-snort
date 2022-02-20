@@ -2,6 +2,7 @@
 #define _ASSIGNDEVICETODEVICE_HPP
 
 #include <assign/assignBase.hpp>
+#include <assign/assignHostToHost.hpp>
 
 namespace esnort
 {
@@ -13,7 +14,7 @@ namespace esnort
     static void exec(Lhs&& lhs,
 		     Rhs&& rhs)
     {
-#if !ENABLE_CUDA_CODE
+#if not ENABLE_DEVICE_CODE
       Assign<ExecutionSpace::HOST,ExecutionSpace::HOST,WhichSideToChange::LHS>::exec(std::forward<Lhs>(lhs),std::forward<Rhs>(rhs));
 #else
       printf("Launching the kernel D to D\n");

@@ -13,7 +13,7 @@ void cuda_generic_kernel(const IMin min,
 			 const IMax max,
 			 F f)
 {
-#if ENABLE_CUDA_CODE
+#if ENABLE_DEVICE_CODE
   const auto i=
     min+blockIdx.x*blockDim.x+threadIdx.x;
   
@@ -24,7 +24,7 @@ void cuda_generic_kernel(const IMin min,
 
 inline void thread_barrier_internal()
 {
-#if ENABLE_CUDA_CODE
+#if ENABLE_DEVICE_CODE
   cudaDeviceSynchronize();
 #endif
 }
@@ -38,7 +38,7 @@ void cuda_parallel_for(const int line,
 		       const IMax max,
 		       F f)
 {
-#if ENABLE_CUDA_CODE
+#if ENABLE_DEVICE_CODE
   const auto length=(max-min);
   const dim3 block_dimension(128);
   int i=(length+block_dimension.x-1)/block_dimension.x;
@@ -62,7 +62,7 @@ CUDA_HOST constexpr std::integral_constant<bool,false> isOnDevice() { return {};
 CUDA_DEVICE constexpr std::integral_constant<bool,true> isOnDevice() { return {}; }
   #endif
 #else
-# if ENABLE_CUDA_CODE
+# if ENABLE_DEVICE_CODE
 CUDA_HOST constexpr std::integral_constant<bool,false> isOnDevice() { return {}; }
 CUDA_DEVICE constexpr std::integral_constant<bool,true> isOnDevice() { return {}; }
 # else
@@ -81,7 +81,7 @@ CUDA_HOST static constexpr std::integral_constant<bool,false> isOnDevice() { ret
 CUDA_DEVICE static constexpr std::integral_constant<bool,true> isOnDevice() { return {}; }
   #endif
 #else
-# if ENABLE_CUDA_CODE
+# if ENABLE_DEVICE_CODE
   CUDA_HOST static constexpr std::integral_constant<bool,false> isOnDevice() { return {}; }
   CUDA_DEVICE static constexpr std::integral_constant<bool,true> isOnDevice() { return {}; }
 # else

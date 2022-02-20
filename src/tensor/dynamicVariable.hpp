@@ -50,7 +50,7 @@ namespace esnort
     
     DynamicVariable()
     {
-#if ENABLE_CUDA_CODE
+#if ENABLE_DEVICE_CODE
       if(execSpace()==ExecutionSpace::DEVICE)
 	{
 	  printf("Allocating on gpu!\n");
@@ -75,7 +75,7 @@ namespace esnort
     {
       if(ptr)
 	{
-#if ENABLE_CUDA_CODE
+#if ENABLE_DEVICE_CODE
 	  if(execSpace()==ExecutionSpace::DEVICE)
 	    freeCuda(ptr);
 	  else
@@ -87,7 +87,7 @@ namespace esnort
     template <ExecutionSpace OthExecSpace>
     decltype(auto) changeExecSpaceTo() const
     {
-#if ENABLE_CUDA_CODE
+#if ENABLE_DEVICE_CODE
       if constexpr(OthExecSpace!=execSpace())
 	{
 	  DynamicVariable<T,OthExecSpace> res;

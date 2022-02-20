@@ -8,7 +8,7 @@
 #include <cstdio>
 #include <utility>
 
-#if ENABLE_CUDA_CODE
+#if ENABLE_DEVICE_CODE
 # include <cuda/cuda.hpp>
 #endif
 #include <expr/executionSpace.hpp>

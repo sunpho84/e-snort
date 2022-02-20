@@ -29,7 +29,7 @@ namespace esnort
     using ExecSpaceChangeDiscriminer=
       std::integral_constant<bool,B>;
     
-#if ENABLE_CUDA_CODE
+#if ENABLE_DEVICE_CODE
     template <ExecutionSpace OthExecSpace>
     StackedVariable _changeExecSpaceTo(ExecSpaceChangeDiscriminer<false>) const
     {
@@ -60,7 +60,7 @@ namespace esnort
 	OthExecSpace!=ExecutionSpace::HOST;
       
       return
-#if ENABLE_CUDA_CODE
+#if ENABLE_DEVICE_CODE
       _changeExecSpaceTo<OthExecSpace>(ExecSpaceChangeDiscriminer<hasToChange>{})
 #else
 	*this

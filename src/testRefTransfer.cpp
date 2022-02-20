@@ -8,7 +8,7 @@
 
 int host;
 
-#if ENABLE_CUDA_CODE
+#if ENABLE_DEVICE_CODE
 template <typename F>
 __global__
 void cuda_generic_kernel(F f)
@@ -76,7 +76,7 @@ int main()
   IncapsInt value{2354};
   RefToIncapsulatedInt ref(value);
   
-#if ENABLE_CUDA_CODE
+#if ENABLE_DEVICE_CODE
   const dim3 block_dimension(128);
   const dim3 grid_dimension(128);
   
@@ -108,7 +108,7 @@ CUDA_HOST static constexpr std::integral_constant<bool,false> isOnDevice() { ret
 CUDA_DEVICE static constexpr std::integral_constant<bool,true> isOnDevice() { return {}; }
   #endif
 #else
-# if ENABLE_CUDA_CODE
+# if ENABLE_DEVICE_CODE
   CUDA_HOST static constexpr std::integral_constant<bool,false> isOnDevice() { return {}; }
   CUDA_DEVICE static constexpr std::integral_constant<bool,true> isOnDevice() { return {}; }
 # else
