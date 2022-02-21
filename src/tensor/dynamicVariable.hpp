@@ -7,6 +7,7 @@
 
 #include <expr/executionSpace.hpp>
 #include <expr/expr.hpp>
+#include <metaprogramming/inline.hpp>
 #include <tensor/tensorRef.hpp>
 
 namespace esnort
@@ -48,6 +49,7 @@ namespace esnort
       return *ptr;
     }
     
+    constexpr INLINE_FUNCTION
     DynamicVariable()
     {
 #if ENABLE_DEVICE_CODE
@@ -64,6 +66,7 @@ namespace esnort
     
     //DynamicVariable(const DynamicVariable&) =delete;
     
+    constexpr INLINE_FUNCTION
     DynamicVariable(DynamicVariable&& oth)
     {
       printf("A move was made\n");
@@ -71,6 +74,7 @@ namespace esnort
       oth.ptr=nullptr;
     }
     
+    INLINE_FUNCTION
     ~DynamicVariable() CUDA_HOST
     {
       if(ptr)

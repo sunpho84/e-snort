@@ -182,6 +182,9 @@ the action of all the device code to alias the non-device versions?
 The first case would forbid usign the DEVICE execution space, would
 this cause problem in writing generic code?
 
+I believe it's easier to write generic code and short-circuit when
+needed.
+
 TODO
 ---
 Logging
