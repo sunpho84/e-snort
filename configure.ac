@@ -201,6 +201,7 @@ Configuration OK
 #create config.hpp
 AC_CONFIG_FILES(
 	Makefile
-	src/Makefile)
+	src/Makefile
+        config/Doxyfile)
 
 AC_OUTPUT

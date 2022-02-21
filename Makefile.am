@@ -1,6 +1,9 @@
 #include m4 dir
 ACLOCAL_AMFLAGS=-I m4
 
+#Doxygen rules
+@DX_RULES@
+
 include $(top_srcdir)/config/baseMakefile.am
 
 #include subdirs
@@ -17,3 +20,7 @@ endif
 EXTRA_DIST= \
 	config \
 	README.md
+
+#Clean also Doxygen files
+MOSTLYCLEANFILES= \
+        ${DX_CLEANFILES}
