@@ -29,7 +29,7 @@ namespace esnort
       printf("Copying to host the rhs\n");
       
       /// Version of the rhs located on the host
-      const auto hostRhs=
+      decltype(auto) hostRhs=
 	rhs.template changeExecSpaceTo<ExecutionSpace::HOST>();
       
       lhs()=hostRhs();
