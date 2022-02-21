@@ -90,6 +90,27 @@ namespace esnort
 #if ENABLE_DEVICE_CODE
       if constexpr(OthExecSpace!=execSpace())
 	{
+	  const DynamicVariable<T,OthExecSpace> res;
+	  cudaMemcpy(res.ptr,
+		     ptr,
+		     sizeof(T),
+		     (OthExecSpace==ExecutionSpace::DEVICE)?
+		     cudaMemcpyHostToDevice:
+		     cudaMemcpyDeviceToHost);
+	  return res;
+	}
+      else
+#endif
+	return
+	  TensorRef<T,OthExecSpace,true>{ptr};
+    }
+    
+    template <ExecutionSpace OthExecSpace>
+    decltype(auto) changeExecSpaceTo()
+    {
+#if ENABLE_DEVICE_CODE
+      if constexpr(OthExecSpace!=execSpace())
+	{
 	  DynamicVariable<T,OthExecSpace> res;
 	  cudaMemcpy(res.ptr,
 		     ptr,
@@ -101,7 +122,8 @@ namespace esnort
 	}
       else
 #endif
-	return *this;
+	return
+	  TensorRef<T,OthExecSpace,false>{ptr};
     }
     
     TensorRef<T,ExecSpace,true> getRef() const

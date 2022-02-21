@@ -86,10 +86,12 @@ AH_VERBATIM([COMPILING_FOR_DEVICE],
 #ifdef __CUDA_ARCH__
  
 # define COMPILING_FOR_DEVICE 1
-
-#else 
-
+# define _ASM_BOOKMARK_SYMBOL "//"
+ 
+#else
+ 
 # define COMPILING_FOR_DEVICE 0
+# define _ASM_BOOKMARK_SYMBOL "#"
 
 #endif
 )

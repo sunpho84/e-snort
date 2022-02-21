@@ -30,6 +30,8 @@ int main(int narg,char** arg)
   static_assert(StackedVariable<int>::execSpace()==esnort::ExecutionSpace::HOST,"We are issuing A on the host");
 #endif
   
+  ASM_BOOKMARK_BEGIN("TEST_ASSIGN");
+  
   StackedVariable<int> a;
   a()=1;
   
@@ -44,5 +46,7 @@ int main(int narg,char** arg)
   d=c;
   printf("Result: %d -> %d\n",a(),d());
   
+  ASM_BOOKMARK_END("TEST_ASSIGN");
+
   return 0;
 }

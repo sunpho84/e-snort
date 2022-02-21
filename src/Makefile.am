@@ -1,8 +1,4 @@
-include_HEADERS=
-bin_PROGRAMS=
-BUILT_SOURCES=
-CLEANFILES=
-assembly_reports=
+include $(top_srcdir)/config/baseMakefile.am
 
 bin_PROGRAMS+= \
 	$(top_builddir)/bin/main \
@@ -19,5 +15,12 @@ __top_builddir__bin_testExecutionSpace_SOURCES= \
 	%D%/testExecutionSpace.cpp
 
 assembly_reports+=\
-        %D%/in/main.s
+        %D%/main.s \
+        %D%/testExecutionSpace.s
+
+#generate assembly report if asked
+if ASSEMBLY_REPORT
+BUILT_SOURCES+=$(assembly_reports)
+CLEANFILES+=$(assembly_reports)
+endif
 
