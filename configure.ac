@@ -169,6 +169,14 @@ AC_DEFINE([ASM_BOOKMARK(COMMENT)],
 AC_DEFINE([ASM_BOOKMARK_BEGIN(COMMENT)],[ASM_BOOKMARK("BEGIN " COMMENT)],[Put a BEGIN for asm bookmark section])
 AC_DEFINE([ASM_BOOKMARK_END(COMMENT)],[ASM_BOOKMARK("END " COMMENT)],[Put a END for asm bookmark section])
 
+# Configure doxygen
+DX_INIT_DOXYGEN($PACKAGE_NAME,[config/Doxyfile],[docs])
+DX_PDF_FEATURE(OFF)
+DX_PS_FEATURE(OFF)
+DX_MAN_FEATURE(ON)
+DX_HTML_FEATURE(ON)
+AC_SUBST([DOXYGEN_OUTPUT_DIR],[docs])
+
 #result of conf to screen
 AC_MSG_RESULT([
 --------------------------------------------------
