@@ -15,33 +15,39 @@ namespace esnort
 	    typename DestructionAction>
   class RefProxy
   {
-    T& value;
+    /// Stored reference
+    T& ref;
     
+    /// Action to be called at destroy
     const DestructionAction destruct;
     
   public:
     
+    /// Assign from other, for some reason does not pass through decay to T
     template <typename U>
     INLINE_FUNCTION const
     RefProxy& operator=(const U& oth)
     {
-      value=oth;
+      ref=oth;
       
       return *this;
     }
     
+    /// Implicit convert to T
     operator T&()
     {
-      return value;
+      return ref;
     }
     
+    /// Create from referencee and action
     RefProxy(T& value,
 	     DestructionAction&& destruct) :
-      value(value),
+      ref(value),
       destruct(destruct)
     {
     }
     
+    /// Destroy calling the action
     ~RefProxy()
     {
       destruct();
