@@ -2,6 +2,9 @@
 # include <config.hpp>
 #endif
 
+#include <algorithm>
+
+
 #include <cstdarg>
 #include <cstdio>
 #include <unistd.h>
@@ -10,12 +13,28 @@
 
 #include <expr/executionSpace.hpp>
 #include <expr/expr.hpp>
+#include <resources/value_with_extreme.hpp>
 #include <tensor/stackedVariable.hpp>
 
 using namespace esnort;
 
 int main(int narg,char** arg)
 {
+  ValWithMax<int> e(0);
+  e+=12;
+  e=1;
+  // int val=1;
+  // int max=0;
+  
+  // {
+  //   RefProxy ref([&val]()->int&{return val;},[&max,&val](){max=std::max(max,val);});
+
+  //   ref()=12;
+  // }
+  printf("1? : %d, 12? %d\n",(int)e,e.extreme());
+  
+  return 0;
+  
   int iDevice;
   if(narg==1)
     iDevice=0;

@@ -39,11 +39,13 @@ namespace esnort
     
     T* ptr{nullptr};
     
+    constexpr INLINE_FUNCTION
     const T& operator()() const CUDA_HOST CUDA_DEVICE
     {
       return *ptr;
     }
     
+    constexpr INLINE_FUNCTION
     T& operator()() CUDA_HOST CUDA_DEVICE
     {
       return *ptr;

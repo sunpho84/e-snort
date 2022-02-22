@@ -5,6 +5,8 @@
 # include <config.hpp>
 #endif
 
+#include <metaprogramming/inline.hpp>
+
 namespace esnort
 {
   /// Implements the CRTP pattern
@@ -13,7 +15,7 @@ namespace esnort
   {
 #define PROVIDE_CRTP(ATTRIB)				\
     /*! Crtp access the type */				\
-    CUDA_HOST CUDA_DEVICE inline constexpr		\
+    CUDA_HOST CUDA_DEVICE INLINE_FUNCTION constexpr	\
     ATTRIB T& crtp() ATTRIB				\
     {							\
       return						\
