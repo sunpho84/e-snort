@@ -9,15 +9,22 @@
 #include <expr/expr.hpp>
 #include <metaprogramming/inline.hpp>
 #include <tensor/tensorRef.hpp>
+#include <tensor/variableExecSpaceChanger.hpp>
 
 namespace esnort
 {
+#define THIS					\
+  DynamicVariable<T,ExecSpace>
+  
   template <typename T,
 	    ExecutionSpace ExecSpace>
   struct DynamicVariable :
-    Expr<DynamicVariable<T,ExecSpace>>
+    Expr<THIS>,
+    VariableExecSpaceChanger<THIS,T,ExecSpace>
   {
-    using Expr<DynamicVariable<T,ExecSpace>>::operator=;
+    using Expr<THIS>::operator=;
+    
+#undef THIS
     
     DynamicVariable& operator=(const DynamicVariable& oth)
     {
@@ -38,6 +45,16 @@ namespace esnort
     }
     
     T* ptr{nullptr};
+    
+    const T* getPtr() const
+    {
+      return ptr;
+    }
+    
+    T* getPtr()
+    {
+      return ptr;
+    }
     
     constexpr INLINE_FUNCTION
     const T& operator()() const CUDA_HOST CUDA_DEVICE
@@ -71,9 +88,23 @@ namespace esnort
     constexpr INLINE_FUNCTION
     DynamicVariable(DynamicVariable&& oth)
     {
-      printf("A move was made\n");
       ptr=oth.ptr;
       oth.ptr=nullptr;
+    }
+    
+    constexpr INLINE_FUNCTION
+    DynamicVariable(const DynamicVariable& oth) :
+      DynamicVariable()
+    {
+#if ENABLE_DEVICE_CODE
+      if(execSpace()==ExecutionSpace::DEVICE)
+	cudaMemcpy(ptr,
+		   oth.getPtr(),
+		   sizeof(T),
+		   cudaMemcpyHostToHost);
+      else
+#endif
+	memcpy(ptr,oth.ptr,sizeof(T));
     }
     
     INLINE_FUNCTION
@@ -88,48 +119,6 @@ namespace esnort
 #endif
 	    delete ptr;
 	}
-    }
-    
-    template <ExecutionSpace OthExecSpace>
-    decltype(auto) changeExecSpaceTo() const
-    {
-#if ENABLE_DEVICE_CODE
-      if constexpr(OthExecSpace!=execSpace())
-	{
-	  const DynamicVariable<T,OthExecSpace> res;
-	  cudaMemcpy(res.ptr,
-		     ptr,
-		     sizeof(T),
-		     (OthExecSpace==ExecutionSpace::DEVICE)?
-		     cudaMemcpyHostToDevice:
-		     cudaMemcpyDeviceToHost);
-	  return res;
-	}
-      else
-#endif
-	return
-	  TensorRef<T,OthExecSpace,true>{ptr};
-    }
-    
-    template <ExecutionSpace OthExecSpace>
-    decltype(auto) changeExecSpaceTo()
-    {
-#if ENABLE_DEVICE_CODE
-      if constexpr(OthExecSpace!=execSpace())
-	{
-	  DynamicVariable<T,OthExecSpace> res;
-	  cudaMemcpy(res.ptr,
-		     ptr,
-		     sizeof(T),
-		     (OthExecSpace==ExecutionSpace::DEVICE)?
-		     cudaMemcpyHostToDevice:
-		     cudaMemcpyDeviceToHost);
-	  return res;
-	}
-      else
-#endif
-	return
-	  TensorRef<T,OthExecSpace,false>{ptr};
     }
     
     TensorRef<T,ExecSpace,true> getRef() const

@@ -9,11 +9,17 @@
 
 namespace esnort
 {
+#define THIS					\
+    StackedVariable<T>
+  
   template <typename T>
   struct StackedVariable :
-    Expr<StackedVariable<T>>
+    Expr<THIS>,
+    VariableExecSpaceChanger<THIS,T,ExecutionSpace::DEVICE>
   {
-    using Expr<StackedVariable<T>>::operator=;
+    using Expr<THIS>::operator=;
+    
+#undef THIS
     
     static constexpr ExecutionSpace execSpace()
     {
@@ -29,49 +35,17 @@ namespace esnort
     using ExecSpaceChangeDiscriminer=
       std::integral_constant<bool,B>;
     
-    template <ExecutionSpace OthExecSpace>
-    decltype(auto) changeExecSpaceTo() const
-    {
-#if ENABLE_DEVICE_CODE
-      if constexpr(OthExecSpace!=execSpace())
-	{
-	  const DynamicVariable<T,OthExecSpace> res;
-	  cudaMemcpy(res.ptr,
-		     &value,
-		     sizeof(T),
-		     (OthExecSpace==ExecutionSpace::DEVICE)?
-		     cudaMemcpyHostToDevice:
-		     cudaMemcpyDeviceToHost);
-	  return res;
-	}
-      else
-#endif
-	return
-	  TensorRef<T,OthExecSpace,true>{&value};
-    }
-    
-    template <ExecutionSpace OthExecSpace>
-    decltype(auto) changeExecSpaceTo()
-    {
-#if ENABLE_DEVICE_CODE
-      if constexpr(OthExecSpace!=execSpace())
-	{
-	  DynamicVariable<T,OthExecSpace> res;
-	  cudaMemcpy(res.ptr,
-		     &value,
-		     sizeof(T),
-		     (OthExecSpace==ExecutionSpace::DEVICE)?
-		     cudaMemcpyHostToDevice:
-		     cudaMemcpyDeviceToHost);
-	  return res;
-	}
-      else
-#endif
-	return
-	  TensorRef<T,OthExecSpace,false>{&value};
-    }
-    
     T value;
+    
+    const T* getPtr() const
+    {
+      return &value;
+    }
+    
+    T* getPtr()
+    {
+      return &value;
+    }
     
     const T& operator()() const CUDA_HOST CUDA_DEVICE
     {

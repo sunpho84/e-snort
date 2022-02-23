@@ -17,21 +17,14 @@
 # define EXTERN_MEMORY_MANAGER extern
 #endif
 
-#include <base/debug.hpp>
-#include <metaProgramming/crtp.hpp>
-#include <memory/storLoc.hpp>
+// #include <base/debug.hpp>
+#include <expr/executionSpace.hpp>
+#include <metaprogramming/crtp.hpp>
 #include <new_types/value_with_extreme.hpp>
 #include <routines/ios.hpp>
 
-namespace nissa
+namespace esnort
 {
-  /// Type of memory
-  enum class MemoryType{CPU ///< Memory allocated on CPU side
-#ifdef USE_CUDA
-			,GPU ///< Memory allocated on GPU side
-#endif
-  };
-  
   /// Type used for size
   using Size=int64_t;
   

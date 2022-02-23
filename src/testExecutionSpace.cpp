@@ -20,20 +20,20 @@ using namespace esnort;
 
 int main(int narg,char** arg)
 {
-  ValWithMax<int> e(0);
-  e+=12;
-  e=1;
-  // int val=1;
-  // int max=0;
+  // ValWithMax<int> e(0);
+  // e+=12;
+  // e=1;
+  // // int val=1;
+  // // int max=0;
   
-  // {
-  //   RefProxy ref([&val]()->int&{return val;},[&max,&val](){max=std::max(max,val);});
+  // // {
+  // //   RefProxy ref([&val]()->int&{return val;},[&max,&val](){max=std::max(max,val);});
 
-  //   ref()=12;
-  // }
-  printf("1? : %d, 12? %d\n",(int)e,e.extreme());
+  // //   ref()=12;
+  // // }
+  // printf("1? : %d, 12? %d\n",(int)e,e.extreme());
   
-  return 0;
+  // return 0;
   
   int iDevice;
   if(narg==1)

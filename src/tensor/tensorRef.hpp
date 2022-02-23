@@ -1,7 +1,8 @@
 #ifndef _TENSORREF_HPP
 #define _TENSORREF_HPP
 
-#include "expr/expr.hpp"
+#include <expr/expr.hpp>
+
 namespace esnort
 {
   template <typename T,

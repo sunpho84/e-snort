@@ -17,10 +17,12 @@
 
 namespace esnort
 {
+  DEFINE_CRTP_INHERITANCE_DISCRIMINER_FOR_TYPE(Expr)
+  
   /// Base type representing an expression
   template <typename T>
   struct Expr :
-    Crtp<T>
+    Crtp<T,crtp::ExprDiscriminer>
   {
     /// Define the assignment operator with the same expression type,
     /// in terms of the templated version

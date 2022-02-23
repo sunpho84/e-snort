@@ -10,7 +10,8 @@
 namespace esnort
 {
   /// Implements the CRTP pattern
-  template <typename T>
+  template <typename T,
+	    typename Discriminer>
   struct Crtp
   {
 #define PROVIDE_CRTP(ATTRIB)				\
@@ -28,6 +29,13 @@ namespace esnort
     
 #undef PROVIDE_CRTP
   };
+  
+#define DEFINE_CRTP_INHERITANCE_DISCRIMINER_FOR_TYPE(NAME)	\
+  namespace crtp						\
+  {								\
+    struct NAME ## Discriminer{};				\
+  }
+  
 }
 
 #endif
