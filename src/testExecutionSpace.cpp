@@ -4,7 +4,6 @@
 
 #include <algorithm>
 
-
 #include <cstdarg>
 #include <cstdio>
 #include <unistd.h>
@@ -13,13 +12,27 @@
 
 #include <expr/executionSpace.hpp>
 #include <expr/expr.hpp>
-#include <resources/value_with_extreme.hpp>
+#include <resources/valueWithExtreme.hpp>
 #include <tensor/stackedVariable.hpp>
+
+#include <esnort.hpp>
+
+#include <iostream>
 
 using namespace esnort;
 
+void testBacktrace()
+{
+  using namespace std;
+  for(auto& b : getBackTraceList())
+    cout<<b<<endl;
+}
+
 int main(int narg,char** arg)
 {
+  testBacktrace();
+  return 0;
+  
   // ValWithMax<int> e(0);
   // e+=12;
   // e=1;

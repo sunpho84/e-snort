@@ -5,6 +5,8 @@
 # include <config.hpp>
 #endif
 
+/// \file valueWithExtreme.hpp
+
 #include <limits>
 
 #include <resources/refProxy.hpp>

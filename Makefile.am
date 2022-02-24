@@ -8,6 +8,7 @@ include $(top_srcdir)/config/baseMakefile.am
 
 #include subdirs
 SUBDIRS= \
+	lib \
 	src
 
 #generate assembly report if asked

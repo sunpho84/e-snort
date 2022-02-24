@@ -5,6 +5,8 @@
 # include <config.hpp>
 #endif
 
+/// \file stackedVariable.hpp
+
 #include <tensor/dynamicVariable.hpp>
 
 namespace esnort
@@ -12,6 +14,7 @@ namespace esnort
 #define THIS					\
     StackedVariable<T>
   
+  /// Holds a variable on Host stack
   template <typename T>
   struct StackedVariable :
     Expr<THIS>,

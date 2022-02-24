@@ -17,21 +17,14 @@
 # define EXTERN_MEMORY_MANAGER extern
 #endif
 
-#include <base/debug.hpp>
-#include <metaProgramming/crtp.hpp>
-#include <memory/storLoc.hpp>
-#include <new_types/value_with_extreme.hpp>
+// #include <base/debug.hpp>
+#include <expr/executionSpace.hpp>
+#include <metaprogramming/crtp.hpp>
+#include <resources/valueWithExtreme.hpp>
 #include <routines/ios.hpp>
 
-namespace nissa
+namespace esnort
 {
-  /// Type of memory
-  enum class MemoryType{CPU ///< Memory allocated on CPU side
-#ifdef USE_CUDA
-			,GPU ///< Memory allocated on GPU side
-#endif
-  };
-  
   /// Type used for size
   using Size=int64_t;
   
@@ -75,7 +68,7 @@ namespace nissa
       
       usedSize+=size;
       
-      verbosity_lv3_master_printf("Pushing to used %p %zu, used: %zu\n",ptr,size,used.size());
+      //verbosity_lv3_master_printf("Pushing to used %p %zu, used: %zu\n",ptr,size,used.size());
     }
     
     /// Removes a pointer from the used list, without actually freeing associated memory
@@ -83,7 +76,7 @@ namespace nissa
     /// Returns the size of the memory pointed
     Size popFromUsed(void* ptr) ///< Pointer to the memory to move to cache
     {
-      verbosity_lv3_master_printf("Popping from used %p\n",ptr);
+      //verbosity_lv3_master_printf("Popping from used %p\n",ptr);
       
       /// Iterator to search result
       auto el=used.find(ptr);
