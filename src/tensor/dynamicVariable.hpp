@@ -80,7 +80,7 @@ namespace esnort
       else
 #endif
 	ptr=new T;
-	  printf("Allocated %p\n",ptr);
+      printf("Allocated %p\n",ptr);
     }
     
     //DynamicVariable(const DynamicVariable&) =delete;
@@ -124,12 +124,14 @@ namespace esnort
     TensorRef<T,ExecSpace,true> getRef() const
     {
       printf("Forging a const ref to %p\n",ptr);
+      
       return ptr;
     }
     
     TensorRef<T,ExecSpace,false> getRef()
     {
       printf("Forging a ref to %p\n",ptr);
+      
       return ptr;
     }
   };
