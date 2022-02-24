@@ -47,7 +47,7 @@ namespace esnort
 	else								\
 	  {								\
 	    printf("No need to allocate, we just return a reference to %p\n",\
-		   res.getPtr());					\
+		   this->crtp().getPtr());				\
 	    								\
 	    return							\
 	      TensorRef<Fund,OthExecSpace,IS_CONST>(this->crtp().getPtr()); \
