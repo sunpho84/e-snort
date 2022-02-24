@@ -12,6 +12,17 @@ namespace esnort
     Expr<TensorRef<T,ExecSpace,IsConst>>
   {
     using Expr<TensorRef<T,ExecSpace,IsConst>>::operator=;
+    std::conditional_t<IsConst,const T*,T*> ptr;
+    
+    const T* getPtr() const
+    {
+      return ptr;
+    }
+    
+    T* getPtr()
+    {
+      return ptr;
+    }
     
     static constexpr ExecutionSpace execSpace()
     {
@@ -22,8 +33,6 @@ namespace esnort
     {
       return ExecutionSpaceChangeCost::LITTLE;
     }
-    
-    std::conditional_t<IsConst,const T*,T*> ptr;
     
     const T& operator()() const CUDA_HOST CUDA_DEVICE
     {
