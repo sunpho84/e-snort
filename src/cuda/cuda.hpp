@@ -43,7 +43,7 @@ namespace esnort
   inline void freeCuda(void* ptr)
   {
 #if ENABLE_DEVICE_CODE
-    printf("freeing %p\n",ptr);
+    printf("freeing on gpu: %p\n",ptr);
     decrypt_cuda_error(cudaFree(ptr),"");
 #endif
   }
@@ -52,6 +52,7 @@ namespace esnort
   inline void mallocCuda(T& ptr,const size_t& sizeInUnit)
   {
 #if ENABLE_DEVICE_CODE
+    printf("Allocating on gpu: %p\n",ptr);
     decrypt_cuda_error(cudaMalloc(&ptr,sizeInUnit*sizeof(T)),"");
 #endif
   }

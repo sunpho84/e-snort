@@ -30,18 +30,28 @@ namespace esnort
       {									\
 	if constexpr(OthExecSpace!=ExecSpace)				\
 	  {								\
+	    printf("Allocating on device to store: %p\n",		\
+		   this->crtp().getPtr());				\
+									\
 	    CONST_ATTRIB DynamicVariable<Fund,OthExecSpace> res;	\
-	    cudaMemcpy(res.ptr,						\
+									\
+	    cudaMemcpy(res.getPtr(),					\
 		       this->crtp().getPtr(),				\
 		       sizeof(Fund),					\
 		       (OthExecSpace==ExecutionSpace::DEVICE)?		\
 		       cudaMemcpyHostToDevice:				\
 		       cudaMemcpyDeviceToHost);				\
+									\
 	    return res;							\
 	  }								\
 	else								\
-	  return							\
-	    TensorRef<Fund,OthExecSpace,IS_CONST>(this->crtp().getPtr()); \
+	  {								\
+	    printf("No need to allocate, we just return a reference to %p\n",\
+		   res.getPtr());					\
+	    								\
+	    return							\
+	      TensorRef<Fund,OthExecSpace,IS_CONST>(this->crtp().getPtr()); \
+	  }								\
       }
       
 #else

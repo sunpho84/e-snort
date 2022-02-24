@@ -32,7 +32,7 @@ namespace esnort
       const auto deviceRhs=
 	rhs.template changeExecSpaceTo<ExecutionSpace::DEVICE>();
       
-      printf("Copied to device: %p -> %p\n",rhs.getPtr(),deviceRhs.getPtr());
+      printf("Copied from host to device: %p -> %p\n",rhs.getPtr(),deviceRhs.getPtr());
       
       lhs=deviceRhs;
     }
