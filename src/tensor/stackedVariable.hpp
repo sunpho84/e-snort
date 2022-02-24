@@ -15,7 +15,7 @@ namespace esnort
   template <typename T>
   struct StackedVariable :
     Expr<THIS>,
-    VariableExecSpaceChanger<THIS,T,ExecutionSpace::DEVICE>
+    VariableExecSpaceChanger<THIS,T,ExecutionSpace::HOST>
   {
     using Expr<THIS>::operator=;
     

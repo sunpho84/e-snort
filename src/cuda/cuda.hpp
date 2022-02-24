@@ -52,8 +52,8 @@ namespace esnort
   inline void mallocCuda(T& ptr,const size_t& sizeInUnit)
   {
 #if ENABLE_DEVICE_CODE
-    printf("Allocating on gpu: %p\n",ptr);
     decrypt_cuda_error(cudaMalloc(&ptr,sizeInUnit*sizeof(T)),"");
+    printf("Allocating on gpu: %p\n",ptr);
 #endif
   }
   
