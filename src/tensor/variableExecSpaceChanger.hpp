@@ -33,7 +33,7 @@ namespace esnort
 	    printf("Allocating on device to store: %p\n",		\
 		   this->crtp().getPtr());				\
 									\
-	    CONST_ATTRIB DynamicVariable<Fund,OthExecSpace> res;	\
+	    DynamicVariable<Fund,OthExecSpace> res;			\
 									\
 	    cudaMemcpy(res.getPtr(),					\
 		       this->crtp().getPtr(),				\
