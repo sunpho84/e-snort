@@ -43,6 +43,7 @@ namespace esnort
   inline void freeCuda(void* ptr)
   {
 #if ENABLE_DEVICE_CODE
+    printf("freeing %p\n",ptr);
     decrypt_cuda_error(cudaFree(ptr),"");
 #endif
   }
