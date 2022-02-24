@@ -15,7 +15,7 @@ namespace esnort
 {
   /// Initialize the crasher
 #define CRASH							\
-  SUNphi::runLog()<<SUNphi::Crasher(__FILE__,__LINE__,__PRETTY_FUNCTION__)
+  esnort::runLog()<<esnort::Crasher(__FILE__,__LINE__,__PRETTY_FUNCTION__)
   
   /// Keep all the information to crash
   class Crasher

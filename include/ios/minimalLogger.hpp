@@ -1,6 +1,10 @@
 #ifndef _MINIMALLOGGER_HPP
 #define _MINIMALLOGGER_HPP
 
+#ifdef HAVE_CONFIG_H
+# include "config.hpp"
+#endif
+
 /// \file minimalLogger.hpp
 ///
 /// \brief Minimal version of the logger

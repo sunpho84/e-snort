@@ -8,6 +8,8 @@
 /// \file esnort.hpp
 
 #include <debug/backtracing.hpp>
+#include <ios/file.hpp>
+#include <ios/logger.hpp>
 #include <debug/demangle.hpp>
 
 /// Global namespace

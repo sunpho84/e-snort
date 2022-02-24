@@ -11,7 +11,7 @@
 
 #include <utility>
 
-namespace SUNphi
+namespace esnort
 {
   /// Class which does something when created and something else when destroyed
   ///

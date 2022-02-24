@@ -1,8 +1,8 @@
 #ifdef HAVE_CONFIG_H
- #include "config.hpp"
+# include "config.hpp"
 #endif
 
-/// \file SUNphi.cpp
+/// \file esnort.cpp
 ///
 /// \brief Implements the parts of code which require dedicated compilation units
 
@@ -35,7 +35,7 @@
 //   ""
 #endif
 
-// namespace SUNphi
+// namespace esnort
 // {
 //   void minimalCrash(const char* path,
 // 		    const int line,

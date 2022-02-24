@@ -35,7 +35,6 @@ SUMMARY_RESULT="---"
 
 AX_ASSEMBLY_REPORT
 
-
 #check if we enable splitting MPI autosearch
 AC_ARG_ENABLE(MPI-autosearch,
 	AS_HELP_STRING([--enable-MPI-autosearch],[Enable MPI autosearch]),

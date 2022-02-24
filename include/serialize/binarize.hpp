@@ -5,7 +5,7 @@
 # include "config.hpp"
 #endif
 
-/// \file Binarize.hpp
+/// \file binarize.hpp
 ///
 /// \brief Converts to and from binary
 
@@ -13,15 +13,15 @@
 #include <string>
 #include <vector>
 
-#include <metaprogramming/crtp.hpp>
-//#include <metaprogramming/SFINAE.hpp>
-
 #include <ios/minimalLogger.hpp>
+#include <metaprogramming/crtp.hpp>
+#include <metaprogramming/hasMember.hpp>
+#include <metaprogramming/templateEnabler.hpp>
 
-namespace SUNphi
+namespace esnort
 {
-  DEFINE_HAS_MEMBER(binarize);
-  DEFINE_HAS_MEMBER(deBinarize);
+  PROVIDE_HAS_MEMBER(binarize);
+  PROVIDE_HAS_MEMBER(deBinarize);
   
   /// Determine whether a type is serializable
   template <typename T>
@@ -96,7 +96,7 @@ namespace SUNphi
     
     /// Write on the binarizer, if the type has a member binarize
     template <typename T,
-	      SFINAE_ON_TEMPLATE_ARG(hasMember_binarize<T>)>
+	      ENABLE_THIS_TEMPLATE_IF(hasMember_binarize<T>)>
     Binarizer& binarize(const T& rhs)
     {
       return
@@ -105,7 +105,7 @@ namespace SUNphi
     
     /// Read from the binarizer, if the type has a member deBinarize
     template <typename T,
-	      SFINAE_ON_TEMPLATE_ARG(hasMember_deBinarize<T>)>
+	      ENABLE_THIS_TEMPLATE_IF(hasMember_deBinarize<T>)>
     Binarizer& deBinarize(T& rhs)
     {
       return
@@ -114,7 +114,7 @@ namespace SUNphi
     
     /// Write on the binarizer
     template <typename T,
-	      SFINAE_ON_TEMPLATE_ARG(std::is_trivially_copyable_v<T>)>
+	      ENABLE_THIS_TEMPLATE_IF(std::is_trivially_copyable_v<T>)>
     Binarizer& binarize(const T& rhs)
     {
       return
@@ -123,79 +123,79 @@ namespace SUNphi
     
     /// Read from the binarizer
     template <typename T,
-	      SFINAE_ON_TEMPLATE_ARG(std::is_trivially_copyable_v<T>)>
+	      ENABLE_THIS_TEMPLATE_IF(std::is_trivially_copyable_v<T>)>
     Binarizer& deBinarize(T& rhs)
     {
       return
 	readAdvancing(&rhs,sizeof(T));
     }
     
-    /// Binarize a tuple-like
-    template <typename T,
-	      SFINAE_ON_TEMPLATE_ARG(isTupleLike<T>)>
-    Binarizer& binarize(T&& rhs)     ///< Input
-    {
-       forEach(rhs,
-	      [this](auto& s)
-	      {
-		this->binarize(s);
-	      });
+    // /// Binarize a tuple-like
+    // template <typename T,
+    // 	      ENABLE_THIS_TEMPLATE_IF(isTupleLike<T>)>
+    // Binarizer& binarize(T&& rhs)     ///< Input
+    // {
+    //    forEach(rhs,
+    // 	      [this](auto& s)
+    // 	      {
+    // 		this->binarize(s);
+    // 	      });
       
-      return
-	*this;
-    }
+    //   return
+    // 	*this;
+    // }
     
-    /// DeBinarize a tuple-like
-    template <typename T,
-	      SFINAE_ON_TEMPLATE_ARG(isTupleLike<T>)>
-    Binarizer& deBinarize(T&& rhs)     ///< Output
-    {
-      forEach(rhs,
-	      [this](auto& s)
-	      {
-		this->deBinarize(s);
-	      });
+    // /// DeBinarize a tuple-like
+    // template <typename T,
+    // 	      ENABLE_THIS_TEMPLATE_IF((isTupleLike<T>)>
+    // Binarizer& deBinarize(T&& rhs)     ///< Output
+    // {
+    //   forEach(rhs,
+    // 	      [this](auto& s)
+    // 	      {
+    // 		this->deBinarize(s);
+    // 	      });
       
-      return
-	*this;
-    }
+    //   return
+    // 	*this;
+    // }
     
-    /// Binarize a vector-like
-    template <typename T,
-	      SFINAE_ON_TEMPLATE_ARG(isVectorLike<T>)>
-    Binarizer& binarize(T&& rhs)     ///< Input
-    {
-      /// Number of elements
-      const size_t nel=
-	rhs.size();
+    // /// Binarize a vector-like
+    // template <typename T,
+    // 	      ENABLE_THIS_TEMPLATE_IF((isVectorLike<T>)>
+    // Binarizer& binarize(T&& rhs)     ///< Input
+    // {
+    //   /// Number of elements
+    //   const size_t nel=
+    // 	rhs.size();
       
-      this->binarize(nel);
+    //   this->binarize(nel);
       
-      for(size_t iel=0;iel<nel;iel++)
-	this->binarize(rhs[iel]);
+    //   for(size_t iel=0;iel<nel;iel++)
+    // 	this->binarize(rhs[iel]);
       
-      return
-	*this;
-    }
+    //   return
+    // 	*this;
+    // }
     
-    /// DeBinarize a vector-like
-    template <typename T,
-	      SFINAE_ON_TEMPLATE_ARG(isVectorLike<T>)>
-    Binarizer& deBinarize(T&& rhs)     ///< Output
-    {
-      /// Number of elements
-      size_t nel;
+    // /// DeBinarize a vector-like
+    // template <typename T,
+    // 	      ENABLE_THIS_TEMPLATE_IF((isVectorLike<T>)>
+    // Binarizer& deBinarize(T&& rhs)     ///< Output
+    // {
+    //   /// Number of elements
+    //   size_t nel;
       
-      this->deBinarize(nel);
+    //   this->deBinarize(nel);
       
-      rhs.resize(nel);
+    //   rhs.resize(nel);
       
-      for(size_t iel=0;iel<nel;iel++)
-	this->deBinarize(rhs[iel]);
+    //   for(size_t iel=0;iel<nel;iel++)
+    // 	this->deBinarize(rhs[iel]);
       
-      return
-	*this;
-    }
+    //   return
+    // 	*this;
+    // }
     
     /// Restart from head
     void restartReading()
@@ -212,13 +212,14 @@ namespace SUNphi
     }
   };
   
+  DEFINE_CRTP_INHERITANCE_DISCRIMINER_FOR_TYPE(Binarizable)
+  
   /// Add binarizable functionality via CRTP
   template <typename T>
-  class Binarizable
+  class Binarizable :
+    Crtp<T,crtp::BinarizableDiscriminer>
   {
   public:
-    
-    PROVIDE_CRTP_CAST_OPERATOR(T);
     
     /// Binarize a Serializable
     template <typename B=Binarizer>

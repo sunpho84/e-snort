@@ -1,7 +1,11 @@
 #ifndef _LOGGER_HPP
 #define _LOGGER_HPP
 
-/// \file Logger.hpp
+#ifdef HAVE_CONFIG_H
+# include "config.hpp"
+#endif
+
+/// \file logger.hpp
 ///
 /// \brief Header file to define a logger wrapping FILE*
 ///
@@ -19,18 +23,20 @@
 
 #include <cstdio>
 
-//#include <Threads.hpp>
 #include <debug/backtracing.hpp>
 #include <debug/crash.hpp>
 #include <ios/file.hpp>
+#include <ios/scopeFormatter.hpp>
 #include <ios/textFormat.hpp>
+#include <metaprogramming/operatorExists.hpp>
 #include <system/Mpi.hpp>
 #include <system/timer.hpp>
-#include <utility/Macros.hpp>
-#include <utility/ScopeDoer.hpp>
+#include <resources/scopeDoer.hpp>
 
 namespace esnort
 {
+  DEFINE_BINARY_OPERATOR_IMPLEMENTATION_CHECK(canPrint,CanPrint,<<);
+  
   /// Write output to a file, using different level of indentation
   class Logger :
     private File
@@ -107,9 +113,10 @@ namespace esnort
 	    (logger.file()<<" Rank "<<mpi.rank()).getRc();
 	
 	// Prepend with thread
-	if(someOtherThreadCouldBePrinting)
-	  rc+=
-	    (logger.file()<<" Thread "<<threads.getThreadId()).getRc();
+#warning messagewarning
+	// if(someOtherThreadCouldBePrinting)
+	//   rc+=
+	//     (logger.file()<<" Thread "<<threads.getThreadId()).getRc();
 	
 	// Mark the margin
 	if(rc)
@@ -126,15 +133,17 @@ namespace esnort
 	  hasToCrash(false),
 	  colorChanged(false),
 	  styleChanged(false),
-	  reallyPrint((threads.isMasterThread() or not logger.onlyMasterThreadPrint) and (mpi.isMasterRank() or not logger.onlyMasterRankPrint)),
+	  reallyPrint((// threads.isMasterThread() or
+		       not logger.onlyMasterThreadPrint) and (mpi.isMasterRank() or not logger.onlyMasterRankPrint)),
 	  someOtherRankCouldBePrinting(mpi.nRanks()!=1 and not logger.onlyMasterRankPrint),
-	  someOtherThreadCouldBePrinting(threads.nActiveThreads()!=1 and not logger.onlyMasterThreadPrint),
+	  someOtherThreadCouldBePrinting(// threads.nActiveThreads()!=1 and 
+					 not logger.onlyMasterThreadPrint),
 	  hasToLock(reallyPrint and someOtherThreadCouldBePrinting),
 	  logger(reallyPrint?logger:fakeLogger)
       {
 	
-	if(hasToLock)
-	  logger.getExclusiveAccess();
+	// if(hasToLock)
+	//   logger.getExclusiveAccess();
 	  
 	startNewLine();
       }
@@ -182,8 +191,8 @@ namespace esnort
 	    // Ends the line
 	    endLine();
 	    
-	    if(hasToLock)
-	      logger.releaseExclusiveAccess();
+	    // if(hasToLock)
+	    //   logger.releaseExclusiveAccess();
 	    
 	    if(hasToCrash)
 	      {
@@ -197,7 +206,7 @@ namespace esnort
       template <typename T>               // Type of the obected to print
       LoggerLine& operator*(T&& t)      ///< Object to be printed
       {
-	logger.file()*forw<T>(t);
+	logger.file()*std::forward<T>(t);
 	
 	return
 	  *this;
@@ -207,10 +216,10 @@ namespace esnort
       ///
       /// The SFINAE is needed to avoid that the method is used when
       /// File does not know how to print
-      template <typename T,                                       // Type of the quantity to print
-		typename=EnableIf<not canPrint<LoggerLine,T>>,    // SFINAE needed to avoid ambiguous overload
-		typename=EnableIf<canPrint<File,const T&>>>       // SFINAE needed to avoid ambiguous overload
-      LoggerLine& operator<<(const T& t)                          ///< Object to print
+      template <typename T,                                           // Type of the quantity to print
+		ENABLE_THIS_TEMPLATE_IF(not canPrint<LoggerLine,T>    // SFINAE needed to avoid ambiguous overload
+					and canPrint<File,const T&>)>
+      LoggerLine& operator<<(const T& t)                             ///< Object to print
       {
 	logger.file()<<t;
 	
@@ -274,29 +283,29 @@ namespace esnort
       {
 	if(str==nullptr)
 	  logger.file()<<str;
-      else
-	{
-	  /// Pointer to the first char of the string
-	  const char* p=
-	    str;
-	  
-	  // Prints until finding end of string
-	  while(*p!='\0')
-	    {
-	      // starts a new line
-	      if(*p=='\n')
-		{
-		  endLine();
-		  startNewLine();
-		}
-	      else
-		// Prints the char
-		*this<<*p;
-	      
-	      // Increment the char
-	      p++;
-	    }
-	}
+	else
+	  {
+	    /// Pointer to the first char of the string
+	    const char* p=
+	      str;
+	    
+	    // Prints until finding end of string
+	    while(*p!='\0')
+	      {
+		// starts a new line
+		if(*p=='\n')
+		  {
+		    endLine();
+		    startNewLine();
+		  }
+		else
+		  // Prints the char
+		  *this<<*p;
+		
+		// Increment the char
+		p++;
+	      }
+	  }
 	
 	return
 	  *this;
@@ -317,20 +326,20 @@ namespace esnort
     /// Determine wheter the new line includes time
     bool prependTime;
     
-    /// Mutex used to lock the logger
-    mutable Mutex mutex;
+    // /// Mutex used to lock the logger
+    // mutable Mutex mutex;
     
-    /// Set the exclusive access right
-    void getExclusiveAccess()
-    {
-      mutex.lock();
-    }
+    // /// Set the exclusive access right
+    // void getExclusiveAccess()
+    // {
+    //   mutex.lock();
+    // }
     
     /// Release the exclusive access right
-    void releaseExclusiveAccess()
-    {
-      mutex.unlock();
-    }
+    // void releaseExclusiveAccess()
+    // {
+    //   mutex.unlock();
+    // }
     
   public:
     

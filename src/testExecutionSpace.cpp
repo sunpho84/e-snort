@@ -7,6 +7,7 @@
 #include <cstdarg>
 #include <cstdio>
 #include <unistd.h>
+#include <iostream>
 
 #include <cuda/cuda.hpp>
 
@@ -17,7 +18,6 @@
 
 #include <esnort.hpp>
 
-#include <iostream>
 
 using namespace esnort;
 

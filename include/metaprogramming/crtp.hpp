@@ -36,6 +36,9 @@ namespace esnort
     struct NAME ## Discriminer{};				\
   }
   
+  /// Access to the inheriting class
+#define CRTP_THIS				\
+  this->crtp()
 }
 
 #endif

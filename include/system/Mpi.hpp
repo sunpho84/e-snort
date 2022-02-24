@@ -1,14 +1,14 @@
 #ifndef _MPI_HPP
 #define _MPI_HPP
 
+#ifdef HAVE_CONFIG_H
+# include "config.hpp"
+#endif
+
 /// \file Mpi.hpp
 ///
 /// \brief Incapsulate all functionalities of MPI into a more
 /// convenient form
-
-#ifdef HAVE_CONFIG_H
-# include "config.hpp"
-#endif
 
 #ifdef USE_MPI
  #include <mpi.h>
@@ -17,8 +17,8 @@
 #include <ios/minimalLogger.hpp>
 #include <system/timer.hpp>
 #include <serialize/binarize.hpp>
-#include <utility/singleInstance.hpp>
-//#include <Threads.hpp>
+#include <metaprogramming/singleInstance.hpp>
+#include <metaprogramming/templateEnabler.hpp>
 
 namespace esnort
 {
@@ -43,7 +43,6 @@ namespace esnort
     return						\
       MPI_TYPE;						\
   }							\
-  SWALLOW_SEMICOLON_AT_GLOBAL_SCOPE
   
   PROVIDE_MPI_DATATYPE(MPI_CHAR,char);
   
@@ -262,7 +261,7 @@ namespace esnort
     ///
     /// This is a simple wrapper around the MPI_Bcast function
     template <typename T,
-	      SFINAE_ON_TEMPLATE_ARG(isTriviallyCopyable<T>)>
+	      ENABLE_THIS_TEMPLATE_IF(std::is_trivially_copyable_v<T>)>
     void broadcast(T* x,                   ///< Quantity to broadcast
 		   const size_t& size,     ///< Size of the quantity to broadcast
 		   int root=MASTER_RANK)   ///< Rank from which to broadcast
@@ -278,7 +277,7 @@ namespace esnort
     ///
     /// Accepts trivially copyable structures
     template <typename T,
-	      SFINAE_ON_TEMPLATE_ARG(isTriviallyCopyable<T>)>
+	      ENABLE_THIS_TEMPLATE_IF(std::is_trivially_copyable_v<T>)>
     void broadcast(T& x,                   ///< Quantity to broadcast
 		   int root=MASTER_RANK)   ///< Rank from which to broadcast
       const
@@ -290,7 +289,7 @@ namespace esnort
     ///
     /// Accepts all binarizable classes
     template <typename T,
-	      SFINAE_ON_TEMPLATE_ARG(isBinarizable<T>)>
+	      ENABLE_THIS_TEMPLATE_IF(isBinarizable<T>)>
     void broadcast(T&& val,                ///< Quantity to broadcast
 		   int root=MASTER_RANK)   ///< Rank from which to broadcast
       const
