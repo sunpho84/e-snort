@@ -53,11 +53,15 @@ namespace esnort
     
     const TensorRef& getRef() const
     {
+      printf("Returning the same const reference %p\n",this);
+      
       return *this;
     }
     
     TensorRef& getRef()
     {
+      printf("Returning the same reference %p\n",this);
+      
       return *this;
     }
   };
