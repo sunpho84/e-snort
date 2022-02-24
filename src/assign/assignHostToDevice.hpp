@@ -26,7 +26,7 @@ namespace esnort
 		     Rhs&& rhs)
     {
 #warning add some verbosity switch
-      printf("Copying to device the rhs\n");
+      printf("Copying to device the rhs, is ref: %d, is const: %d\n",std::is_lvalue_reference_v<Rhs>,std::is_const_v<std::remove_reference_t<Rhs>>);
       
       /// Version of the rhs located on the device
       const auto deviceRhs=
