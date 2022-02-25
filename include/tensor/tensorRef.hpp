@@ -51,7 +51,7 @@ namespace esnort
       return *ptr;
     }
     
-    TensorRef(std::conditional_t<IsConst,const T*,T*> ptr) CUDA_HOST CUDA_DEVICE:
+    TensorRef(std::conditional_t<IsConst,const T*,T*> ptr) :
       ptr(ptr)
     {
       SCOPE_INDENT(runLog);

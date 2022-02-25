@@ -18,7 +18,6 @@
 
 #include <esnort.hpp>
 
-
 using namespace esnort;
 
 int main(int narg,char** arg)
