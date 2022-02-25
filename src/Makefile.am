@@ -6,11 +6,7 @@ AM_CPPFLAGS= \
 	-I$(top_srcdir)/include
 
 bin_PROGRAMS+= \
-	$(top_builddir)/bin/testRefTransfer \
 	$(top_builddir)/bin/testExecutionSpace
-
-__top_builddir__bin_testRefTransfer_SOURCES= \
-	%D%/testRefTransfer.cpp
 
 __top_builddir__bin_testExecutionSpace_SOURCES= \
 	%D%/testExecutionSpace.cpp

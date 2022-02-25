@@ -187,4 +187,5 @@ needed.
 
 TODO
 ---
-Logging
+Putting togeter all cuda stuff
+Then put all the cuda stuff in a more generic device

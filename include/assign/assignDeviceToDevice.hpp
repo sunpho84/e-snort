@@ -3,6 +3,7 @@
 
 #include <assign/assignBase.hpp>
 #include <assign/assignHostToHost.hpp>
+#include <cuda/cuda.hpp>
 
 namespace esnort
 {
@@ -17,10 +18,7 @@ namespace esnort
 #if not ENABLE_DEVICE_CODE
       Assign<ExecutionSpace::HOST,ExecutionSpace::HOST,WhichSideToChange::LHS>::exec(std::forward<Lhs>(lhs),std::forward<Rhs>(rhs));
 #else
-      printf("Launching the kernel D to D\n");
-      
-      const dim3 block_dimension(1);
-      const dim3 grid_dimension(1);
+      runLog()<<"Launching the kernel D to D";
       
       auto devLhs=lhs.getRef();
       const auto devRhs=rhs.getRef();
@@ -29,15 +27,8 @@ namespace esnort
       {
 	return devLhs()=devRhs();
       };
-
-#ifdef __NVCC__
-      static_assert(__nv_is_extended_device_lambda_closure_type(decltype(f)),"");
-#endif
       
-      cudaGenericKernel<<<grid_dimension,block_dimension>>>(0,1,f);
-      
-      cudaDeviceSynchronize();
-      // #endif
+      Cuda::launchKernel(f,0,1);
 #endif
     }
   };

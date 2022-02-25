@@ -10,21 +10,24 @@
 #include <cstddef>
 
 #include <debug/crash.hpp>
+#include <ios/scopeFormatter.hpp>
 #include <ios/logger.hpp>
 #include <metaprogramming/singleInstance.hpp>
 
 namespace esnort
 {
-  template <typename IMin,
-	    typename IMax,
-	    typename F>
+  template <typename F,
+	    typename IMin,
+	    typename IMax>
   CUDA_GLOBAL
-  static void cudaGenericKernel(const IMin min,
-			    const IMax max,
-			    F f)
+  static void cudaGenericKernel(F&& f,
+				const IMin& min,
+				const IMax& max)
   {
 #if ENABLE_DEVICE_CODE
-    const auto i=min+blockIdx.x*blockDim.x+threadIdx.x;
+    const auto i=
+      min+blockIdx.x*blockDim.x+threadIdx.x;
+    
     if(i<max)
       f(i);
 #endif
@@ -33,6 +36,44 @@ namespace esnort
   struct Cuda :
     SingleInstance<Cuda>
   {
+    static INLINE_FUNCTION
+    void memcpy(void* dst,const void* src,size_t count,cudaMemcpyKind kind)
+    {
+#if ENABLE_DEVICE_CODE
+      runLog()<<"Cuda memcpy: "<<kind;
+      decryptError(cudaMemcpy(dst,src,count,kind),"calling cudaMemcpy");
+#endif
+    }
+    
+    /// Launch the kernel over the passed range
+    template <typename F,
+	      typename IMin,
+	      typename IMax>
+    static INLINE_FUNCTION
+    void launchKernel(F&& f,
+		      const IMin& min,
+		      const IMax& max)
+    {
+     /// Length of the loop
+      const auto length=
+        max-min;
+      
+      const int nCudaThreads=128;
+      
+      /// Dimension of the block
+      const dim3 blockDimension(nCudaThreads);
+      
+      /// Dimension of the grid
+      const dim3 gridDimension((length+blockDimension.x-1)/blockDimension.x);
+      
+#ifdef __NVCC__
+      static_assert(__nv_is_extended_device_lambda_closure_type(std::remove_reference_t<F>,"We need an extended lambda closure"));
+#endif
+      cudaGenericKernel<<<gridDimension,blockDimension>>>(std::forward<F>(f),min,max);
+      
+      synchronize();
+    }
+    
     
 #if ENABLE_DEVICE_CODE
     static void decryptError(cudaError_t rc,const char *templ,...)
@@ -50,10 +91,22 @@ namespace esnort
     }
 #endif
     
+    static void synchronize()
+    {
+#if ENABLE_DEVICE_CODE
+      SCOPE_INDENT(runLog);
+      
+      runLog()<<"Synchronizing gpu";
+      decryptError(cudaDeviceSynchronize(),"Synchronizing");
+#endif
+    }
+    
     static void free(void* ptr)
     {
 #if ENABLE_DEVICE_CODE
-      printf("freeing on gpu: %p\n",ptr);
+      SCOPE_INDENT(runLog);
+      
+      runLog()<<"Freeing on gpu: "<<ptr;
       decryptError(cudaFree(ptr),"");
 #endif
     }
@@ -62,8 +115,10 @@ namespace esnort
     static void malloc(T& ptr,const size_t& sizeInUnit)
     {
 #if ENABLE_DEVICE_CODE
+      SCOPE_INDENT(runLog);
+      
       decryptError(cudaMalloc(&ptr,sizeInUnit*sizeof(T)),"");
-      runLog()<<"Allocating on gpu: "<<ptr;
+      runLog()<<"Allocated on gpu: "<<ptr;
 #endif
     }
     
