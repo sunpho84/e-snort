@@ -9,8 +9,11 @@
 
 #include <debug/backtracing.hpp>
 #include <debug/demangle.hpp>
+#include <debug/crash.hpp>
+#include <debug/minimalCrash.hpp>
 #include <ios/file.hpp>
 #include <ios/logger.hpp>
+#include <ios/minimalLogger.hpp>
 #include <system/aliver.hpp>
 
 /// Global namespace

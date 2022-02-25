@@ -44,6 +44,8 @@ namespace esnort
   {
     runLog()<<"Backtracing...";
     
+    SCOPE_INDENT(runLog);
+    
     for(auto &p : getBackTraceList())
       runLog()<<p;
   }

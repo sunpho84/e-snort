@@ -1,7 +1,14 @@
 #ifndef _TENSORREF_HPP
 #define _TENSORREF_HPP
 
+#ifdef HAVE_CONFIG_H
+# include "config.hpp"
+#endif
+
+/// \file tensorRef.hpp
+
 #include <expr/expr.hpp>
+#include <ios/logger.hpp>
 
 namespace esnort
 {
@@ -47,7 +54,9 @@ namespace esnort
     TensorRef(std::conditional_t<IsConst,const T*,T*> ptr) CUDA_HOST CUDA_DEVICE:
       ptr(ptr)
     {
-      printf("%p associated to ref\n",ptr);
+      SCOPE_INDENT(runLog);
+      
+      runLog()<<ptr<<" associated to ref";
     }
     
     // TensorRef(const T* ptr) CUDA_HOST CUDA_DEVICE:
@@ -62,14 +71,18 @@ namespace esnort
     
     const TensorRef& getRef() const
     {
-      printf("Returning the same const reference %p\n",this);
+      SCOPE_INDENT(runLog);
+      
+      runLog()<<"Returning the same const reference to "<<this;
       
       return *this;
     }
     
     TensorRef& getRef()
     {
-      printf("Returning the same reference %p\n",this);
+      SCOPE_INDENT(runLog);
+      
+      runLog()<<"Returning the same reference to "<<this;
       
       return *this;
     }

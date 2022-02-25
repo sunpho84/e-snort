@@ -10,6 +10,7 @@
 /// \brief Assign from host to a device expression
 
 #include <assign/assignBase.hpp>
+#include <ios/logger.hpp>
 
 namespace esnort
 {
@@ -25,14 +26,16 @@ namespace esnort
     static void exec(Lhs&& lhs,
 		     Rhs&& rhs)
     {
+      SCOPE_INDENT(runLog);
+
 #warning add some verbosity switch
-      printf("Copying to device the rhs, is ref: %d, is const: %d\n",std::is_lvalue_reference_v<Rhs>,std::is_const_v<std::remove_reference_t<Rhs>>);
+      runLog()<<"Copying to device the rhs, is ref: "<<std::is_lvalue_reference_v<Rhs><<", is const: "<<std::is_const_v<std::remove_reference_t<Rhs>>;
       
       /// Version of the rhs located on the device
       const auto deviceRhs=
 	rhs.template changeExecSpaceTo<ExecutionSpace::DEVICE>();
       
-      printf("Copied from host to device: %p -> %p\n",rhs.getPtr(),deviceRhs.getPtr());
+      runLog()<<"Copied from host to device: "<<rhs.getPtr()<<" -> "<<deviceRhs.getPtr();
       
       lhs=deviceRhs;
     }

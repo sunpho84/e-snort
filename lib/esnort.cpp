@@ -104,6 +104,7 @@ namespace esnort
   
 //   /// Memory manager
 //   Memory memory;
-  
+
+  Aliver aliver;
 }
 

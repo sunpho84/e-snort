@@ -10,6 +10,8 @@
 /// \brief Assign from device to a host expression
 
 #include <assign/assignBase.hpp>
+#include <ios/logger.hpp>
+#include <ios/scopeFormatter.hpp>
 
 namespace esnort
 {
@@ -25,8 +27,10 @@ namespace esnort
     static void exec(Lhs&& lhs,
 		     Rhs&& rhs)
     {
+      SCOPE_INDENT(runLog);
+      
 #warning add some verbosity switch
-      printf("Copying to host the rhs\n");
+      runLog()<<"Copying to host the rhs";
       
       /// Version of the rhs located on the host
       decltype(auto) hostRhs=

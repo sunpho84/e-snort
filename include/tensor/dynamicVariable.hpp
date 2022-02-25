@@ -7,6 +7,7 @@
 
 #include <expr/executionSpace.hpp>
 #include <expr/expr.hpp>
+#include <ios/logger.hpp>
 #include <metaprogramming/inline.hpp>
 #include <tensor/tensorRef.hpp>
 #include <tensor/variableExecSpaceChanger.hpp>
@@ -71,16 +72,20 @@ namespace esnort
     constexpr INLINE_FUNCTION
     DynamicVariable()
     {
+      runLog.indentMore();
+      
 #if ENABLE_DEVICE_CODE
       if(execSpace()==ExecutionSpace::DEVICE)
 	{
-	  printf("Allocating on gpu!\n");
+	  runLog()<<"Allocating on gpu!";
 	  mallocCuda(ptr,1);
 	}
       else
 #endif
 	ptr=new T;
-      printf("Allocated %p\n",ptr);
+      runLog()<<"Allocated "<<ptr;
+      
+      runLog.indentLess();
     }
     
     //DynamicVariable(const DynamicVariable&) =delete;
@@ -123,14 +128,18 @@ namespace esnort
     
     TensorRef<T,ExecSpace,true> getRef() const
     {
-      printf("Forging a const ref to %p\n",ptr);
+      SCOPE_INDENT(runLog);
+      
+      runLog()<<"Forging a const ref to "<<ptr;
       
       return ptr;
     }
     
     TensorRef<T,ExecSpace,false> getRef()
     {
-      printf("Forging a ref to %p\n",ptr);
+      SCOPE_INDENT(runLog);
+      
+      runLog()<<"Forging a ref to "<<ptr;
       
       return ptr;
     }

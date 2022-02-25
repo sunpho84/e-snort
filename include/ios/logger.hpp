@@ -133,7 +133,7 @@ namespace esnort
 	  hasToCrash(false),
 	  colorChanged(false),
 	  styleChanged(false),
-	  reallyPrint((// threads.isMasterThread() or
+	  reallyPrint((true or // threads.isMasterThread() or
 		       not logger.onlyMasterThreadPrint) and (mpi.isMasterRank() or not logger.onlyMasterRankPrint)),
 	  someOtherRankCouldBePrinting(mpi.nRanks()!=1 and not logger.onlyMasterRankPrint),
 	  someOtherThreadCouldBePrinting(// threads.nActiveThreads()!=1 and 

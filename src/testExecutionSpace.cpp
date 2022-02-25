@@ -21,38 +21,15 @@
 
 using namespace esnort;
 
-void testBacktrace()
-{
-  using namespace std;
-  for(auto& b : getBackTraceList())
-    cout<<b<<endl;
-}
-
 int main(int narg,char** arg)
 {
-  runLog()<<";\n";
-  // ValWithMax<int> e(0);
-  // e+=12;
-  // e=1;
-  // // int val=1;
-  // // int max=0;
-  
-  // // {
-  // //   RefProxy ref([&val]()->int&{return val;},[&max,&val](){max=std::max(max,val);});
-
-  // //   ref()=12;
-  // // }
-  // printf("1? : %d, 12? %d\n",(int)e,e.extreme());
-  
-  // return 0;
-  
   int iDevice;
   if(narg==1)
     iDevice=0;
   else
     sscanf(arg[1],"%d",&iDevice);
   
-  printf("Using device: %d\n",iDevice);
+  runLog()<<"Using device: "<<iDevice;
   
   cuda_init(iDevice);
 
@@ -65,7 +42,7 @@ int main(int narg,char** arg)
   StackedVariable<int> a;
   a()=1;
   
-  printf("going to issue the assignment\n");
+  runLog()<<"going to issue the assignment";
   DynamicVariable<int,ExecutionSpace::DEVICE> b;
   b=a;
   
@@ -74,9 +51,9 @@ int main(int narg,char** arg)
   
   StackedVariable<int> d;
   d=c;
-  printf("Result: %d -> %d\n",a(),d());
+  runLog()<<"Result: "<<a()<<" -> "<<d();
   
   ASM_BOOKMARK_END("TEST_ASSIGN");
-
+  
   return 0;
 }

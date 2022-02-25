@@ -8,6 +8,7 @@
 /// \file aliver.hpp
 
 #include "../lib/gitInfo.hpp"
+
 #include <ios/logger.hpp>
 #include <metaprogramming/singleInstance.hpp>
 
@@ -80,7 +81,6 @@ namespace esnort
     /// Creates
     Aliver()
     {
-      printf("wefwef\n");
       printBanner();
       printVersionContacts();
       printGitInfo();
