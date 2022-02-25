@@ -58,13 +58,13 @@ namespace esnort
     }
     
     constexpr INLINE_FUNCTION
-    const T& operator()() const CUDA_HOST CUDA_DEVICE
+    const T& operator()() const HOST_DEVICE_ATTRIB
     {
       return *ptr;
     }
     
     constexpr INLINE_FUNCTION
-    T& operator()() CUDA_HOST CUDA_DEVICE
+    T& operator()() HOST_DEVICE_ATTRIB
     {
       return *ptr;
     }
@@ -78,7 +78,7 @@ namespace esnort
       if(execSpace()==ExecutionSpace::DEVICE)
 	{
 	  runLog()<<"Allocating on gpu!";
-	  Cuda::malloc(ptr,1);
+	  Device::malloc(ptr,1);
 	}
       else
 #endif
@@ -103,23 +103,23 @@ namespace esnort
     {
 #if ENABLE_DEVICE_CODE
       if(execSpace()==ExecutionSpace::DEVICE)
-	cudaMemcpy(ptr,
-		   oth.getPtr(),
-		   sizeof(T),
-		   cudaMemcpyHostToHost);
+	Device::memcpy(ptr,
+		     oth.getPtr(),
+		     sizeof(T),
+		     cudaMemcpyHostToHost);
       else
 #endif
 	memcpy(ptr,oth.ptr,sizeof(T));
     }
     
     INLINE_FUNCTION
-    ~DynamicVariable() CUDA_HOST
+    ~DynamicVariable() HOST_ATTRIB
     {
       if(ptr)
 	{
 #if ENABLE_DEVICE_CODE
 	  if(execSpace()==ExecutionSpace::DEVICE)
-	    Cuda::free(ptr);
+	    Device::free(ptr);
 	  else
 #endif
 	    delete ptr;

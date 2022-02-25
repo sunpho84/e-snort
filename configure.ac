@@ -112,20 +112,16 @@ AM_CONDITIONAL([DEVICE_CODE],[test "$enable_device_code" == "yes" ],[true],[fals
 if test "$enable_device_code" == "yes"
 then
 	ENABLE_DEVICE_CODE=1
-	CUDA_MANAGED=__managed__
-	CUDA_HOST="__host__"
-	CUDA_GLOBAL="__global__"
-	CUDA_DEVICE="__device__"
-	CUDA_HOST_DEVICE="__host__ __device__"
+	HOST_ATTRIB="__host__"
+	DEVICE_ATTRIB="__device__"
+	HOST_DEVICE_ATTRIB="__host__ __device__"
 else
 	ENABLE_DEVICE_CODE=0
 fi
 AC_DEFINE_UNQUOTED([ENABLE_DEVICE_CODE],${ENABLE_DEVICE_CODE},[Enable device code])
-AC_DEFINE_UNQUOTED([CUDA_MANAGED],${CUDA_MANAGED},[Whether to use managed memory])
-AC_DEFINE_UNQUOTED([CUDA_GLOBAL],${CUDA_GLOBAL},[Whether this function is GLOBAL])
-AC_DEFINE_UNQUOTED([CUDA_HOST],${CUDA_HOST},[Whether this function is HOST only])
-AC_DEFINE_UNQUOTED([CUDA_DEVICE],${CUDA_DEVICE},[Whether to duplicate functions for DEVICE only])
-AC_DEFINE_UNQUOTED([CUDA_HOST_DEVICE],${CUDA_HOST_DEVICE},[Whether to duplicate functions for host and device])
+AC_DEFINE_UNQUOTED([HOST_ATTRIB],${HOST_ATTRIB},[Whether this function is HOST only])
+AC_DEFINE_UNQUOTED([DEVICE_ATTRIB],${DEVICE_ATTRIB},[Whether to duplicate functions for DEVICE only])
+AC_DEFINE_UNQUOTED([HOST_DEVICE_ATTRIB],${HOST_DEVICE_ATTRIB},[Whether to duplicate functions for host and device])
 AH_VERBATIM([COMPILING_FOR_DEVICE],
 #ifdef __CUDA_ARCH__
  

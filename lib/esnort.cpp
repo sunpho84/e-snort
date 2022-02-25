@@ -9,8 +9,8 @@
 #include <cstdarg>
 #include <cstdio>
 
-#include <cuda/cuda.hpp>
 #include <ios/logger.hpp>
+#include <resources/device.hpp>
 #include <system/aliver.hpp>
 
 // #include <Threads.hpp>
@@ -106,7 +106,7 @@ namespace esnort
 //   /// Memory manager
 //   Memory memory;
   
-  Cuda cuda;
+  Device device;
   
   Aliver aliver;
 }

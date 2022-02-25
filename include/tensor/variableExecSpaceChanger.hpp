@@ -35,7 +35,7 @@ namespace esnort
 									\
 	    DynamicVariable<Fund,OthExecSpace> res;			\
 									\
-	    Cuda::memcpy(res.getPtr(),					\
+	    Device::memcpy(res.getPtr(),				\
 			 this->crtp().getPtr(),				\
 			 sizeof(Fund),					\
 			 (OthExecSpace==ExecutionSpace::DEVICE)?	\

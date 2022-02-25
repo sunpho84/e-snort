@@ -27,7 +27,7 @@ namespace esnort
 		     Rhs&& rhs)
     {
       SCOPE_INDENT(runLog);
-
+     
 #warning add some verbosity switch
       runLog()<<"Copying to device the rhs, is ref: "<<std::is_lvalue_reference_v<Rhs><<", is const: "<<std::is_const_v<std::remove_reference_t<Rhs>>;
       

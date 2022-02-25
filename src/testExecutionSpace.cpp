@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <iostream>
 
-#include <cuda/cuda.hpp>
+#include <resources/device.hpp>
 
 #include <expr/executionSpace.hpp>
 #include <expr/expr.hpp>
@@ -22,16 +22,6 @@ using namespace esnort;
 
 int main(int narg,char** arg)
 {
-  // int iDevice;
-  // if(narg==1)
-  //   iDevice=0;
-  // else
-  //   sscanf(arg[1],"%d",&iDevice);
-  
-  // runLog()<<"Using device: "<<iDevice;
-  
-  // cuda::init(iDevice);
-
 #if !COMPILING_FOR_DEVICE
   static_assert(StackedVariable<int>::execSpace()==esnort::ExecutionSpace::HOST,"We are issuing A on the host");
 #endif

@@ -16,7 +16,7 @@ namespace esnort
   {
 #define PROVIDE_CRTP(ATTRIB)				\
     /*! Crtp access the type */				\
-    CUDA_HOST CUDA_DEVICE INLINE_FUNCTION constexpr	\
+    HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr	\
     ATTRIB T& crtp() ATTRIB				\
     {							\
       return						\

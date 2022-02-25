@@ -13,8 +13,9 @@
 #include <utility>
 
 #if ENABLE_DEVICE_CODE
-# include <cuda/cuda.hpp>
+# include <resources/device.hpp>
 #endif
+
 #include <expr/executionSpace.hpp>
 
 namespace esnort

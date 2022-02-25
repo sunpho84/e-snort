@@ -1,11 +1,11 @@
-#ifndef _CUDA_HPP
-#define _CUDA_HPP
+#ifndef _DEVICE_HPP
+#define _DEVICE_HPP
 
 #ifdef HAVE_CONFIG_H
 # include <config.hpp>
 #endif
 
-/// \file cuda.hpp
+/// \file device.hpp
 
 #include <cstddef>
 
@@ -16,43 +16,44 @@
 
 namespace esnort
 {
+#if ENABLE_DEVICE_CODE
   template <typename F,
 	    typename IMin,
 	    typename IMax>
-  CUDA_GLOBAL
-  static void cudaGenericKernel(F&& f,
+  __global__
+  static void cudaGenericKernel(F f,
 				const IMin& min,
 				const IMax& max)
   {
-#if ENABLE_DEVICE_CODE
     const auto i=
       min+blockIdx.x*blockDim.x+threadIdx.x;
     
     if(i<max)
       f(i);
-#endif
   }
+#endif
   
-  struct Cuda :
-    SingleInstance<Cuda>
+  struct Device :
+    SingleInstance<Device>
   {
+#if ENABLE_DEVICE_CODE
     static INLINE_FUNCTION
     void memcpy(void* dst,const void* src,size_t count,cudaMemcpyKind kind)
     {
-#if ENABLE_DEVICE_CODE
       runLog()<<"Cuda memcpy: "<<kind;
       decryptError(cudaMemcpy(dst,src,count,kind),"calling cudaMemcpy");
-#endif
     }
     
     /// Launch the kernel over the passed range
-    template <typename F,
-	      typename IMin,
-	      typename IMax>
+    template <typename IMin,
+	      typename IMax,
+	      typename F>
     static INLINE_FUNCTION
-    void launchKernel(F&& f,
-		      const IMin& min,
-		      const IMax& max)
+    void launchKernel(const int line,
+		      const char *file,
+		      const IMin min,
+		      const IMax max,
+		      F&& f)
     {
      /// Length of the loop
       const auto length=
@@ -67,15 +68,16 @@ namespace esnort
       const dim3 gridDimension((length+blockDimension.x-1)/blockDimension.x);
       
 #ifdef __NVCC__
-      static_assert(__nv_is_extended_device_lambda_closure_type(std::remove_reference_t<F>,"We need an extended lambda closure"));
+      static_assert(__nv_is_extended_device_lambda_closure_type(std::remove_reference_t<F>),"We need an extended lambda closure");
 #endif
+      
+      runLog()<<"at line "<<line<<" of file "<<file<<" launching kernel on loop ["<<min<<","<<max<<") using blocks of size "<<blockDimension.x<<" and grid of size "<<gridDimension.x;
+      
       cudaGenericKernel<<<gridDimension,blockDimension>>>(std::forward<F>(f),min,max);
       
       synchronize();
     }
     
-    
-#if ENABLE_DEVICE_CODE
     static void decryptError(cudaError_t rc,const char *templ,...)
     {
       if(rc!=cudaSuccess)
@@ -89,38 +91,32 @@ namespace esnort
 	  CRASH<<mess<<", cuda raised error: "<<cudaGetErrorString(rc);
 	}
     }
-#endif
     
     static void synchronize()
     {
-#if ENABLE_DEVICE_CODE
       SCOPE_INDENT(runLog);
       
       runLog()<<"Synchronizing gpu";
       decryptError(cudaDeviceSynchronize(),"Synchronizing");
-#endif
     }
     
     static void free(void* ptr)
     {
-#if ENABLE_DEVICE_CODE
       SCOPE_INDENT(runLog);
       
       runLog()<<"Freeing on gpu: "<<ptr;
       decryptError(cudaFree(ptr),"");
-#endif
     }
     
     template <typename  T>
     static void malloc(T& ptr,const size_t& sizeInUnit)
     {
-#if ENABLE_DEVICE_CODE
       SCOPE_INDENT(runLog);
       
       decryptError(cudaMalloc(&ptr,sizeInUnit*sizeof(T)),"");
       runLog()<<"Allocated on gpu: "<<ptr;
-#endif
     }
+#endif
     
     /// Get the number of devices
     int getNDevices()
@@ -163,7 +159,7 @@ namespace esnort
       for(int i=0;i<nDevices();i++)
 	{
 	  cudaDeviceProp deviceProp;
-	  cudaGetDeviceProperties(&deviceProp,i);
+	  decryptError(cudaGetDeviceProperties(&deviceProp,i),"Getting properties for device");
 	  runLog()<<" CUDA Enabled device "<<i<<"/"<<nDevices()<<": "<<deviceProp.major<<"."<<deviceProp.minor;
 	}
       
@@ -173,7 +169,7 @@ namespace esnort
     }
     
     /// Initialize Cuda
-    Cuda()
+    Device()
     {
 #if ENABLE_DEVICE_CODE
       
@@ -186,8 +182,9 @@ namespace esnort
       
 #endif
     }
-    
   };
+  
+#define DEVICE_LOOP(INDEX,EXT_START,EXT_END,BODY...) Device::launchKernel(__LINE__,__FILE__,EXT_START,EXT_END,[=] DEVICE_ATTRIB (const std::common_type_t<decltype((EXT_END)),decltype((EXT_START))>& INDEX) mutable {BODY})
 }
 
 #endif

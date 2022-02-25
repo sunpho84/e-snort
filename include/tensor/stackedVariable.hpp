@@ -50,12 +50,12 @@ namespace esnort
       return &value;
     }
     
-    const T& operator()() const CUDA_HOST CUDA_DEVICE
+    const T& operator()() const HOST_DEVICE_ATTRIB
     {
       return value;
     }
     
-    T& operator()() CUDA_HOST CUDA_DEVICE
+    T& operator()() HOST_DEVICE_ATTRIB
     {
       return value;
     }

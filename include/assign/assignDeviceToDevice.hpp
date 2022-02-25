@@ -1,9 +1,15 @@
 #ifndef _ASSIGNDEVICETODEVICE_HPP
 #define _ASSIGNDEVICETODEVICE_HPP
 
+#ifdef HAVE_CONFIG_H
+# include "config.hpp"
+#endif
+
+/// \file assignDevicetoDevice.hpp
+
 #include <assign/assignBase.hpp>
 #include <assign/assignHostToHost.hpp>
-#include <cuda/cuda.hpp>
+#include <resources/device.hpp>
 
 namespace esnort
 {
@@ -23,12 +29,9 @@ namespace esnort
       auto devLhs=lhs.getRef();
       const auto devRhs=rhs.getRef();
       
-      auto f=[=] CUDA_DEVICE (const int& i) mutable
-      {
-	return devLhs()=devRhs();
-      };
-      
-      Cuda::launchKernel(f,0,1);
+      DEVICE_LOOP(i,0,1,
+		  return devLhs()=devRhs();
+		  );
 #endif
     }
   };

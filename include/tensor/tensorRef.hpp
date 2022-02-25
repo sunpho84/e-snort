@@ -41,12 +41,12 @@ namespace esnort
       return ExecutionSpaceChangeCost::LITTLE;
     }
     
-    const T& operator()() const CUDA_HOST CUDA_DEVICE
+    const T& operator()() const HOST_DEVICE_ATTRIB
     {
       return *ptr;
     }
     
-    std::conditional_t<IsConst,const T&,T&> operator()() CUDA_HOST CUDA_DEVICE
+    std::conditional_t<IsConst,const T&,T&> operator()() HOST_DEVICE_ATTRIB
     {
       return *ptr;
     }
@@ -59,12 +59,12 @@ namespace esnort
       runLog()<<ptr<<" associated to ref";
     }
     
-    // TensorRef(const T* ptr) CUDA_HOST CUDA_DEVICE:
+    // TensorRef(const T* ptr) HOST_DEVICE_ATTRIB:
     //   ptr(ptr)
     // {
     // }
     
-    // TensorRef(const TensorRef& oth) CUDA_HOST CUDA_DEVICE :
+    // TensorRef(const TensorRef& oth) HOST_DEVICE_ATTRIB :
     //   ptr(oth.ptr)
     // {
     // }
