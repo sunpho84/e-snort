@@ -54,24 +54,21 @@ namespace esnort
     }
     
     /// Returns the line
-    const int getLine()
-      const
+    int getLine() const
     {
       return
 	line;
     }
     
     /// Returns the function name
-    const char* getFuncName()
-      const
+    const char* getFuncName() const
     {
       return
 	funcName;
     }
     
     /// Returns the standard library error
-    const int getErrNo()
-      const
+    int getErrNo() const
     {
       return
 	errNo;
@@ -86,7 +83,6 @@ namespace esnort
       return
 	*this;
     }
-    
   };
 }
 
