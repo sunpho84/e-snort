@@ -11,7 +11,7 @@
 /// convenient form
 
 #ifdef USE_MPI
- #include <mpi.h>
+# include <mpi.h>
 #endif
 
 #include <ios/minimalLogger.hpp>
@@ -112,7 +112,8 @@ namespace esnort
       
       MPI_CRASH_ON_ERROR(durationOf(initDur,MPI_Init,nullptr,nullptr),"Error initializing MPI");
       
-      minimalLogger(runLog,"MPI initialized in %lg s",durationInSec(initDur));
+      minimalLogger(runLog,"MPI initialized in %lg s, nranks: %d",durationInSec(initDur),nRanks());
+      
 #endif
     }
     
