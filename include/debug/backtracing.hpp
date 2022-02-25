@@ -35,7 +35,7 @@ namespace esnort
     /// Parse the string
     explicit BackTraceSymbol(const std::string& str)
     {
-      const std::regex regex("[(\[+() \\]]");
+      const std::regex regex("[([+() \\]]");
       const std::sregex_token_iterator first{str.begin(),str.end(),regex,-1},last;
       const std::vector<std::string> tokens{first,last};
       
