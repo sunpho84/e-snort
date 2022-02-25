@@ -7,6 +7,7 @@
 /// \brief Defines the backtracing function
 
 #include <debug/backtracing.hpp>
+#include <ios/logger.hpp>
 
 namespace esnort
 {
@@ -37,5 +38,13 @@ namespace esnort
     
     return
       res;
+  }
+  
+  void printBacktraceList()
+  {
+    runLog()<<"Backtracing...";
+    
+    for(auto &p : getBackTraceList())
+      runLog()<<p;
   }
 }

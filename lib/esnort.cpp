@@ -9,7 +9,8 @@
 #include <cstdarg>
 #include <cstdio>
 
-#include <gitInfo.hpp>
+#include <ios/logger.hpp>
+#include <system/aliver.hpp>
 
 // #include <Threads.hpp>
 // #include <debug/Crash.hpp>
@@ -35,22 +36,8 @@
 //   ""
 #endif
 
-// namespace esnort
-// {
-//   void minimalCrash(const char* path,
-// 		    const int line,
-// 		    const char* funcName,
-// 		    const char* format,
-// 		    ...)
-//   {
-//     /// Starts the variadic arguments
-//     va_list ap;
-//     va_start(ap,format);
-    
-//     (runLog()<<Crasher(path,line,funcName)).printVariadicMessage(format,ap);
-    
-//     va_end(ap);
-//   }
+namespace esnort
+{
   
 // #ifdef USE_THREADS
 //   void ThreadPool::fill(const pthread_attr_t* attr)
@@ -98,105 +85,16 @@
 //       0;
 //   }
   
-//   /// Class used to provocate initialization of Mpi
-//   class Aliver : public SingleInstance<Aliver>
-//   {
-    
-//     /// Prints the banner
-//     void printBanner()
-//       const
-//     {
-//       runLog()<<"";
-//       runLog()<<TextColor::BROWN<<"          ▄▄        ▄█▄        ▄▄        \t"<<TextColor::PURPLE<< "                 ▄█▄                  ";
-//       runLog()<<TextColor::BROWN<<"          █░█       █░█       █░█         \t"<<TextColor::PURPLE<< "                 █░█                   ";
-//       runLog()<<TextColor::BROWN<<"     ▄▄    █░█      █░█      █░█    ▄▄   \t"<<TextColor::PURPLE<<  "                 █░█                  ";
-//       runLog()<<TextColor::BROWN<<"     █░█    █░█     █░█     █░█    █░█   \t"<<TextColor::PURPLE<<  "                 █░█                  ";
-//       runLog()<<TextColor::BROWN<<"      █░█    █░█  ███████  █░█    █░█    \t"<<TextColor::PURPLE<<  "               ███████                ";
-//       runLog()<<TextColor::BROWN<<"       █░█    █████░░░░░█████    █░█     \t"<<TextColor::PURPLE<<  "           █████░█░█░█████            ";
-//       runLog()<<TextColor::BROWN<<"        █░█  ██░░░░░░░░░░░░░██  █░█      \t"<<TextColor::PURPLE<<  "          ██░░░░░█░█░░░░░██           ";
-//       runLog()<<TextColor::BROWN<<"         █░██░░░░░░░░░░░░░░░░░██░█       \t"<<TextColor::PURPLE<<  "        ██░░░░░░░█░█░░░░░░░██         ";
-//       runLog()<<TextColor::BROWN<<"    ▄▄▄▄▄▄███████████░███████████▄▄▄▄▄▄ \t" <<TextColor::PURPLE<< "       ██░░░░░░░░█░█░░░░░░░░██        ";
-//       runLog()<<TextColor::BROWN<<"   █░░░░░░█░████████░░░████████░█░░░░░░█ \t"<<TextColor::PURPLE<<  "       █░░░░░░░░░█░█░░░░░░░░░█        ";
-//       runLog()<<TextColor::BROWN<<"    ▀▀▀▀▀▀█░░░████░░░░░░░████░░░█▀▀▀▀▀▀ \t" <<TextColor::PURPLE<< "       █░░░░░░░░░█░█░░░░░░░░░█        ";
-//       runLog()<<TextColor::BROWN<<"          ██░░░░░░░░░░░░░░░░░░░░█        \t"<<TextColor::PURPLE<<  "       ██░░░░░░░░█░█░░░░░░░░░█        ";
-//       runLog()<<TextColor::BROWN<<"         █░██░░░░░███████░░░░░░█░█       \t"<<TextColor::PURPLE<<  "        ██░░░░░░░█░█░░░░░░░░█         ";
-//       runLog()<<TextColor::BROWN<<"        █░█  █░░░░░░░░░░░░░░░██ █░█      \t"<<TextColor::PURPLE<<  "          █░░░░░░█░█░░░░░░██          ";
-//       runLog()<<TextColor::BROWN<<"       █░█    ██░░░░░░░░░░░██    █░█     \t"<<TextColor::PURPLE<<  "           ██░░░░█░█░░░░██            ";
-//       runLog()<<TextColor::BROWN<<"      █░█     █░███████████░█     █░█    \t"<<TextColor::PURPLE<<  "             ███████████              ";
-//       runLog()<<TextColor::BROWN<<"     █░█     █░█    █░█    █░█     █░█   \t"<<TextColor::PURPLE<<  "                 █░█                  ";
-//       runLog()<<TextColor::BROWN<<"     ▀▀     █░█     █░█     █░█     ▀▀  \t" <<TextColor::PURPLE<<  "                 █░█                  ";
-//       runLog()<<TextColor::BROWN<<"           █░█      █░█      █░█        \t" <<TextColor::PURPLE<<  "                 █░█                 ";
-//       runLog()<<TextColor::BROWN<<"          █░█       █░█       █░█       \t" <<TextColor::PURPLE<<  "                 █░█                 ";
-//       runLog()<<TextColor::BROWN<<"          ▀▀        ▀█▀        ▀▀       \t" <<TextColor::PURPLE<< "                 ▀█▀                ";
-//       runLog()<< "";
-//     }
-    
-//     /// Prints the version, and contacts
-//     void printVersionContacts()
-//       const
-//     {
-//       runLog()<<"\nInitializing "<<PACKAGE_NAME<<" library, v"<<PACKAGE_VERSION<<", send bug report to <"<<PACKAGE_BUGREPORT<<">";
-//     }
-    
-//     /// Prints the git info
-//     void printGitInfo()
-//       const
-//     {
-//       runLog()<<"Commit "<<GIT_HASH<<" made at "<<GIT_TIME<<" by "<<GIT_COMMITTER<<" with message: \""<<GIT_LOG<<"\"";
-//     }
-    
-//     /// Prints configure info
-//     void printConfigurePars()
-//       const
-//     {
-//       runLog()<<"Configured at "<<CONFIG_TIME<<" with flags: "<<CONFIG_FLAGS<<"";
-//     }
-    
-//     /// Says bye bye
-//     void printBailout()
-//       const
-//     {
-//       runLog()<<"\n Ciao!\n";
-//     }
-    
-//   public:
-    
-//     /// Creates
-//     Aliver()
-//     {
-//       printBanner();
-//       printVersionContacts();
-//       printGitInfo();
-//       printConfigurePars();
-      
-//       threads.workOn([](const int threadID){runLog()<<"ANNA";});
-      
-//       {
-// 	ALLOWS_ALL_THREADS_TO_PRINT_FOR_THIS_SCOPE(runLog);
-// 	ALLOWS_ALL_RANKS_TO_PRINT_FOR_THIS_SCOPE(runLog);
-	
-// 	threads.workOn([](const int threadID){runLog()<<"ANNA";});
-//       }
-//       // threads.loopSplit(0,10,[](const int& rank,const int& i){printf("Rank %d prints again %d\n",rank,i);});
-//     }
-    
-//     /// Destroyer
-//     ~Aliver()
-//     {
-//       printBailout();
-//     }
-//   };
+  /// Global timings
+  Timer timings("Total time",Timer::NO_FATHER,Timer::UNSTOPPABLE);
   
-//   /// Global timings
-//   Timer timings("Total time",Timer::NO_FATHER,Timer::UNSTOPPABLE);
+  Logger Logger::fakeLogger("/dev/null");
   
-//   Logger Logger::fakeLogger("/dev/null");
+  /// Global logger
+  Logger runLog("/dev/stdout");
   
-//   /// Global logger
-//   Logger runLog("/dev/stdout");
-  
-//   /// Global MPI
-//   Mpi mpi;
+  /// Global MPI
+  Mpi mpi;
   
 //   /// Global thrads
 //   ThreadPool threads;
@@ -207,7 +105,5 @@
 //   /// Memory manager
 //   Memory memory;
   
-//   /// Presentation of the library
-//   Aliver aliver;
-// }
+}
 

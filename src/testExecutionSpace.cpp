@@ -30,9 +30,7 @@ void testBacktrace()
 
 int main(int narg,char** arg)
 {
-  testBacktrace();
-  return 0;
-  
+  runLog()<<";\n";
   // ValWithMax<int> e(0);
   // e+=12;
   // e=1;
