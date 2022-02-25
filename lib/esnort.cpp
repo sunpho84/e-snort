@@ -9,6 +9,7 @@
 #include <cstdarg>
 #include <cstdio>
 
+#include <cuda/cuda.hpp>
 #include <ios/logger.hpp>
 #include <system/aliver.hpp>
 
@@ -104,7 +105,9 @@ namespace esnort
   
 //   /// Memory manager
 //   Memory memory;
-
+  
+  Cuda cuda;
+  
   Aliver aliver;
 }
 

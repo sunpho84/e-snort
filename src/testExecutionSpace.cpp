@@ -22,15 +22,15 @@ using namespace esnort;
 
 int main(int narg,char** arg)
 {
-  int iDevice;
-  if(narg==1)
-    iDevice=0;
-  else
-    sscanf(arg[1],"%d",&iDevice);
+  // int iDevice;
+  // if(narg==1)
+  //   iDevice=0;
+  // else
+  //   sscanf(arg[1],"%d",&iDevice);
   
-  runLog()<<"Using device: "<<iDevice;
+  // runLog()<<"Using device: "<<iDevice;
   
-  cuda_init(iDevice);
+  // cuda::init(iDevice);
 
 #if !COMPILING_FOR_DEVICE
   static_assert(StackedVariable<int>::execSpace()==esnort::ExecutionSpace::HOST,"We are issuing A on the host");
@@ -41,7 +41,6 @@ int main(int narg,char** arg)
   StackedVariable<int> a;
   a()=1;
   
-  runLog()<<"going to issue the assignment";
   DynamicVariable<int,ExecutionSpace::DEVICE> b;
   b=a;
   

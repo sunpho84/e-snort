@@ -78,7 +78,7 @@ namespace esnort
       if(execSpace()==ExecutionSpace::DEVICE)
 	{
 	  runLog()<<"Allocating on gpu!";
-	  mallocCuda(ptr,1);
+	  Cuda::malloc(ptr,1);
 	}
       else
 #endif
@@ -119,7 +119,7 @@ namespace esnort
 	{
 #if ENABLE_DEVICE_CODE
 	  if(execSpace()==ExecutionSpace::DEVICE)
-	    freeCuda(ptr);
+	    Cuda::free(ptr);
 	  else
 #endif
 	    delete ptr;

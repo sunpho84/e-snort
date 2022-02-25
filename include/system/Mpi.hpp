@@ -52,7 +52,8 @@ namespace esnort
 #endif
   
   /// Class wrapping all MPI functionalities
-  class Mpi : public SingleInstance<Mpi>
+  class Mpi :
+    public SingleInstance<Mpi>
   {
 #ifdef USE_MPI
     /// Crash on MPI error, providing a meaningful error
