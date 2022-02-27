@@ -18,7 +18,10 @@ namespace esnort
 {
   class Logger;
   
-  extern Logger runLog;
+  namespace resources
+  {
+    extern Logger logger;
+  }
   
   /// Wraps the actual logger through the old-style C variadic function
   ///

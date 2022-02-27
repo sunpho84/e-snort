@@ -42,11 +42,11 @@ namespace esnort
   
   void printBacktraceList()
   {
-    runLog()<<"Backtracing...";
+    logger()<<"Backtracing...";
     
-    SCOPE_INDENT(runLog);
+    SCOPE_INDENT();
     
     for(auto &p : getBackTraceList())
-      runLog()<<p;
+      logger()<<p;
   }
 }

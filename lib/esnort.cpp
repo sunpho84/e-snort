@@ -89,10 +89,20 @@ namespace esnort
   /// Global timings
   Timer timings("Total time",Timer::NO_FATHER,Timer::UNSTOPPABLE);
   
-  Logger Logger::fakeLogger("/dev/null");
+  int Logger::verbosityLv{0};
   
-  /// Global logger
-  Logger runLog("/dev/stdout");
+  bool Logger::onlyMasterRankPrint{true};
+  
+  bool Logger::onlyMasterThreadPrint{true};
+  
+  namespace resources
+  {
+    /// Global logger
+    Logger logger("/dev/stdout");
+    
+    /// Dump to /dev/null
+    Logger fakeLogger("/dev/null");
+  }
   
   /// Global MPI
   Mpi mpi;

@@ -21,7 +21,7 @@ namespace esnort
     va_list ap;
     va_start(ap,format);
     
-    (runLog()<<Crasher(path,line,funcName)).printVariadicMessage(format,ap);
+    (logger()<<Crasher(path,line,funcName)).printVariadicMessage(format,ap);
     
     va_end(ap);
   }

@@ -24,7 +24,7 @@ namespace esnort
 #if not ENABLE_DEVICE_CODE
       Assign<ExecutionSpace::HOST,ExecutionSpace::HOST,WhichSideToChange::LHS>::exec(std::forward<Lhs>(lhs),std::forward<Rhs>(rhs));
 #else
-      runLog()<<"Launching the kernel D to D";
+      logger()<<"Launching the kernel D to D";
       
       auto devLhs=lhs.getRef();
       const auto devRhs=rhs.getRef();

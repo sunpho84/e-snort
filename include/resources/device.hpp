@@ -40,7 +40,7 @@ namespace esnort
     static INLINE_FUNCTION
     void memcpy(void* dst,const void* src,size_t count,cudaMemcpyKind kind)
     {
-      runLog()<<"Cuda memcpy: "<<kind;
+      logger()<<"Cuda memcpy: "<<kind;
       decryptError(cudaMemcpy(dst,src,count,kind),"calling cudaMemcpy");
     }
     
@@ -71,7 +71,7 @@ namespace esnort
       static_assert(__nv_is_extended_device_lambda_closure_type(std::remove_reference_t<F>),"We need an extended lambda closure");
 #endif
       
-      runLog()<<"at line "<<line<<" of file "<<file<<" launching kernel on loop ["<<min<<","<<max<<") using blocks of size "<<blockDimension.x<<" and grid of size "<<gridDimension.x;
+      logger()<<"at line "<<line<<" of file "<<file<<" launching kernel on loop ["<<min<<","<<max<<") using blocks of size "<<blockDimension.x<<" and grid of size "<<gridDimension.x;
       
       cudaGenericKernel<<<gridDimension,blockDimension>>>(std::forward<F>(f),min,max);
       
@@ -94,27 +94,27 @@ namespace esnort
     
     static void synchronize()
     {
-      SCOPE_INDENT(runLog);
+      SCOPE_INDENT();
       
-      runLog()<<"Synchronizing gpu";
+      logger()<<"Synchronizing gpu";
       decryptError(cudaDeviceSynchronize(),"Synchronizing");
     }
     
     static void free(void* ptr)
     {
-      SCOPE_INDENT(runLog);
+      SCOPE_INDENT();
       
-      runLog()<<"Freeing on gpu: "<<ptr;
+      logger()<<"Freeing on gpu: "<<ptr;
       decryptError(cudaFree(ptr),"");
     }
     
     template <typename  T>
     static void malloc(T& ptr,const size_t& sizeInUnit)
     {
-      SCOPE_INDENT(runLog);
+      SCOPE_INDENT();
       
       decryptError(cudaMalloc(&ptr,sizeInUnit*sizeof(T)),"");
-      runLog()<<"Allocated on gpu: "<<ptr;
+      logger()<<"Allocated on gpu: "<<ptr;
     }
 #endif
     
@@ -160,7 +160,7 @@ namespace esnort
 	{
 	  cudaDeviceProp deviceProp;
 	  decryptError(cudaGetDeviceProperties(&deviceProp,i),"Getting properties for device");
-	  runLog()<<" CUDA Enabled device "<<i<<"/"<<nDevices()<<": "<<deviceProp.major<<"."<<deviceProp.minor;
+	  logger()<<" CUDA Enabled device "<<i<<"/"<<nDevices()<<": "<<deviceProp.major<<"."<<deviceProp.minor;
 	}
       
       decryptError(cudaSetDevice(iDevice),"Unable to set the device");
@@ -178,7 +178,7 @@ namespace esnort
       
       init(0);
       
-      runLog()<<"cuda initialized in "<<durationInSec(initDur)<<" s, nDevices: "<<nDevices();
+      logger()<<"cuda initialized in "<<durationInSec(initDur)<<" s, nDevices: "<<nDevices();
       
 #endif
     }

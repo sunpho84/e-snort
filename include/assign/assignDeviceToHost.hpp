@@ -27,10 +27,10 @@ namespace esnort
     static void exec(Lhs&& lhs,
 		     Rhs&& rhs)
     {
-      SCOPE_INDENT(runLog);
+      SCOPE_INDENT();
       
 #warning add some verbosity switch
-      runLog()<<"Copying to host the rhs";
+      logger()<<"Copying to host the rhs";
       
       /// Version of the rhs located on the host
       decltype(auto) hostRhs=

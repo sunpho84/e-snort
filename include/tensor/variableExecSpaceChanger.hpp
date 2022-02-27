@@ -30,7 +30,7 @@ namespace esnort
       {									\
 	if constexpr(OthExecSpace!=ExecSpace)				\
 	  {								\
-	    runLog()<<"Allocating on device to store: ",		\
+	    logger()<<"Allocating on device to store: ",		\
 		   this->crtp().getPtr();				\
 									\
 	    DynamicVariable<Fund,OthExecSpace> res;			\
@@ -46,7 +46,7 @@ namespace esnort
 	  }								\
 	else								\
 	  {								\
-	    runLog()<<"No need to allocate, returning a reference to ", \
+	    logger()<<"No need to allocate, returning a reference to ", \
 		   this->crtp().getPtr();				\
 	    								\
 	    return							\

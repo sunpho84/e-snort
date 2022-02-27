@@ -187,5 +187,12 @@ needed.
 
 TODO
 ---
-Putting togeter all cuda stuff
-Then put all the cuda stuff in a more generic device
+Remove logger class in favor of some static variable, only thr logline should exists
+Enable log from maze
+Enable threads
+Enable vectorization
+Enable memory
+
+Tensor from nissa
+Reducer from nissa
+Grid from...?

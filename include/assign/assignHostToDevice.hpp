@@ -26,16 +26,16 @@ namespace esnort
     static void exec(Lhs&& lhs,
 		     Rhs&& rhs)
     {
-      SCOPE_INDENT(runLog);
+      SCOPE_INDENT();
      
 #warning add some verbosity switch
-      runLog()<<"Copying to device the rhs, is ref: "<<std::is_lvalue_reference_v<Rhs><<", is const: "<<std::is_const_v<std::remove_reference_t<Rhs>>;
+      logger()<<"Copying to device the rhs, is ref: "<<std::is_lvalue_reference_v<Rhs><<", is const: "<<std::is_const_v<std::remove_reference_t<Rhs>>;
       
       /// Version of the rhs located on the device
       const auto deviceRhs=
 	rhs.template changeExecSpaceTo<ExecutionSpace::DEVICE>();
       
-      runLog()<<"Copied from host to device: "<<rhs.getPtr()<<" -> "<<deviceRhs.getPtr();
+      logger()<<"Copied from host to device: "<<rhs.getPtr()<<" -> "<<deviceRhs.getPtr();
       
       lhs=deviceRhs;
     }

@@ -15,7 +15,7 @@ namespace esnort
 {
   /// Initialize the crasher
 #define CRASH							\
-  esnort::runLog()<<esnort::Crasher(__FILE__,__LINE__,__PRETTY_FUNCTION__)
+  logger()<<esnort::Crasher(__FILE__,__LINE__,__PRETTY_FUNCTION__)
   
   /// Keep all the information to crash
   class Crasher

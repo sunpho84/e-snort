@@ -54,9 +54,9 @@ namespace esnort
     TensorRef(std::conditional_t<IsConst,const T*,T*> ptr) :
       ptr(ptr)
     {
-      SCOPE_INDENT(runLog);
+      SCOPE_INDENT();
       
-      runLog()<<ptr<<" associated to ref";
+      logger()<<ptr<<" associated to ref";
     }
     
     // TensorRef(const T* ptr) HOST_DEVICE_ATTRIB:
@@ -71,18 +71,18 @@ namespace esnort
     
     const TensorRef& getRef() const
     {
-      SCOPE_INDENT(runLog);
+      SCOPE_INDENT();
       
-      runLog()<<"Returning the same const reference to "<<this;
+      logger()<<"Returning the same const reference to "<<this;
       
       return *this;
     }
     
     TensorRef& getRef()
     {
-      SCOPE_INDENT(runLog);
+      SCOPE_INDENT();
       
-      runLog()<<"Returning the same reference to "<<this;
+      logger()<<"Returning the same reference to "<<this;
       
       return *this;
     }

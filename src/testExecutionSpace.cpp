@@ -22,7 +22,7 @@ using namespace esnort;
 
 int main(int narg,char** arg)
 {
-#if !COMPILING_FOR_DEVICE
+#if not COMPILING_FOR_DEVICE
   static_assert(StackedVariable<int>::execSpace()==esnort::ExecutionSpace::HOST,"We are issuing A on the host");
 #endif
   
@@ -39,7 +39,7 @@ int main(int narg,char** arg)
   
   StackedVariable<int> d;
   d=c;
-  runLog()<<"Result: "<<a()<<" -> "<<d();
+  logger()<<"Result: "<<a()<<" -> "<<d();
   
   ASM_BOOKMARK_END("TEST_ASSIGN");
   

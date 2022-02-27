@@ -72,20 +72,20 @@ namespace esnort
     constexpr INLINE_FUNCTION
     DynamicVariable()
     {
-      runLog.indentMore();
+      resources::logger.indentMore();
       
 #if ENABLE_DEVICE_CODE
       if(execSpace()==ExecutionSpace::DEVICE)
 	{
-	  runLog()<<"Allocating on gpu!";
+	  logger()<<"Allocating on gpu!";
 	  Device::malloc(ptr,1);
 	}
       else
 #endif
 	ptr=new T;
-      runLog()<<"Allocated "<<ptr;
+      logger()<<"Allocated "<<ptr;
       
-      runLog.indentLess();
+      resources::logger.indentLess();
     }
     
     //DynamicVariable(const DynamicVariable&) =delete;
@@ -128,18 +128,18 @@ namespace esnort
     
     TensorRef<T,ExecSpace,true> getRef() const
     {
-      SCOPE_INDENT(runLog);
+      SCOPE_INDENT();
       
-      runLog()<<"Forging a const ref to "<<ptr;
+      logger()<<"Forging a const ref to "<<ptr;
       
       return ptr;
     }
     
     TensorRef<T,ExecSpace,false> getRef()
     {
-      SCOPE_INDENT(runLog);
+      SCOPE_INDENT();
       
-      runLog()<<"Forging a ref to "<<ptr;
+      logger()<<"Forging a ref to "<<ptr;
       
       return ptr;
     }

@@ -41,9 +41,6 @@ namespace esnort
   class Logger :
     private File
   {
-    /// Fake logger, printing to /dev/null
-    static Logger fakeLogger;
-    
     /// Access to the logger as if it was a file
     const File& file()
       const
@@ -69,14 +66,11 @@ namespace esnort
       /// Mark that the style has changed in this line
       bool styleChanged;
       
-      /// Check whether should actually print or not
-      const bool reallyPrint;
+      /// Decide whether to prepend the rank id on the line
+      const bool prependRank;
       
-      /// Check if some other rank could be printing
-      const bool someOtherRankCouldBePrinting;
-      
-      /// Check if some other thread could be printing
-      const bool someOtherThreadCouldBePrinting;
+      /// Decide whether to prepend the thread id on the line
+      const bool prependThread;
       
       /// Check whether we need to lock
       const bool hasToLock;
@@ -99,16 +93,16 @@ namespace esnort
  	// Prepend with time
 	if(logger.prependTime)
 	  {
-	    SCOPE_REAL_FORMAT_FIXED(logger);
-	    SCOPE_REAL_PRECISION(logger,10);
-	    SCOPE_ALWAYS_PRINT_ZERO(logger);
-	    SCOPE_NOT_ALWAYS_PUT_SIGN(logger);
+	    SCOPE_REAL_FORMAT_FIXED();
+	    SCOPE_REAL_PRECISION(10);
+	    SCOPE_ALWAYS_PRINT_ZERO();
+	    SCOPE_NOT_ALWAYS_PUT_SIGN();
 	    rc+=
 	      (logger.file()<<durationInSec(timings.currentMeasure())<<" s").getRc();
 	  }
 	
 	// Prepend with rank
-	if(someOtherRankCouldBePrinting)
+	if(prependRank)
 	  rc+=
 	    (logger.file()<<" Rank "<<mpi.rank()).getRc();
 	
@@ -133,13 +127,11 @@ namespace esnort
 	  hasToCrash(false),
 	  colorChanged(false),
 	  styleChanged(false),
-	  reallyPrint((true or // threads.isMasterThread() or
-		       not logger.onlyMasterThreadPrint) and (mpi.isMasterRank() or not logger.onlyMasterRankPrint)),
-	  someOtherRankCouldBePrinting(mpi.nRanks()!=1 and not logger.onlyMasterRankPrint),
-	  someOtherThreadCouldBePrinting(// threads.nActiveThreads()!=1 and 
-					 not logger.onlyMasterThreadPrint),
-	  hasToLock(reallyPrint and someOtherThreadCouldBePrinting),
-	  logger(reallyPrint?logger:fakeLogger)
+	  prependRank(mpi.nRanks()!=1 and not onlyMasterRankPrint),
+	  prependThread(1 and // threads.nActiveThreads()!=1 and 
+			not onlyMasterThreadPrint),
+	  hasToLock(prependThread),
+	  logger(logger)
       {
 	
 	// if(hasToLock)
@@ -154,9 +146,8 @@ namespace esnort
       	  hasToCrash(oth.hasToCrash),
 	  colorChanged(oth.colorChanged),
 	  styleChanged(oth.styleChanged),
-	  reallyPrint(oth.reallyPrint),
-	  someOtherRankCouldBePrinting(oth.someOtherRankCouldBePrinting),
-	  someOtherThreadCouldBePrinting(oth.someOtherThreadCouldBePrinting),
+	  prependRank(oth.prependRank),
+	  prependThread(oth.prependThread),
 	  hasToLock(oth.hasToLock),
       	  logger(oth.logger)
       {
@@ -343,16 +334,19 @@ namespace esnort
     
   public:
     
+    ///Verbosity level
+    static int verbosityLv;
+    
+    /// Decide whether only master thread can write here
+    static bool onlyMasterThreadPrint;
+    
+    /// Decide whether only master MPI can write here
+    static bool onlyMasterRankPrint;
+    
     using File::alwaysPrintSign;
     using File::alwaysPrintZero;
     using File::realFormat;
     using File::realPrecision;
-    
-    /// Decide whether only master thread can write here
-    bool onlyMasterThreadPrint{true};
-    
-    /// Decide whether only master MPI can write here
-    bool onlyMasterRankPrint{true};
     
     /////////////////////////////////////////////////////////////////
     
@@ -434,12 +428,30 @@ namespace esnort
     }
   };
   
-  extern Logger runLog;
+  namespace resources
+  {
+    extern Logger fakeLogger;
+    
+    extern Logger logger;
+  }
+  
+  INLINE_FUNCTION auto logger(const int verbosityLv=0)
+  {
+    if((mpi.isMasterRank() or not Logger::onlyMasterRankPrint) and
+       (1 and /* threads.nActiveThreads()!=1 */ not Logger::onlyMasterThreadPrint) and
+       (verbosityLv<=Logger::verbosityLv))
+      return resources::logger();
+    else
+      return resources::fakeLogger();
+  }
 }
 
-/// Create the line
-#define RUNLOG \
-  runLog()
-
+/// Shortcut to avoid having to put ()
+#define LOGGER \
+  logger()
+  
+  /// Verbose logger or not, capital worded for homogeneity
+#define VERB_LOGGER(LV) \
+  verbLogger(LV)
 
 #endif
