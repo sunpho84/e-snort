@@ -28,14 +28,13 @@ namespace esnort
     {
       SCOPE_INDENT();
      
-#warning add some verbosity switch
-      logger()<<"Copying to device the rhs, is ref: "<<std::is_lvalue_reference_v<Rhs><<", is const: "<<std::is_const_v<std::remove_reference_t<Rhs>>;
+      VERBOSE_LOGGER(1)<<"Copying to device the rhs, is ref: "<<std::is_lvalue_reference_v<Rhs><<", is const: "<<std::is_const_v<std::remove_reference_t<Rhs>>;
       
       /// Version of the rhs located on the device
       const auto deviceRhs=
 	rhs.template changeExecSpaceTo<ExecutionSpace::DEVICE>();
       
-      logger()<<"Copied from host to device: "<<rhs.getPtr()<<" -> "<<deviceRhs.getPtr();
+      VERBOSE_LOGGER(1)<<"Copied from host to device: "<<rhs.getPtr()<<" -> "<<deviceRhs.getPtr();
       
       lhs=deviceRhs;
     }

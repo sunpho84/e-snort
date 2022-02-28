@@ -59,7 +59,8 @@ namespace esnort
     extern bool onlyMasterRankPrint;
     
     /// Starts a new line
-    inline void startNewLine(const bool actuallyPrint)
+  INLINE_FUNCTION
+  void startNewLine(const bool actuallyPrint)
     {
       if(not actuallyPrint)
 	return;
@@ -107,13 +108,15 @@ namespace esnort
     }
     
     /// Increase indentation
-    inline void indentMore()
+    INLINE_FUNCTION
+    void indentMore()
     {
       indentLev++;
     }
     
     /// Decrease indentation
-    inline void indentLess()
+    INLINE_FUNCTION
+    void indentLess()
     {
       indentLev--;
     }
@@ -357,7 +360,8 @@ namespace esnort
     // }
   };
   
-  INLINE_FUNCTION auto logger(const int verbosityLv=0)
+  INLINE_FUNCTION
+  Logger::LoggerLine logger(const int verbosityLv=0)
   {
     const bool actuallyPrint=
       ((mpi.isMasterRank() or not Logger::onlyMasterRankPrint) and
@@ -366,15 +370,15 @@ namespace esnort
     
     Logger::startNewLine(actuallyPrint);
     
-    return Logger::LoggerLine(actuallyPrint);
-    }
+    return actuallyPrint;
+  }
   
   /// Shortcut to avoid having to put ()
 #define LOGGER					\
   logger()
   
   /// Verbose logger or not, capital worded for homogeneity
-#define VERB_LOGGER(LV) \
+#define VERBOSE_LOGGER(LV) \
   logger(LV)
 }
 

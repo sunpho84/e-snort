@@ -187,8 +187,6 @@ needed.
 
 TODO
 ---
-Remove logger class in favor of some static variable, only thr logline should exists
-Enable log from maze
 Enable threads
 Enable vectorization
 Enable memory

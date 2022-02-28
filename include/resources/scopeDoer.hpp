@@ -96,6 +96,10 @@ namespace esnort
 		    oldVal;
 		});
   }
+
+#define SET_FOR_CURRENT_SCOPE(VAR,VAL)					\
+  auto NAME2(SET_VAR_AT_LINE,__LINE__)=getScopeChangeVar(VAR,VAL)
+  
 }
 
 #endif

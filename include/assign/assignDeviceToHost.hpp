@@ -29,8 +29,7 @@ namespace esnort
     {
       SCOPE_INDENT();
       
-#warning add some verbosity switch
-      logger()<<"Copying to host the rhs";
+      VERBOSE_LOGGER(1)<<"Copying to host the rhs";
       
       /// Version of the rhs located on the host
       decltype(auto) hostRhs=

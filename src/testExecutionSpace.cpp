@@ -22,6 +22,8 @@ using namespace esnort;
 
 int main(int narg,char** arg)
 {
+  SET_FOR_CURRENT_SCOPE(Logger::verbosityLv,1);
+  
 #if not COMPILING_FOR_DEVICE
   static_assert(StackedVariable<int>::execSpace()==esnort::ExecutionSpace::HOST,"We are issuing A on the host");
 #endif
