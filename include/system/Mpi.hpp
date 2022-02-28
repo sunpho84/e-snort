@@ -15,7 +15,7 @@
 #endif
 
 #include <ios/minimalLogger.hpp>
-#include <system/timer.hpp>
+#include <system/timerGlobalVariablesDeclarations.hpp>
 #include <serialize/binarize.hpp>
 #include <metaprogramming/singleInstance.hpp>
 #include <metaprogramming/templateEnabler.hpp>

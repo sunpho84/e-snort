@@ -185,8 +185,16 @@ this cause problem in writing generic code?
 I believe it's easier to write generic code and short-circuit when
 needed.
 
+DONE
+---
+Move external variabiles to a specific file
+
+
 TODO
 ---
+Change flags to polymorphic struct, name it options
+put each option in an object which initializes and install in a list, then put the aliver last
+Move Mpi to namespace
 Enable threads
 Enable vectorization
 Enable memory

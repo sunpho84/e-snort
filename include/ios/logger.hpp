@@ -32,7 +32,7 @@
 #include <system/Mpi.hpp>
 #include <system/timer.hpp>
 #include <resources/scopeDoer.hpp>
-#include <ios/loggerExternalVariables.hpp>
+#include <ios/loggerGlobalVariablesDeclarations.hpp>
 
 namespace esnort
 {

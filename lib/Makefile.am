@@ -24,5 +24,6 @@ __top_builddir__lib_libesnort_a_SOURCES= \
 	%D%/debug/demangle.cpp \
 	%D%/debug/minimalCrash.cpp \
 	%D%/ios/minimalLogger.cpp \
+	%D%/resources/globalVariablesDefinitions.cpp \
 	%D%/esnort.cpp
 
