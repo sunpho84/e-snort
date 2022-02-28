@@ -25,6 +25,7 @@ __top_builddir__lib_libesnort_a_SOURCES= \
 	%D%/debug/minimalCrash.cpp \
 	%D%/ios/minimalLogger.cpp \
 	%D%/resources/globalVariablesDefinitions.cpp \
+	%D%/resources/device.cpp \
 	%D%/system/aliver.cpp \
 	%D%/system/Mpi.cpp \
 	%D%/esnort.cpp

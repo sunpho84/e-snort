@@ -9,7 +9,9 @@
 #include <ios/logger.hpp>
 #include <metaprogramming/singleInstance.hpp>
 
+#include <resources/device.hpp>
 #include <system/aliver.hpp>
+#include <system/Mpi.hpp>
 
 namespace esnort
 {
@@ -68,6 +70,7 @@ namespace esnort
   Aliver::Aliver()
   {
     Mpi::initialize();
+    device::initialize(Mpi::rank);
     
     printBanner();
     printVersionContacts();

@@ -13,36 +13,29 @@
 #include <ios/scopeFormatter.hpp>
 #include <ios/logger.hpp>
 #include <metaprogramming/singleInstance.hpp>
+#include <resources/deviceGlobalVariablesDeclarations.hpp>
 
 namespace esnort
 {
-#if ENABLE_DEVICE_CODE
-  template <typename F,
-	    typename IMin,
-	    typename IMax>
-  __global__
-  static void cudaGenericKernel(F f,
-				const IMin& min,
-				const IMax& max)
-  {
-    const auto i=
-      min+blockIdx.x*blockDim.x+threadIdx.x;
-    
-    if(i<max)
-      f(i);
-  }
-#endif
-  
-  struct Device :
-    SingleInstance<Device>
+  namespace device
   {
 #if ENABLE_DEVICE_CODE
-    static INLINE_FUNCTION
-    void memcpy(void* dst,const void* src,size_t count,cudaMemcpyKind kind)
+    template <typename F,
+	      typename IMin,
+	      typename IMax>
+    __global__
+    static void cudaGenericKernel(F f,
+				  const IMin& min,
+				  const IMax& max)
     {
-      logger()<<"Cuda memcpy: "<<kind;
-      decryptError(cudaMemcpy(dst,src,count,kind),"calling cudaMemcpy");
+      const auto i=
+	min+blockIdx.x*blockDim.x+threadIdx.x;
+      
+      if(i<max)
+	f(i);
     }
+    
+    void memcpy(void* dst,const void* src,size_t count,cudaMemcpyKind kind);
     
     /// Launch the kernel over the passed range
     template <typename IMin,
@@ -92,21 +85,9 @@ namespace esnort
 	}
     }
     
-    static void synchronize()
-    {
-      SCOPE_INDENT();
-      
-      logger()<<"Synchronizing gpu";
-      decryptError(cudaDeviceSynchronize(),"Synchronizing");
-    }
+    void synchronize();
     
-    static void free(void* ptr)
-    {
-      SCOPE_INDENT();
-      
-      logger()<<"Freeing on gpu: "<<ptr;
-      decryptError(cudaFree(ptr),"");
-    }
+    void free(void* ptr);
     
     template <typename  T>
     static void malloc(T& ptr,const size_t& sizeInUnit)
@@ -118,73 +99,11 @@ namespace esnort
     }
 #endif
     
-    /// Get the number of devices
-    int getNDevices()
-      const
-    {
-      
-#if ENABLE_DEVICE_CODE
-      
-      int nDevices;
-      if(cudaGetDeviceCount(&nDevices)!=cudaSuccess)
-	CRASH<<"no CUDA enabled device";
-      
-      return
-	nDevices;
-      
-#else
-      
-      return
-	0;
-      
-#endif
-    }
-    
-    /// Cached value of number of devices
-    int nDevices()
-      const
-    {
-      /// Stored value
-      static int _nDevices=
-	getNDevices();
-      
-      return
-	_nDevices;
-    }
-    
-    void init(const int& iDevice)
-    {
-#if ENABLE_DEVICE_CODE
-      
-      for(int i=0;i<nDevices();i++)
-	{
-	  cudaDeviceProp deviceProp;
-	  decryptError(cudaGetDeviceProperties(&deviceProp,i),"Getting properties for device");
-	  logger()<<" CUDA Enabled device "<<i<<"/"<<nDevices()<<": "<<deviceProp.major<<"."<<deviceProp.minor;
-	}
-      
-      decryptError(cudaSetDevice(iDevice),"Unable to set the device");
-      decryptError(cudaDeviceSynchronize(),"Unable to synchronize the device");
-#endif
-    }
-    
-    /// Initialize Cuda
-    Device()
-    {
-#if ENABLE_DEVICE_CODE
-      
-      /// Takes the time
-      Duration initDur;
-      
-      init(0);
-      
-      logger()<<"cuda initialized in "<<durationInSec(initDur)<<" s, nDevices: "<<nDevices();
-      
-#endif
-    }
-  };
+    void initialize(const int& iDevice);
+  }
   
-#define DEVICE_LOOP(INDEX,EXT_START,EXT_END,BODY...) Device::launchKernel(__LINE__,__FILE__,EXT_START,EXT_END,[=] DEVICE_ATTRIB (const std::common_type_t<decltype((EXT_END)),decltype((EXT_START))>& INDEX) mutable {BODY})
+#define DEVICE_LOOP(INDEX,EXT_START,EXT_END,BODY...) \
+  Device::launchKernel(__LINE__,__FILE__,EXT_START,EXT_END,[=] DEVICE_ATTRIB (const std::common_type_t<decltype((EXT_END)),decltype((EXT_START))>& INDEX) mutable {BODY})
 }
 
 #endif

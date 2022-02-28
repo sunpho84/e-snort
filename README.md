@@ -188,6 +188,7 @@ needed.
 DONE
 ---
 Move external variabiles to a specific file
+Convert device to namespace
 
 
 TODO

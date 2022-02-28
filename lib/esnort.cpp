@@ -94,7 +94,5 @@ namespace esnort
   
 //   /// Memory manager
 //   Memory memory;
-  
-  Device device;
 }
 
