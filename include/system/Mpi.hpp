@@ -15,10 +15,11 @@
 #endif
 
 #include <ios/minimalLogger.hpp>
-#include <system/timerGlobalVariablesDeclarations.hpp>
-#include <serialize/binarize.hpp>
 #include <metaprogramming/singleInstance.hpp>
 #include <metaprogramming/templateEnabler.hpp>
+#include <serialize/binarize.hpp>
+#include <system/MpiHiddenVariables.hpp>
+#include <system/timerGlobalVariablesDeclarations.hpp>
 
 namespace esnort
 {
@@ -26,24 +27,51 @@ namespace esnort
 #define ALLOWS_ALL_RANKS_TO_PRINT_FOR_THIS_SCOPE(LOGGER)		\
   SET_FOR_CURRENT_SCOPE(LOGGER_ALL_RANKS_PRINT,LOGGER.onlyMasterRankPrint,false)
   
-#ifdef USE_MPI
-  /// Provides the \c MPI_Datatype of an any unknown type
-  template <typename T>
-  inline MPI_Datatype mpiType()
+  /// Crash on MPI error, providing a meaningful error
+# define MPI_CRASH_ON_ERROR(...)					\
+    Mpi::crashOnError(__LINE__,__FILE__,__PRETTY_FUNCTION__,__VA_ARGS__)
+  
+  /// Class wrapping all MPI functionalities
+  namespace Mpi
   {
-    return
-      nullptr;
-  }
-  
-  /// Provides the \c MPI_Datatype of a given type
+    extern const int& rank;
+    
+    extern const int& nRanks;
+    
+    void initialize();
+    
+    void finalize();
+    
+    extern const bool& inited;
+    
+    extern const bool& isMasterRank;
+    
+    /// Decrypt the returned value of an MPI call
+    ///
+    /// Returns the value of \c rc
+    int crashOnError(const int line,        ///< Line of file where the error needs to be checked
+		     const char *file,      ///< File where the error must be checked
+		     const char *function,  ///< Function where the error was possibly raised
+		     const int rc);         ///< Exit condition of the called routine
+    
+#ifdef USE_MPI
+    /// Provides the \c MPI_Datatype of an any unknown type
+    template <typename T>
+    inline MPI_Datatype type()
+    {
+      return
+	nullptr;
+    }
+    
+    /// Provides the \c MPI_Datatype of a given type
 #define PROVIDE_MPI_DATATYPE(MPI_TYPE,TYPE)		\
-  template <>						\
-  inline MPI_Datatype mpiType<TYPE>()			\
-  {							\
-    return						\
-      MPI_TYPE;						\
-  }							\
-  
+    template <>						\
+    inline MPI_Datatype type<TYPE>()			\
+    {							\
+      return						\
+	MPI_TYPE;					\
+    }
+    
   PROVIDE_MPI_DATATYPE(MPI_CHAR,char);
   
   PROVIDE_MPI_DATATYPE(MPI_INT,int);
@@ -51,191 +79,16 @@ namespace esnort
   PROVIDE_MPI_DATATYPE(MPI_DOUBLE,double);
 #endif
   
-  /// Class wrapping all MPI functionalities
-  class Mpi :
-    public SingleInstance<Mpi>
-  {
-#ifdef USE_MPI
-    /// Crash on MPI error, providing a meaningful error
-#define MPI_CRASH_ON_ERROR(...)						\
-    Mpi::crashOnError(__LINE__,__FILE__,__PRETTY_FUNCTION__,__VA_ARGS__)
-#endif
-    
-    /// Decrypt the returned value of an MPI call
-    ///
-    /// Returns the value of \c rc
-    template <typename...Args>
-    int crashOnError(const int line,        ///< Line of file where the error needs to be checked
-		     const char *file,      ///< File where the error must be checked
-		     const char *function,  ///< Function where the error was possibly raised
-		     const int rc,          ///< Exit condition of the called routine
-		     Args&&... args)        ///< Other arguments
-      const
-    {
-#ifdef USE_MPI
-      
-      if(rc!=MPI_SUCCESS and rank()==0)
-	{
-	  /// Length of the error message
-	  int len;
-	  
-	  /// Error message
-	  char err[MPI_MAX_ERROR_STRING];
-	  MPI_Error_string(rc,err,&len);
-	  
-	  minimalCrash(file,line,__PRETTY_FUNCTION__,"(args ignored!), raised error %d, err: %s",rc,err);
-	}
-      
-#endif
-      
-      return
-	rc;
-    }
-    
-  public:
-    
     /// Id of master rank
-    static constexpr int MASTER_RANK=
-      0;
+    constexpr int MASTER_RANK=0;
     
     /// Placeholder for all ranks
     [[ maybe_unused ]]
-    static constexpr int ALL_RANKS=
-      -1;
-    
-    /// Initialize MPI
-    Mpi()
-    {
-#ifdef USE_MPI
-      
-      /// Takes the time
-      Duration initDur;
-      
-      MPI_CRASH_ON_ERROR(durationOf(initDur,MPI_Init,nullptr,nullptr),"Error initializing MPI");
-      
-      minimalLogger("MPI initialized in %lg s, nranks: %d",durationInSec(initDur),nRanks());
-      
-#endif
-    }
-    
-    /// Check initialization flag
-    bool isInitialized()
-      const
-    {
-      
-#ifdef USE_MPI
-      
-      /// Initialization flag
-      int res;
-      MPI_CRASH_ON_ERROR(MPI_Initialized(&res),"Checking MPI initialization");
-      
-      return
-	res;
-      
-#else
-      
-      return
-	true;
-      
-#endif
-    }
-    
-    /// Finalize MPI
-    ~Mpi()
-    {
-    
-#ifdef USE_MPI
-      
-      MPI_CRASH_ON_ERROR(MPI_Finalize(),"Finalizing MPI");
-      
-#endif
-    }
-    
-    /// Get current rank calling explicitly MPI
-    int getRank()
-      const
-    {
-      
-#ifdef USE_MPI
-      
-      /// Returned value
-      int res;
-      MPI_CRASH_ON_ERROR(MPI_Comm_rank(MPI_COMM_WORLD,&res),"Getting current rank");
-      
-      return
-	res;
-      
-#else
-      
-      return
-	0;
-      
-#endif
-      
-    }
-    
-    /// Cached value of current rank
-    int rank()
-      const
-    {
-      /// Stored value
-      static int _rank=
-	getRank();
-      
-      return
-	_rank;
-    }
-    
-    /// Get the total number of ranks, calling explicitly MPI
-    int getNRanks()
-      const
-    {
-      
-#ifdef USE_MPI
-      
-      /// Returned value
-      int res;
-      MPI_CRASH_ON_ERROR(MPI_Comm_size(MPI_COMM_WORLD,&res),"Getting total number of ranks");
-      
-      return
-	res;
-      
-#else
-      
-      return
-	1;
-      
-#endif
-    }
-    
-    /// Check if this is the master rank
-    bool isMasterRank()
-      const
-    {
-      /// Store the result
-      static bool is=
-	(rank()==MASTER_RANK);
-      
-      return
-	is;
-    }
-    
-    /// Cached value of total number of ranks
-    int nRanks()
-      const
-    {
-      /// Stored value
-      static int _nRanks=
-	getNRanks();
-      
-      return
-	_nRanks;
-    }
+    constexpr int ALL_RANKS=-1;
     
     /// Reduces among all MPI process
     template <typename T>
     T allReduce(const T& in)
-      const
     {
       
 #ifdef USE_MPI
@@ -243,9 +96,9 @@ namespace esnort
       /// Result
       T out;
       
-      minimalLogger("%p %d",&out,rank());
+      minimalLogger("%p %d",&out,rank);
       
-      MPI_CRASH_ON_ERROR(MPI_Allreduce(&in,&out,1,mpiType<T>(),MPI_SUM,MPI_COMM_WORLD),"Reducing among all processes");
+      MPI_CRASH_ON_ERROR(MPI_Allreduce(&in,&out,1,type<T>(),MPI_SUM,MPI_COMM_WORLD),"Reducing among all processes");
       
       return
 	out;
@@ -267,10 +120,9 @@ namespace esnort
     void broadcast(T* x,                   ///< Quantity to broadcast
 		   const size_t& size,     ///< Size of the quantity to broadcast
 		   int root=MASTER_RANK)   ///< Rank from which to broadcast
-      const
     {
 #ifdef USE_MPI
-      minimalLogger("%p %d",x,rank());
+      minimalLogger("%p %d",x,rank);
       MPI_CRASH_ON_ERROR(MPI_Bcast(x,size,MPI_CHAR,root,MPI_COMM_WORLD),"Broadcasting");
 #endif
     }
@@ -282,7 +134,6 @@ namespace esnort
 	      ENABLE_THIS_TEMPLATE_IF(std::is_trivially_copyable_v<T>)>
     void broadcast(T& x,                   ///< Quantity to broadcast
 		   int root=MASTER_RANK)   ///< Rank from which to broadcast
-      const
     {
       broadcast(&x,sizeof(T),root);
     }
@@ -294,7 +145,6 @@ namespace esnort
 	      ENABLE_THIS_TEMPLATE_IF(isBinarizable<T>)>
     void broadcast(T&& val,                ///< Quantity to broadcast
 		   int root=MASTER_RANK)   ///< Rank from which to broadcast
-      const
     {
       
 #ifdef USE_MPI
@@ -306,10 +156,7 @@ namespace esnort
       val.deBinarize(bin);
 #endif
     }
-  };
-  
-  /// Gloabl MPI
-  extern Mpi mpi;
+  }
 }
 
 #endif

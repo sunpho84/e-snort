@@ -49,7 +49,7 @@ namespace esnort
 	return;
       
       const bool prependRank=
-	mpi.nRanks()!=1 and not onlyMasterRankPrint;
+	Mpi::nRanks!=1 and not onlyMasterRankPrint;
       
       const bool prependThread=
 	(1 and // threads.nActiveThreads()!=1 and 
@@ -73,7 +73,7 @@ namespace esnort
       // Prepend with rank
       if(prependRank)
 	rc+=
-	  (Logger::logFile<<" Rank "<<mpi.rank()).getRc();
+	  (Logger::logFile<<" Rank "<<Mpi::rank).getRc();
       
       // Prepend with thread
 #warning messagewarning
@@ -347,7 +347,7 @@ namespace esnort
   Logger::LoggerLine logger(const int verbosityLv=0)
   {
     const bool actuallyPrint=
-      ((mpi.isMasterRank() or not Logger::onlyMasterRankPrint) and
+      ((Mpi::isMasterRank or not Logger::onlyMasterRankPrint) and
        (1 or /* threads.nActiveThreads()!=1 */ not Logger::onlyMasterThreadPrint) and
        (verbosityLv<=Logger::verbosityLv));
     

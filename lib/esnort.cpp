@@ -86,12 +86,6 @@ namespace esnort
 //       0;
 //   }
   
-  /// Global timings
-  Timer timings("Total time",Timer::NO_FATHER,Timer::UNSTOPPABLE);
-  
-  /// Global MPI
-  Mpi mpi;
-  
 //   /// Global thrads
 //   ThreadPool threads;
   
@@ -102,7 +96,5 @@ namespace esnort
 //   Memory memory;
   
   Device device;
-  
-  Aliver aliver;
 }
 

@@ -11,7 +11,7 @@
 
 namespace esnort
 {
-  DEFINE_OR_DECLARE_GLOBAL_VARIABLE(Timer,timings,);
+  DEFINE_OR_DECLARE_GLOBAL_VARIABLE(Timer,timings,("Total time",Timer::NO_FATHER,Timer::UNSTOPPABLE));
 }
 
 #endif
