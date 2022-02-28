@@ -9,6 +9,13 @@
 #include <cstdarg>
 #include <cstdio>
 
+#define DEFINE_EXTERNAL_VARIABLES
+#undef DEFINE_OR_DECLARE_EXTERNAL_VARIABLE
+#include <debug/gdbAttachExternalVariables.hpp>
+#include <ios/loggerExternalVariables.hpp>
+#undef DEFINE_EXTERNAL_VARIABLES
+#undef DEFINE_OR_DECLARE_EXTERNAL_VARIABLE
+
 #include <ios/logger.hpp>
 #include <resources/device.hpp>
 #include <system/aliver.hpp>
@@ -88,19 +95,6 @@ namespace esnort
   
   /// Global timings
   Timer timings("Total time",Timer::NO_FATHER,Timer::UNSTOPPABLE);
-  
-  int Logger::verbosityLv{0};
-  
-  bool Logger::onlyMasterRankPrint{true};
-  
-  bool Logger::onlyMasterThreadPrint{true};
-  
-  bool Logger::prependTime{true};
-  
-  int Logger::indentLev{0};
-  
-  /// Global logger
-  File Logger::logFile("/dev/stdout","w");
   
   /// Global MPI
   Mpi mpi;

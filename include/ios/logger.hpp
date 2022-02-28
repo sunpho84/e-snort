@@ -32,6 +32,7 @@
 #include <system/Mpi.hpp>
 #include <system/timer.hpp>
 #include <resources/scopeDoer.hpp>
+#include <ios/loggerExternalVariables.hpp>
 
 namespace esnort
 {
@@ -40,27 +41,9 @@ namespace esnort
   /// Write output to a file, using different level of indentation
   namespace Logger
   {
-    /// Access to the logger as if it was a file
-    extern File logFile;
-    
-    /// Indentation level
-    extern int indentLev;
-    
-    /// Determine wheter the new line includes time
-    extern bool prependTime;
-    
-    ///Verbosity level
-    extern int verbosityLv;
-    
-    /// Decide whether only master thread can write here
-    extern bool onlyMasterThreadPrint;
-    
-    /// Decide whether only master MPI can write here
-    extern bool onlyMasterRankPrint;
-    
     /// Starts a new line
-  INLINE_FUNCTION
-  void startNewLine(const bool actuallyPrint)
+    INLINE_FUNCTION
+    void startNewLine(const bool actuallyPrint)
     {
       if(not actuallyPrint)
 	return;
