@@ -38,22 +38,92 @@ namespace esnort
   DEFINE_BINARY_OPERATOR_IMPLEMENTATION_CHECK(canPrint,CanPrint,<<);
   
   /// Write output to a file, using different level of indentation
-  class Logger :
-    private File
+  namespace Logger
   {
     /// Access to the logger as if it was a file
-    const File& file()
-      const
+    extern File logFile;
+    
+    /// Indentation level
+    extern int indentLev;
+    
+    /// Determine wheter the new line includes time
+    extern bool prependTime;
+    
+    ///Verbosity level
+    extern int verbosityLv;
+    
+    /// Decide whether only master thread can write here
+    extern bool onlyMasterThreadPrint;
+    
+    /// Decide whether only master MPI can write here
+    extern bool onlyMasterRankPrint;
+    
+    /// Starts a new line
+    inline void startNewLine(const bool actuallyPrint)
     {
-      return
-	static_cast<const File&>(*this);
+      if(not actuallyPrint)
+	return;
+      
+      const bool prependRank=
+	mpi.nRanks()!=1 and not onlyMasterRankPrint;
+      
+      const bool prependThread=
+	(1 and // threads.nActiveThreads()!=1 and 
+	 not onlyMasterThreadPrint);
+      
+      /// Total number of the character written
+      int rc=
+	0;
+      
+      // Prepend with time
+      if(prependTime)
+	{
+	  SCOPE_REAL_FORMAT_FIXED();
+	  SCOPE_REAL_PRECISION(10);
+	  SCOPE_ALWAYS_PRINT_ZERO();
+	  SCOPE_NOT_ALWAYS_PUT_SIGN();
+	  rc+=
+	    (Logger::logFile<<durationInSec(timings.currentMeasure())<<" s").getRc();
+	}
+      
+      // Prepend with rank
+      if(prependRank)
+	rc+=
+	  (Logger::logFile<<" Rank "<<mpi.rank()).getRc();
+      
+      // Prepend with thread
+#warning messagewarning
+      // if(someOtherThreadCouldBePrinting)
+      //   rc+=
+      //     (Logger::logFile<<" Thread "<<threads.getThreadId()).getRc();
+      
+      // Mark the margin
+      if(rc)
+	Logger::logFile<<":\t";
+      
+      // Writes the given number of spaces
+      for(int i=0;i<Logger::indentLev;i++)
+	Logger::logFile<<' ';
     }
     
-    PROVIDE_ALSO_NON_CONST_METHOD(file);
+    /// Increase indentation
+    inline void indentMore()
+    {
+      indentLev++;
+    }
+    
+    /// Decrease indentation
+    inline void indentLess()
+    {
+      indentLev--;
+    }
     
     /// Single line in the logger
     class LoggerLine
     {
+      /// Store whether actually printing
+      bool actuallyPrint;
+      
       /// Store wether the line has to be ended or not
       bool hasToEndLine;
       
@@ -66,90 +136,31 @@ namespace esnort
       /// Mark that the style has changed in this line
       bool styleChanged;
       
-      /// Decide whether to prepend the rank id on the line
-      const bool prependRank;
-      
-      /// Decide whether to prepend the thread id on the line
-      const bool prependThread;
-      
-      /// Check whether we need to lock
-      const bool hasToLock;
-      
-      /// Reference to the logger
-      Logger& logger;
-      
       /// Forbids copying a line
       LoggerLine(const LoggerLine&)=delete;
       
     public:
       
-      /// Starts a new line
-      void startNewLine()
-      {
-	/// Total number of the character written
-	int rc=
-	  0;
-	
- 	// Prepend with time
-	if(logger.prependTime)
-	  {
-	    SCOPE_REAL_FORMAT_FIXED();
-	    SCOPE_REAL_PRECISION(10);
-	    SCOPE_ALWAYS_PRINT_ZERO();
-	    SCOPE_NOT_ALWAYS_PUT_SIGN();
-	    rc+=
-	      (logger.file()<<durationInSec(timings.currentMeasure())<<" s").getRc();
-	  }
-	
-	// Prepend with rank
-	if(prependRank)
-	  rc+=
-	    (logger.file()<<" Rank "<<mpi.rank()).getRc();
-	
-	// Prepend with thread
-#warning messagewarning
-	// if(someOtherThreadCouldBePrinting)
-	//   rc+=
-	//     (logger.file()<<" Thread "<<threads.getThreadId()).getRc();
-	
-	// Mark the margin
-	if(rc)
-	  logger.file()<<":\t";
-	
-	// Writes the given number of spaces
-	for(int i=0;i<logger.indentLev;i++)
-	  logger.file()<<' ';
-      }
-      
       /// Construct
-      LoggerLine(Logger& logger)
-	: hasToEndLine(true),
-	  hasToCrash(false),
-	  colorChanged(false),
-	  styleChanged(false),
-	  prependRank(mpi.nRanks()!=1 and not onlyMasterRankPrint),
-	  prependThread(1 and // threads.nActiveThreads()!=1 and 
-			not onlyMasterThreadPrint),
-	  hasToLock(prependThread),
-	  logger(logger)
+      LoggerLine(const bool actuallyPrint) :
+	actuallyPrint(actuallyPrint),
+	hasToEndLine(true),
+	hasToCrash(false),
+	colorChanged(false),
+	styleChanged(false)
       {
 	
 	// if(hasToLock)
 	//   logger.getExclusiveAccess();
-	  
-	startNewLine();
       }
       
       /// Move constructor
-      LoggerLine(LoggerLine&& oth)
-      	: hasToEndLine(true),
-      	  hasToCrash(oth.hasToCrash),
-	  colorChanged(oth.colorChanged),
-	  styleChanged(oth.styleChanged),
-	  prependRank(oth.prependRank),
-	  prependThread(oth.prependThread),
-	  hasToLock(oth.hasToLock),
-      	  logger(oth.logger)
+      LoggerLine(LoggerLine&& oth) :
+	actuallyPrint(oth.actuallyPrint),
+	hasToEndLine(true),
+	hasToCrash(oth.hasToCrash),
+	colorChanged(oth.colorChanged),
+	styleChanged(oth.styleChanged)
       {
       	oth.hasToEndLine=
       	  false;
@@ -158,12 +169,16 @@ namespace esnort
       /// Ends the line
       void endLine()
       {
-	logger.file()<<'\n';
+	if(actuallyPrint)
+	  Logger::logFile<<'\n';
       }
       
       /// Destroy (end the line)
       ~LoggerLine()
       {
+	if(not actuallyPrint)
+	  return;
+	
 	// Wrap everything here
 	if(hasToEndLine)
 	  {
@@ -197,7 +212,8 @@ namespace esnort
       template <typename T>               // Type of the obected to print
       LoggerLine& operator*(T&& t)      ///< Object to be printed
       {
-	logger.file()*std::forward<T>(t);
+	if(actuallyPrint)
+	  Logger::logFile*std::forward<T>(t);
 	
 	return
 	  *this;
@@ -212,7 +228,8 @@ namespace esnort
 					and canPrint<File,const T&>)>
       LoggerLine& operator<<(const T& t)                             ///< Object to print
       {
-	logger.file()<<t;
+	if(actuallyPrint)
+	  Logger::logFile<<t;
 	
 	return
 	  *this;
@@ -222,7 +239,8 @@ namespace esnort
       LoggerLine& printVariadicMessage(const char* format, ///< Format to print
 				       va_list ap)         ///< Variadic part
       {
-	logger.file().printVariadicMessage(format,ap);
+	if(actuallyPrint)
+	  Logger::logFile.printVariadicMessage(format,ap);
 	
 	return
 	  *this;
@@ -236,9 +254,9 @@ namespace esnort
 	
 	return
 	  *this<<
-	    TEXT_CHANGE_COLOR_HEAD<<
-	    static_cast<char>(c)<<
-	    TEXT_CHANGE_COLOR_TAIL;
+	  TEXT_CHANGE_COLOR_HEAD<<
+	  static_cast<char>(c)<<
+	  TEXT_CHANGE_COLOR_TAIL;
       }
       
       /// Changes the style of the line
@@ -249,9 +267,9 @@ namespace esnort
 	
 	return
 	  *this<<
-	    TEXT_CHANGE_STYLE_HEAD<<
-	    static_cast<char>(c)<<
-	    TEXT_CHANGE_STYLE_TAIL;
+	  TEXT_CHANGE_STYLE_HEAD<<
+	  static_cast<char>(c)<<
+	  TEXT_CHANGE_STYLE_TAIL;
       }
       
       /// Prints crash information
@@ -263,17 +281,18 @@ namespace esnort
 	this->hasToCrash=
 	  true;
 	
-	(*this)<<TextColor::RED<<" ERROR in function "<<cr.getFuncName()<<" at line "<<cr.getLine()<<" of file "<<cr.getPath()<<": \"";
-	
 	return
-	  *this;
+	  (*this)<<TextColor::RED<<" ERROR in function "<<cr.getFuncName()<<" at line "<<cr.getLine()<<" of file "<<cr.getPath()<<": \"";
       }
       
       /// Prints a string, parsing newline
       LoggerLine& operator<<(const char* str)
       {
+	if(not actuallyPrint)
+	  return *this;
+	
 	if(str==nullptr)
-	  logger.file()<<str;
+	  Logger::logFile<<str;
 	else
 	  {
 	    /// Pointer to the first char of the string
@@ -287,7 +306,7 @@ namespace esnort
 		if(*p=='\n')
 		  {
 		    endLine();
-		    startNewLine();
+		    Logger::startNewLine(actuallyPrint);
 		  }
 		else
 		  // Prints the char
@@ -308,14 +327,6 @@ namespace esnort
 	return
 	  *this<<str.c_str();
       }
-      
-    };
-    
-    /// Indentation level
-    int indentLev{0};
-    
-    /// Determine wheter the new line includes time
-    bool prependTime;
     
     // /// Mutex used to lock the logger
     // mutable Mutex mutex;
@@ -331,50 +342,10 @@ namespace esnort
     // {
     //   mutex.unlock();
     // }
-    
-  public:
-    
-    ///Verbosity level
-    static int verbosityLv;
-    
-    /// Decide whether only master thread can write here
-    static bool onlyMasterThreadPrint;
-    
-    /// Decide whether only master MPI can write here
-    static bool onlyMasterRankPrint;
-    
-    using File::alwaysPrintSign;
-    using File::alwaysPrintZero;
-    using File::realFormat;
-    using File::realPrecision;
+    };
     
     /////////////////////////////////////////////////////////////////
     
-    /// Increase indentation
-    void indentMore()
-    {
-      indentLev++;
-    }
-    
-    /// Decrease indentation
-    void indentLess()
-    {
-      indentLev--;
-    }
-    
-    /// Create a new line
-    LoggerLine getNewLine()
-    {
-      return
-	*this;
-    }
-    
-    /// Create a new line
-    LoggerLine operator()()
-    {
-      return
-	*this;
-    }
     // /// Create a new line, and print on it
     // template <typename T,
     // 	      typename=EnableIf<canPrint<LoggerLine,T>>,            // SFINAE needed to avoid ambiguous overload
@@ -384,74 +355,27 @@ namespace esnort
     //   return
     // 	std::move(getNewLine()<<forw<T>(t));
     // }
-    
-    /// Print a C-style variadic message
-    LoggerLine printVariadicMessage(const char* format, ///< Format to print
-				    va_list ap)         ///< Variadic part
-    {
-      return
-	std::move(getNewLine().printVariadicMessage(format,ap));
-    }
-    
-    /// Create with a path
-    Logger(const char* path,              ///< Path to open
-	   const bool& prependTime=true)  ///< Prepend or not with time
-      :
-      prependTime(prependTime)
-    {
-      file().open(path,"w");
-      
-      // Cannot print, otherwise all rank would!
-      //*this<<"Logger initialized";
-    }
   };
-  
-  /// Increment the logger indentation level for the object scope
-  class ScopeIndenter
-  {
-    /// Pointed logger
-    Logger& logger;
-    
-  public:
-    
-    /// Create and increase indent level
-    ScopeIndenter(Logger& logger) :
-      logger(logger)
-    {
-      logger.indentMore();
-    }
-    
-    /// Delete and decrease indent level
-    ~ScopeIndenter()
-    {
-      logger.indentLess();
-    }
-  };
-  
-  namespace resources
-  {
-    extern Logger fakeLogger;
-    
-    extern Logger logger;
-  }
   
   INLINE_FUNCTION auto logger(const int verbosityLv=0)
   {
-    if((mpi.isMasterRank() or not Logger::onlyMasterRankPrint) and
-       (1 and /* threads.nActiveThreads()!=1 */ not Logger::onlyMasterThreadPrint) and
-       (verbosityLv<=Logger::verbosityLv))
-      return resources::logger();
-    else
-      return resources::fakeLogger();
-  }
-}
-
-/// Shortcut to avoid having to put ()
-#define LOGGER \
+    const bool actuallyPrint=
+      ((mpi.isMasterRank() or not Logger::onlyMasterRankPrint) and
+       (1 or /* threads.nActiveThreads()!=1 */ not Logger::onlyMasterThreadPrint) and
+       (verbosityLv<=Logger::verbosityLv));
+    
+    Logger::startNewLine(actuallyPrint);
+    
+    return Logger::LoggerLine(actuallyPrint);
+    }
+  
+  /// Shortcut to avoid having to put ()
+#define LOGGER					\
   logger()
   
   /// Verbose logger or not, capital worded for homogeneity
 #define VERB_LOGGER(LV) \
-  verbLogger(LV)
+  logger(LV)
+}
 
 #endif

@@ -113,7 +113,7 @@ namespace esnort
       
       MPI_CRASH_ON_ERROR(durationOf(initDur,MPI_Init,nullptr,nullptr),"Error initializing MPI");
       
-      minimalLogger(resources::logger,"MPI initialized in %lg s, nranks: %d",durationInSec(initDur),nRanks());
+      minimalLogger("MPI initialized in %lg s, nranks: %d",durationInSec(initDur),nRanks());
       
 #endif
     }
@@ -243,7 +243,7 @@ namespace esnort
       /// Result
       T out;
       
-      minimalLogger(resources::logger,"%p %d",&out,rank());
+      minimalLogger("%p %d",&out,rank());
       
       MPI_CRASH_ON_ERROR(MPI_Allreduce(&in,&out,1,mpiType<T>(),MPI_SUM,MPI_COMM_WORLD),"Reducing among all processes");
       
@@ -270,7 +270,7 @@ namespace esnort
       const
     {
 #ifdef USE_MPI
-      minimalLogger(resources::logger,"%p %d",x,rank());
+      minimalLogger("%p %d",x,rank());
       MPI_CRASH_ON_ERROR(MPI_Bcast(x,size,MPI_CHAR,root,MPI_COMM_WORLD),"Broadcasting");
 #endif
     }

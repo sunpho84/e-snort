@@ -230,6 +230,18 @@ namespace esnort
 	*this;
     }
     
+    /// Default constructor
+    File()
+    {
+    }
+    
+    /// Constructor opening
+    File(const char* path,              ///< Path to open
+	 const char* mode,              ///< Mode used to open
+	 const bool crashIfFail=true)   ///< Crash or not if failing
+    {
+      open(path,mode,crashIfFail);
+    }
     /// Destroy
     ~File()
     {

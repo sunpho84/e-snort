@@ -14,20 +14,14 @@
 /// presence of routine from which the actual logger depends, such as
 /// threads or MPI. The actual logger is called in the cpp file
 
+#include <ios/file.hpp>
+
 namespace esnort
 {
-  class Logger;
-  
-  namespace resources
-  {
-    extern Logger logger;
-  }
-  
   /// Wraps the actual logger through the old-style C variadic function
   ///
   /// We cannot use variadic template version here, as the logger cannot be called directly here, since "Logger.hpp" is expected
-  void minimalLogger(Logger& logger,           ///< Logger to be used
-		     const char* format,       ///< Formatting string
+  void minimalLogger(const char* format,       ///< Formatting string
 		     ...);
 }
 

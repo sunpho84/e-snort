@@ -72,7 +72,7 @@ namespace esnort
     constexpr INLINE_FUNCTION
     DynamicVariable()
     {
-      resources::logger.indentMore();
+      Logger::indentMore();
       
 #if ENABLE_DEVICE_CODE
       if(execSpace()==ExecutionSpace::DEVICE)
@@ -85,7 +85,7 @@ namespace esnort
 	ptr=new T;
       logger()<<"Allocated "<<ptr;
       
-      resources::logger.indentLess();
+      Logger::indentLess();
     }
     
     //DynamicVariable(const DynamicVariable&) =delete;

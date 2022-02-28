@@ -95,14 +95,12 @@ namespace esnort
   
   bool Logger::onlyMasterThreadPrint{true};
   
-  namespace resources
-  {
-    /// Global logger
-    Logger logger("/dev/stdout");
-    
-    /// Dump to /dev/null
-    Logger fakeLogger("/dev/null");
-  }
+  bool Logger::prependTime{true};
+  
+  int Logger::indentLev{0};
+  
+  /// Global logger
+  File Logger::logFile("/dev/stdout","w");
   
   /// Global MPI
   Mpi mpi;
