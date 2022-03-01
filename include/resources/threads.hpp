@@ -7,7 +7,7 @@
 
 /// \file threads.hpp
 
-#include <resources/threadsGlobalVariablesDeclarations.hpp>
+#include <resources/threadsHiddenVariablesDeclarations.hpp>
 
 namespace esnort::threads
 {

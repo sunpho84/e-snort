@@ -78,6 +78,26 @@ fi
 #check openmp
 AX_OPENMP
 
+#threads
+AC_ARG_ENABLE(threads,
+	AS_HELP_STRING([--enable-threads],[Enable threads]),
+	enable_threads="${enableval}",
+	enable_threads="${have_openmp}")
+AM_CONDITIONAL([THREADS],[test "$enable_threads" == "yes" ],[true],[false])
+if test "$enable_threads" == "yes"
+then
+	ENABLE_THREADS=1
+	CFLAGS="$CFLAGS $OPENMP_CFLAGS"
+	CPPFLAGS="$CPPFLAGS $OPENMP_CPPFLAGS"
+	CXXFLAGS="$CXXFLAGS $OPENMP_CXXFLAGS"
+else
+	ENABLE_THREADS=0
+fi
+AC_DEFINE_UNQUOTED([ENABLE_THREADS],${ENABLE_THREADS},[Enable threads])
+AC_MSG_RESULT([enabling threads... $enable_threads])
+SUMMARY_RESULT="$SUMMARY_RESULT
+Threads          : $enable_threads"
+
 #cuda
 AX_CHECK_CUDA
 

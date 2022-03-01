@@ -11,7 +11,9 @@
 
 namespace esnort::threads
 {
-  DEFINE_OR_DECLARE_HIDDEN_VARIABLE_WITH_CONST_ACCESSOR(int,n,(1));
+  DEFINE_OR_DECLARE_HIDDEN_VARIABLE_WITH_CONST_ACCESSOR(int,nThreads,(1));
 }
+
+#include <metaprogramming/hiddenVariableProviderTail.hpp>
 
 #endif

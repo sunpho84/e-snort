@@ -12,6 +12,7 @@
 #include <resources/aliver.hpp>
 #include <resources/device.hpp>
 #include <resources/Mpi.hpp>
+#include <resources/threads.hpp>
 
 namespace esnort
 {
@@ -70,12 +71,14 @@ namespace esnort
   Aliver::Aliver()
   {
     Mpi::initialize();
-    device::initialize(Mpi::rank);
     
     printBanner();
     printVersionContacts();
     printGitInfo();
     printConfigurePars();
+    
+    device::initialize(Mpi::rank);
+    threads::initialize();
     
     // threads.workOn([](const int threadID){logger()<<"ANNA";});
     
