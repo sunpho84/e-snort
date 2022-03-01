@@ -193,10 +193,11 @@ Convert device to namespace
 
 TODO
 ---
+Enable threads
 Change flags to polymorphic struct, name it options
 put each option in an object which initializes and install in a list, then put the aliver last
+Gdb Attacher
 Move Mpi to namespace
-Enable threads
 Enable vectorization
 Enable memory
 

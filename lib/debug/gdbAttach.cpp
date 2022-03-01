@@ -9,7 +9,7 @@
 #define EXTERN_GDB_ATTACH
 # include <debug/gdbAttach.hpp>
 
-#include <system/Mpi.hpp>
+#include <resources/Mpi.hpp>
 #include <ios/logger.hpp>
 
 namespace esnort

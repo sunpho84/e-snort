@@ -9,9 +9,9 @@
 #include <ios/logger.hpp>
 #include <metaprogramming/singleInstance.hpp>
 
+#include <resources/aliver.hpp>
 #include <resources/device.hpp>
-#include <system/aliver.hpp>
-#include <system/Mpi.hpp>
+#include <resources/Mpi.hpp>
 
 namespace esnort
 {

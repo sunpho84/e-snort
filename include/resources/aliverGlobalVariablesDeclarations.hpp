@@ -7,7 +7,7 @@
 
 /// \file aliverglobalvariablesdeclarations.hpp
 
-#include <system/aliver.hpp>
+#include <resources/aliver.hpp>
 
 namespace esnort
 {

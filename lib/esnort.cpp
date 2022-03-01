@@ -10,8 +10,8 @@
 #include <cstdio>
 
 #include <ios/logger.hpp>
+#include <resources/aliver.hpp>
 #include <resources/device.hpp>
-#include <system/aliver.hpp>
 
 // #include <Threads.hpp>
 // #include <debug/Crash.hpp>
@@ -19,9 +19,9 @@
 // #include <ios/MinimalLogger.hpp>
 // #include <ios/TextFormat.hpp>
 // #include <random/TrueRandomGenerator.hpp>
-// #include <system/Memory.hpp>
-// #include <system/Mpi.hpp>
-// #include <system/Timer.hpp>
+// #include <resources/Memory.hpp>
+// #include <resources/Mpi.hpp>
+// #include <resources/Timer.hpp>
 // #include <utility/Aliver.hpp>
 // #include <utility/SingleInstance.hpp>
 

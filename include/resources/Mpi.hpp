@@ -18,8 +18,8 @@
 #include <metaprogramming/singleInstance.hpp>
 #include <metaprogramming/templateEnabler.hpp>
 #include <serialize/binarize.hpp>
-#include <system/MpiHiddenVariables.hpp>
-#include <system/timerGlobalVariablesDeclarations.hpp>
+#include <resources/MpiHiddenVariables.hpp>
+#include <resources/timerGlobalVariablesDeclarations.hpp>
 
 namespace esnort
 {
@@ -28,8 +28,8 @@ namespace esnort
   SET_FOR_CURRENT_SCOPE(LOGGER_ALL_RANKS_PRINT,LOGGER.onlyMasterRankPrint,false)
   
   /// Crash on MPI error, providing a meaningful error
-# define MPI_CRASH_ON_ERROR(...)					\
-    Mpi::crashOnError(__LINE__,__FILE__,__PRETTY_FUNCTION__,__VA_ARGS__)
+# define MPI_CRASH_ON_ERROR(ARGS...)					\
+    Mpi::crashOnError(__LINE__,__FILE__,__PRETTY_FUNCTION__,ARGS)
   
   /// Class wrapping all MPI functionalities
   namespace Mpi
@@ -52,7 +52,8 @@ namespace esnort
     int crashOnError(const int line,        ///< Line of file where the error needs to be checked
 		     const char *file,      ///< File where the error must be checked
 		     const char *function,  ///< Function where the error was possibly raised
-		     const int rc);         ///< Exit condition of the called routine
+		     const int rc,          ///< Exit condition of the called routine
+		     const char* mess);     ///< Additional error message
     
 #ifdef USE_MPI
     /// Provides the \c MPI_Datatype of an any unknown type

@@ -35,7 +35,7 @@ namespace esnort
 									\
 	    DynamicVariable<Fund,OthExecSpace> res;			\
 									\
-	    Device::memcpy(res.getPtr(),				\
+	    device::memcpy(res.getPtr(),				\
 			 this->crtp().getPtr(),				\
 			 sizeof(Fund),					\
 			 (OthExecSpace==ExecutionSpace::DEVICE)?	\

@@ -1,11 +1,12 @@
 #ifdef HAVE_CONFIG_H
-# define DEFINE_GLOBAL_VARIABLES
 # include "config.hpp"
 #endif
 
 /// \file globalVariablesDefinitions.cpp
 
-#include <system/aliverGlobalVariablesDeclarations.hpp>
-#include <debug/gdbAttachGlobalVariablesDeclarations.hpp>
-#include <ios/loggerGlobalVariablesDeclarations.hpp>
-#include <system/timerGlobalVariablesDeclarations.hpp>
+#define DEFINE_GLOBAL_VARIABLES
+# include <debug/gdbAttachGlobalVariablesDeclarations.hpp>
+# include <ios/loggerGlobalVariablesDeclarations.hpp>
+# include <resources/aliverGlobalVariablesDeclarations.hpp>
+# include <resources/timerGlobalVariablesDeclarations.hpp>
+#undef DEFINE_GLOBAL_VARIABLES

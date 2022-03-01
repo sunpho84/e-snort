@@ -7,13 +7,12 @@
 
 /// \file gdbAttachGlobalVariablesDeclarations.hpp
 
-namespace esnort
+#include <metaprogramming/globalVariableProvider.hpp>
+
+namespace esnort::envFlags
 {
-  namespace envFlags
-  {
-    /// Wait to attach gdb
-    DEFINE_OR_DECLARE_GLOBAL_VARIABLE(bool,waitToAttachDebugger,{true});
-  }
+  /// Wait to attach gdb
+  DEFINE_OR_DECLARE_GLOBAL_VARIABLE(bool,waitToAttachDebugger,{true});
 }
 
 #endif

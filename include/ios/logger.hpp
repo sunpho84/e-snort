@@ -29,8 +29,8 @@
 #include <ios/scopeFormatter.hpp>
 #include <ios/textFormat.hpp>
 #include <metaprogramming/operatorExists.hpp>
-#include <system/Mpi.hpp>
-#include <system/timer.hpp>
+#include <resources/Mpi.hpp>
+#include <resources/timer.hpp>
 #include <resources/scopeDoer.hpp>
 #include <ios/loggerGlobalVariablesDeclarations.hpp>
 

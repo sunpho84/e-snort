@@ -7,7 +7,8 @@
  #include "config.hpp"
 #endif
 
-#include <system/timer.hpp>
+#include <metaprogramming/globalVariableProvider.hpp>
+#include <resources/timer.hpp>
 
 namespace esnort
 {
