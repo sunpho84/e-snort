@@ -16,6 +16,7 @@
 
 namespace esnort::threads
 {
+#if ENABLE_THREADS
   const char* translateProcBindingToString(const omp_proc_bind_t& binding)
   {
     switch(binding)
@@ -39,6 +40,7 @@ namespace esnort::threads
     
     return "";
   }
+#endif
   
   void initialize()
   {
