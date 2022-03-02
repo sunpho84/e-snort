@@ -1,13 +1,13 @@
-#ifndef _GDB_ATTACH_HPP
-#define _GDB_ATTACH_HPP
+#ifndef _ATTACH_DEBUGGER_HPP
+#define _ATTACH_DEBUGGER_HPP
 
 #ifdef HAVE_CONFIG_H
 # include "config.hpp"
 #endif
 
-/// \file gdbAttach.hpp
+/// \file attachDebugger.hpp
 
-#include <debug/gdbAttachGlobalVariablesDeclarations.hpp>
+#include <debug/attachDebuggerGlobalVariablesDeclarations.hpp>
 
 namespace esnort
 {

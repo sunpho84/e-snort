@@ -6,7 +6,7 @@
 
 #include "../lib/gitInfo.hpp"
 
-#include <debug/gdbAttach.hpp>
+#include <debug/attachDebugger.hpp>
 #include <ios/logger.hpp>
 #include <metaprogramming/singleInstance.hpp>
 #include <resources/aliver.hpp>

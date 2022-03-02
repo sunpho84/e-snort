@@ -162,6 +162,19 @@ namespace esnort::Mpi
     val.deBinarize(bin);
 #endif
   }
+  
+  /// Exec on all ranks sequentially
+  template <typename F>
+  void onAllRanksSequentiallyDo(const F& f)
+  {
+    for(int iRank=0;iRank<Mpi::nRanks;iRank++)
+      {
+	Mpi::barrier();
+	
+	if(iRank==Mpi::rank)
+	  f(iRank);
+      }
+  }
 }
 
 #endif

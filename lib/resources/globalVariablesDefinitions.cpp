@@ -5,7 +5,7 @@
 /// \file globalVariablesDefinitions.cpp
 
 #define DEFINE_GLOBAL_VARIABLES
-# include <debug/gdbAttachGlobalVariablesDeclarations.hpp>
+# include <debug/attachDebuggerGlobalVariablesDeclarations.hpp>
 # include <ios/loggerGlobalVariablesDeclarations.hpp>
 # include <resources/aliverGlobalVariablesDeclarations.hpp>
 # include <resources/timerGlobalVariablesDeclarations.hpp>

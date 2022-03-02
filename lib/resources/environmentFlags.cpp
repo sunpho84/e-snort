@@ -8,7 +8,7 @@
 
 #include <sstream>
 
-#include <debug/gdbAttachGlobalVariablesDeclarations.hpp>
+#include <debug/attachDebuggerGlobalVariablesDeclarations.hpp>
 #include <ios/logger.hpp>
 #include <metaprogramming/forEachInTuple.hpp>
 
@@ -51,11 +51,11 @@ namespace esnort::envFlags
 				std::istringstream is(p);
 				is>>flag;
 				
-				LOGGER<<"changed from "<<def<<" to: "<<flag;
+				LOGGER<<"  changed from "<<def<<" to: "<<flag;
 			      }
 			    else
 			      {
-				LOGGER<<"set to default value: "<<flag;
+				LOGGER<<"  set to default value: "<<def;
 				flag=def;
 			      }
 			  });

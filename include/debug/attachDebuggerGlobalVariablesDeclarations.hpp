@@ -1,17 +1,17 @@
-#ifndef _GDB_ATTACH_GLOBAL_VARIABLES_DECLARATIONS_HPP
-#define _GDB_ATTACH_GLOBAL_VARIABLES_DECLARATIONS_HPP
+#ifndef _ATTACH_DEBUGGER_GLOBAL_VARIABLES_DECLARATIONS_HPP
+#define _ATTACH_DEBUGGER_GLOBAL_VARIABLES_DECLARATIONS_HPP
 
 #ifdef HAVE_CONFIG_H
 # include "config.hpp"
 #endif
 
-/// \file gdbAttachGlobalVariablesDeclarations.hpp
+/// \file attachDebuggerGlobalVariablesDeclarations.hpp
 
 #include <metaprogramming/globalVariableProvider.hpp>
 
 namespace esnort
 {
-  /// Wait to attach gdb
+  /// Wait to attach debugger
   DEFINE_OR_DECLARE_GLOBAL_VARIABLE(bool,waitToAttachDebugger,{true});
 }
 
