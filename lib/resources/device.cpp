@@ -37,6 +37,22 @@ namespace esnort::device
   }
 #endif
   
+#if ENABLE_DEVICE_CODE
+  void decryptError(cudaError_t rc,const char *templ,...)
+  {
+    if(rc!=cudaSuccess)
+      {
+	va_list ap;
+	va_start(ap,templ);
+	char mess[1024];
+	vsnprintf(mess,1024,templ,ap);
+	va_end(ap);
+	
+	CRASH<<mess<<", cuda raised error: "<<cudaGetErrorString(rc);
+      }
+  }
+#endif
+  
   void initialize(const int& iDevice)
   {
 #if ENABLE_DEVICE_CODE

@@ -22,7 +22,7 @@ namespace esnort::device
 	    typename IMin,
 	    typename IMax>
   __global__
-  static void cudaGenericKernel(F f,
+  void cudaGenericKernel(F f,
 				const IMin& min,
 				const IMax& max)
   {
@@ -43,7 +43,7 @@ namespace esnort::device
   template <typename IMin,
 	    typename IMax,
 	    typename F>
-  static INLINE_FUNCTION
+  INLINE_FUNCTION
   void launchKernel(const int line,
 		    const char *file,
 		    const IMin min,
@@ -73,19 +73,7 @@ namespace esnort::device
     synchronize();
   }
   
-  static void decryptError(cudaError_t rc,const char *templ,...)
-  {
-    if(rc!=cudaSuccess)
-      {
-	va_list ap;
-	va_start(ap,templ);
-	char mess[1024];
-	vsnprintf(mess,1024,templ,ap);
-	va_end(ap);
-	
-	CRASH<<mess<<", cuda raised error: "<<cudaGetErrorString(rc);
-      }
-  }
+  void decryptError(cudaError_t rc,const char *templ,...);
   
   template <typename  T>
   void malloc(T& ptr,const size_t& sizeInUnit)
@@ -98,7 +86,7 @@ namespace esnort::device
 #endif
   
   void initialize(const int& iDevice);
-
+  
 #define DEVICE_LOOP(INDEX,EXT_START,EXT_END,BODY...)			\
   device::launchKernel(__LINE__,__FILE__,EXT_START,EXT_END,[=] DEVICE_ATTRIB (const std::common_type_t<decltype((EXT_END)),decltype((EXT_START))>& INDEX) mutable {BODY})
 }
