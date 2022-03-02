@@ -22,10 +22,12 @@ BUILT_SOURCES=%D%/gitInfo.hpp
 __top_builddir__lib_libesnort_a_SOURCES= \
 	%D%/debug/backtracing.cpp \
 	%D%/debug/demangle.cpp \
+	%D%/debug/gdbAttach.cpp \
 	%D%/debug/minimalCrash.cpp \
 	%D%/ios/minimalLogger.cpp \
 	%D%/resources/aliver.cpp \
 	%D%/resources/device.cpp \
+	%D%/resources/environmentFlags.cpp \
 	%D%/resources/globalVariablesDefinitions.cpp \
 	%D%/resources/Mpi.cpp \
 	%D%/resources/threads.cpp \

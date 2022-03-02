@@ -42,54 +42,6 @@ namespace esnort
   /// Write output to a file, using different level of indentation
   namespace Logger
   {
-    /// Starts a new line
-    INLINE_FUNCTION
-    void startNewLine(const bool actuallyPrint)
-    {
-      if(not actuallyPrint)
-	return;
-      
-      const bool prependRank=
-	Mpi::nRanks!=1 and not onlyMasterRankPrint;
-      
-      const bool prependThread=
-	(threads::isInsideParallelSection() and 
-	 not onlyMasterThreadPrint);
-      
-      /// Total number of the character written
-      int rc=
-	0;
-      
-      // Prepend with time
-      if(prependTime)
-	{
-	  SCOPE_REAL_FORMAT_FIXED();
-	  SCOPE_REAL_PRECISION(10);
-	  SCOPE_ALWAYS_PRINT_ZERO();
-	  SCOPE_NOT_ALWAYS_PUT_SIGN();
-	  rc+=
-	    (Logger::logFile<<durationInSec(timings.currentMeasure())<<" s").getRc();
-	}
-      
-      // Prepend with rank
-      if(prependRank)
-	rc+=
-	  (Logger::logFile<<" Rank "<<Mpi::rank).getRc();
-      
-      // Prepend with thread
-      if(prependThread)
-	rc+=
-          (Logger::logFile<<" Thread "<<threads::threadId()).getRc();
-      
-      // Mark the margin
-      if(rc)
-	Logger::logFile<<":\t";
-      
-      // Writes the given number of spaces
-      for(int i=0;i<Logger::indentLev;i++)
-	Logger::logFile<<' ';
-    }
-    
     /// Increase indentation
     INLINE_FUNCTION
     void indentMore()
@@ -125,6 +77,52 @@ namespace esnort
       /// Forbids copying a line
       LoggerLine(const LoggerLine&)=delete;
       
+      /// Starts a new line
+      void startNewLine(const bool actuallyPrint)
+      {
+	if(not actuallyPrint)
+	  return;
+	
+	const bool prependRank=
+	  Mpi::nRanks!=1 and not onlyMasterRankPrint;
+	
+	const bool prependThread=
+	  (threads::isInsideParallelSection() and 
+	   not onlyMasterThreadPrint);
+	
+	/// Total number of the character written
+	int rc=0;
+	
+	// Prepend with time
+	if(prependTime)
+	  {
+	    SCOPE_REAL_FORMAT_FIXED();
+	    SCOPE_REAL_PRECISION(10);
+	    SCOPE_ALWAYS_PRINT_ZERO();
+	    SCOPE_NOT_ALWAYS_PUT_SIGN();
+	    rc+=
+	      (Logger::logFile<<durationInSec(timings.currentMeasure())<<" s").getRc();
+	  }
+	
+	// Prepend with rank
+	if(prependRank)
+	  rc+=
+	    (Logger::logFile<<" Rank "<<Mpi::rank).getRc();
+	
+	// Prepend with thread
+	if(prependThread)
+	  rc+=
+	    (Logger::logFile<<" Thread "<<threads::threadId()).getRc();
+	
+	// Mark the margin
+	if(rc)
+	  Logger::logFile<<":\t";
+	
+	// Writes the given number of spaces
+	for(int i=0;i<Logger::indentLev;i++)
+	  Logger::logFile<<' ';
+      }
+      
     public:
       
       /// Construct
@@ -135,6 +133,10 @@ namespace esnort
 	colorChanged(false),
 	styleChanged(false)
       {
+	if(threads::isInsideParallelSection() and not Logger::onlyMasterThreadPrint)
+	  Logger::lock.acquire();
+    
+	startNewLine(actuallyPrint);
       }
       
       /// Move constructor
@@ -182,7 +184,7 @@ namespace esnort
 	    endLine();
 	    
 	    if(threads::isInsideParallelSection() and not Logger::onlyMasterThreadPrint)
-	      lock.unset();
+	      lock.release();
 	    
 	    if(hasToCrash)
 	      {
@@ -290,7 +292,7 @@ namespace esnort
 		if(*p=='\n')
 		  {
 		    endLine();
-		    Logger::startNewLine(actuallyPrint);
+		    startNewLine(actuallyPrint);
 		  }
 		else
 		  // Prints the char
@@ -333,11 +335,6 @@ namespace esnort
       ((Mpi::isMaster or not Logger::onlyMasterRankPrint) and
        (threads::isMaster() or not Logger::onlyMasterThreadPrint) and
        (verbosityLv<=Logger::verbosityLv));
-    
-    if(threads::isInsideParallelSection() and not Logger::onlyMasterThreadPrint)
-      Logger::lock.set();
-    
-    Logger::startNewLine(actuallyPrint);
     
     return actuallyPrint;
   }

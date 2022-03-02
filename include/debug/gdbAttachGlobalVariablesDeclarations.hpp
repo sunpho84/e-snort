@@ -9,7 +9,7 @@
 
 #include <metaprogramming/globalVariableProvider.hpp>
 
-namespace esnort::envFlags
+namespace esnort
 {
   /// Wait to attach gdb
   DEFINE_OR_DECLARE_GLOBAL_VARIABLE(bool,waitToAttachDebugger,{true});

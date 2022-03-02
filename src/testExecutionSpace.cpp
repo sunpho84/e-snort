@@ -14,6 +14,7 @@
 #include <expr/executionSpace.hpp>
 #include <expr/expr.hpp>
 #include <resources/valueWithExtreme.hpp>
+#include <resources/environmentFlags.hpp>
 #include <tensor/stackedVariable.hpp>
 
 #include <esnort.hpp>
@@ -22,8 +23,6 @@ using namespace esnort;
 
 int main(int narg,char** arg)
 {
-  SET_FOR_CURRENT_SCOPE(Logger::verbosityLv,1);
-  
 #if not COMPILING_FOR_DEVICE
   static_assert(StackedVariable<int>::execSpace()==esnort::ExecutionSpace::HOST,"We are issuing A on the host");
 #endif
@@ -42,10 +41,6 @@ int main(int narg,char** arg)
   StackedVariable<int> d;
   d=c;
   logger()<<"Result: "<<a()<<" -> "<<d();
-  
-  Logger::onlyMasterThreadPrint=false;
-#pragma omp parallel
-  logger()<<"ciao!";
   
   ASM_BOOKMARK_END("TEST_ASSIGN");
   

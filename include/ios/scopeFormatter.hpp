@@ -50,7 +50,7 @@ namespace esnort
   
   /// Allows all ransk to print for current scope
 #define SCOPE_ALL_RANKS_CAN_PRINT()					\
-  SET_FOR_CURRENT_SCOPE(Logger::logFile.onlyMasterRankPrint,false)
+  SET_FOR_CURRENT_SCOPE(Logger::onlyMasterRankPrint,false)
 }
 
 #endif

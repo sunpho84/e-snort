@@ -7,7 +7,7 @@
 
 /// \file gdbAttach.hpp
 
-#include <debug/gdbAttachExternalVariables.hpp>
+#include <debug/gdbAttachGlobalVariablesDeclarations.hpp>
 
 namespace esnort
 {

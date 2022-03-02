@@ -59,14 +59,14 @@ namespace esnort::threads
 #endif
     }
     
-    void set()
+    void acquire()
     {
 #if ENABLE_THREADS
       omp_set_lock(&lock);
 #endif
     }
     
-    void unset()
+    void release()
     {
 #if ENABLE_THREADS
       omp_unset_lock(&lock);

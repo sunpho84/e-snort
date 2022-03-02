@@ -189,11 +189,11 @@ DONE
 ---
 Move external variabiles to a specific file
 Convert device to namespace
+Enable threads
 
 
 TODO
 ---
-Enable threads
 Change flags to polymorphic struct, name it options
 put each option in an object which initializes and install in a list, then put the aliver last
 Gdb Attacher

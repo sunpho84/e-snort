@@ -6,19 +6,26 @@
 ///
 /// \brief Routines needed to read environment variables
 
-#define EXTERN_ENVIRONMENT_FLAGS
-# include <resources/environmentFlags.hpp>
-
 #include <sstream>
 
-#include <base/logger.hpp>
-#include <unroll/forEachInTuple.hpp>
+#include <debug/gdbAttachGlobalVariablesDeclarations.hpp>
+#include <ios/logger.hpp>
+#include <metaprogramming/forEachInTuple.hpp>
 
-namespace maze
+namespace esnort::envFlags
 {
-  void readAllFlags()
+  void readAll()
   {
-    LOGGER<<endl;
+    SCOPE_INDENT();
+
+#define ADD_FLAG(NAME,DEFAULT,TAG,DESCRIPTION)		\
+    std::make_tuple(&NAME,DEFAULT,TAG,DESCRIPTION)
+    
+    const auto flagList=
+      std::make_tuple(ADD_FLAG(waitToAttachDebugger,false,"WAIT_TO_ATTACH_DEBUGGER","to be used to wait for gdb to attach"),
+		      ADD_FLAG(Logger::verbosityLv,1,"VERBOSITY_LV","Level of verbosity of the program")
+		      );
+    
     forEachInTuple(flagList,[](auto& f)
 			  {
 			    /// Flag to be parsed
@@ -33,7 +40,7 @@ namespace maze
 			    /// Description to be used to parse
 			    const char* descr=std::get<3>(f);
 			    
-			    LOGGER<<"Flag "<<tag<<" ("<<descr<<") ";
+			    LOGGER<<"- Flag "<<tag<<" ("<<descr<<") ";
 			    
 			    /// Search for the tag
 			    const char* p=getenv(tag);
@@ -44,14 +51,13 @@ namespace maze
 				std::istringstream is(p);
 				is>>flag;
 				
-				LOGGER<<"changed from "<<def<<" to: ";
+				LOGGER<<"changed from "<<def<<" to: "<<flag;
 			      }
 			    else
 			      {
-				LOGGER<<"set to default value: ";
+				LOGGER<<"set to default value: "<<flag;
 				flag=def;
 			      }
-			    LOGGER<<flag<<endl;
 			  });
   }
 }
