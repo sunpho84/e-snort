@@ -43,6 +43,10 @@ int main(int narg,char** arg)
   d=c;
   logger()<<"Result: "<<a()<<" -> "<<d();
   
+  Logger::onlyMasterThreadPrint=false;
+#pragma omp parallel
+  logger()<<"ciao!";
+  
   ASM_BOOKMARK_END("TEST_ASSIGN");
   
   return 0;

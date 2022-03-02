@@ -28,11 +28,12 @@
 #include <ios/file.hpp>
 #include <ios/scopeFormatter.hpp>
 #include <ios/textFormat.hpp>
+#include <ios/loggerGlobalVariablesDeclarations.hpp>
 #include <metaprogramming/operatorExists.hpp>
 #include <resources/Mpi.hpp>
 #include <resources/timer.hpp>
 #include <resources/scopeDoer.hpp>
-#include <ios/loggerGlobalVariablesDeclarations.hpp>
+#include <resources/threads.hpp>
 
 namespace esnort
 {
@@ -52,7 +53,7 @@ namespace esnort
 	Mpi::nRanks!=1 and not onlyMasterRankPrint;
       
       const bool prependThread=
-	(1 and // threads.nActiveThreads()!=1 and 
+	(threads::isInsideParallelSection() and 
 	 not onlyMasterThreadPrint);
       
       /// Total number of the character written
@@ -76,10 +77,9 @@ namespace esnort
 	  (Logger::logFile<<" Rank "<<Mpi::rank).getRc();
       
       // Prepend with thread
-#warning messagewarning
-      // if(someOtherThreadCouldBePrinting)
-      //   rc+=
-      //     (Logger::logFile<<" Thread "<<threads.getThreadId()).getRc();
+      if(prependThread)
+	rc+=
+          (Logger::logFile<<" Thread "<<threads::threadId()).getRc();
       
       // Mark the margin
       if(rc)
@@ -128,16 +128,13 @@ namespace esnort
     public:
       
       /// Construct
-      LoggerLine(const bool actuallyPrint) :
+      LoggerLine(const bool& actuallyPrint) :
 	actuallyPrint(actuallyPrint),
 	hasToEndLine(true),
 	hasToCrash(false),
 	colorChanged(false),
 	styleChanged(false)
       {
-	
-	// if(hasToLock)
-	//   logger.getExclusiveAccess();
       }
       
       /// Move constructor
@@ -147,6 +144,7 @@ namespace esnort
 	hasToCrash(oth.hasToCrash),
 	colorChanged(oth.colorChanged),
 	styleChanged(oth.styleChanged)
+	
       {
       	oth.hasToEndLine=
       	  false;
@@ -183,8 +181,8 @@ namespace esnort
 	    // Ends the line
 	    endLine();
 	    
-	    // if(hasToLock)
-	    //   logger.releaseExclusiveAccess();
+	    if(threads::isInsideParallelSection() and not Logger::onlyMasterThreadPrint)
+	      lock.unset();
 	    
 	    if(hasToCrash)
 	      {
@@ -211,7 +209,7 @@ namespace esnort
       /// File does not know how to print
       template <typename T,                                           // Type of the quantity to print
 		ENABLE_THIS_TEMPLATE_IF(not canPrint<LoggerLine,T>    // SFINAE needed to avoid ambiguous overload
-					and canPrint<File,const T&>)>
+		and canPrint<File,const T&>)>
       LoggerLine& operator<<(const T& t)                             ///< Object to print
       {
 	if(actuallyPrint)
@@ -313,43 +311,31 @@ namespace esnort
 	return
 	  *this<<str.c_str();
       }
-    
-    // /// Mutex used to lock the logger
-    // mutable Mutex mutex;
-    
-    // /// Set the exclusive access right
-    // void getExclusiveAccess()
-    // {
-    //   mutex.lock();
-    // }
-    
-    /// Release the exclusive access right
-    // void releaseExclusiveAccess()
-    // {
-    //   mutex.unlock();
-    // }
+      
+      /////////////////////////////////////////////////////////////////
+      
+      // /// Create a new line, and print on it
+      // template <typename T,
+      // 	      typename=EnableIf<canPrint<LoggerLine,T>>,            // SFINAE needed to avoid ambiguous overload
+      // 	      typename=EnableIf<not canPrint<Logger,RemRef<T>>>>    // SFINAE to avoid ambiguous reimplementation
+      // LoggerLine operator<<(T&& t)
+      // {
+      //   return
+      // 	std::move(getNewLine()<<forw<T>(t));
+      // }
     };
-    
-    /////////////////////////////////////////////////////////////////
-    
-    // /// Create a new line, and print on it
-    // template <typename T,
-    // 	      typename=EnableIf<canPrint<LoggerLine,T>>,            // SFINAE needed to avoid ambiguous overload
-    // 	      typename=EnableIf<not canPrint<Logger,RemRef<T>>>>    // SFINAE to avoid ambiguous reimplementation
-    // LoggerLine operator<<(T&& t)
-    // {
-    //   return
-    // 	std::move(getNewLine()<<forw<T>(t));
-    // }
-  };
+  }
   
   INLINE_FUNCTION
   Logger::LoggerLine logger(const int verbosityLv=0)
   {
     const bool actuallyPrint=
-      ((Mpi::isMasterRank or not Logger::onlyMasterRankPrint) and
-       (1 or /* threads.nActiveThreads()!=1 */ not Logger::onlyMasterThreadPrint) and
+      ((Mpi::isMaster or not Logger::onlyMasterRankPrint) and
+       (threads::isMaster() or not Logger::onlyMasterThreadPrint) and
        (verbosityLv<=Logger::verbosityLv));
+    
+    if(threads::isInsideParallelSection() and not Logger::onlyMasterThreadPrint)
+      Logger::lock.set();
     
     Logger::startNewLine(actuallyPrint);
     
@@ -361,7 +347,7 @@ namespace esnort
   logger()
   
   /// Verbose logger or not, capital worded for homogeneity
-#define VERBOSE_LOGGER(LV) \
+#define VERBOSE_LOGGER(LV)			\
   logger(LV)
 }
 

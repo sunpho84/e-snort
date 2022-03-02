@@ -51,7 +51,7 @@ namespace esnort::Mpi
     
     MPI_CRASH_ON_ERROR(MPI_Comm_rank(MPI_COMM_WORLD,&_rank),"Getting the rank");
     
-    _isMasterRank=(rank==MASTER_RANK);
+    _isMaster=(rank==MASTER_RANK);
     
     minimalLogger("MPI initialized in %lg s, nranks: %d",durationInSec(initDur),nRanks);
     

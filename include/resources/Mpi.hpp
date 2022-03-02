@@ -44,7 +44,7 @@ namespace esnort
     
     extern const bool& inited;
     
-    extern const bool& isMasterRank;
+    extern const bool& isMaster;
     
     /// Decrypt the returned value of an MPI call
     ///
