@@ -11,13 +11,25 @@
 
 namespace esnort::Mpi
 {
+  DEFINE_OR_DECLARE_HIDDEN_VARIABLE_WITH_CONST_ACCESSOR(bool,inited,{false});
+  
+#if USE_MPI
+  
   DEFINE_OR_DECLARE_HIDDEN_VARIABLE_WITH_CONST_ACCESSOR(int,rank,{0});
   
   DEFINE_OR_DECLARE_HIDDEN_VARIABLE_WITH_CONST_ACCESSOR(int,nRanks,{1});
   
-  DEFINE_OR_DECLARE_HIDDEN_VARIABLE_WITH_CONST_ACCESSOR(bool,inited,{false});
-  
   DEFINE_OR_DECLARE_HIDDEN_VARIABLE_WITH_CONST_ACCESSOR(bool,isMaster,{false});
+  
+#else
+  
+  constexpr int rank=0;
+  
+  constexpr int nRanks=1;
+  
+  constexpr bool isMaster=true;
+  
+#endif
 }
 
 #include <metaprogramming/hiddenVariableProviderTail.hpp>

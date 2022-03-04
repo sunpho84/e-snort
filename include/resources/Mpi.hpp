@@ -31,17 +31,9 @@
   
 namespace esnort::Mpi
 {
-  extern const int& rank;
-  
-  extern const int& nRanks;
-  
   void initialize();
   
   void finalize();
-  
-  extern const bool& inited;
-  
-  extern const bool& isMaster;
   
   /// Decrypt the returned value of an MPI call
   ///
