@@ -1,10 +1,10 @@
 #ifndef _TIMERGLOBALVARIABLESDECLARATIONS_HPP
 #define _TIMERGLOBALVARIABLESDECLARATIONS_HPP
 
-/// \file timer.hpp
+/// \file timerGlobalVariablesDeclarations.hpp
 
 #ifdef HAVE_CONFIG_H
- #include "config.hpp"
+# include "config.hpp"
 #endif
 
 #include <metaprogramming/globalVariableProvider.hpp>

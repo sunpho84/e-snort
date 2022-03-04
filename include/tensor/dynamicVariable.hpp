@@ -9,6 +9,7 @@
 #include <expr/expr.hpp>
 #include <ios/logger.hpp>
 #include <metaprogramming/inline.hpp>
+#include <resources/memory.hpp>
 #include <tensor/tensorRef.hpp>
 #include <tensor/variableExecSpaceChanger.hpp>
 
@@ -72,20 +73,9 @@ namespace esnort
     constexpr INLINE_FUNCTION
     DynamicVariable()
     {
-      Logger::indentMore();
+      static_assert(std::is_trivially_constructible_v<T>,"not implemented for non-trivially constructible quantities");
       
-#if ENABLE_DEVICE_CODE
-      if(execSpace()==ExecutionSpace::DEVICE)
-	{
-	  logger()<<"Allocating on gpu!";
-	  device::malloc(ptr,1);
-	}
-      else
-#endif
-	ptr=new T;
-      logger()<<"Allocated "<<ptr;
-      
-      Logger::indentLess();
+      ptr=memory::manager<ExecSpace>.template provide<T>(1);
     }
     
     //DynamicVariable(const DynamicVariable&) =delete;
@@ -116,21 +106,14 @@ namespace esnort
     ~DynamicVariable() HOST_ATTRIB
     {
       if(ptr)
-	{
-#if ENABLE_DEVICE_CODE
-	  if(execSpace()==ExecutionSpace::DEVICE)
-	    device::free(ptr);
-	  else
-#endif
-	    delete ptr;
-	}
+	memory::manager<ExecSpace>.release(ptr);
     }
     
     TensorRef<T,ExecSpace,true> getRef() const
     {
       SCOPE_INDENT();
       
-      logger()<<"Forging a const ref to "<<ptr;
+      LOGGER<<"Forging a const ref to "<<ptr;
       
       return ptr;
     }
@@ -139,7 +122,7 @@ namespace esnort
     {
       SCOPE_INDENT();
       
-      logger()<<"Forging a ref to "<<ptr;
+      LOGGER<<"Forging a ref to "<<ptr;
       
       return ptr;
     }

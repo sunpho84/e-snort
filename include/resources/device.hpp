@@ -75,7 +75,7 @@ namespace esnort::device
   
   void decryptError(cudaError_t rc,const char *templ,...);
   
-  template <typename  T>
+  template <typename T>
   void malloc(T& ptr,const size_t& sizeInUnit)
   {
     SCOPE_INDENT();

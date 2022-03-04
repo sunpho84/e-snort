@@ -193,10 +193,10 @@ Enable threads
 Gdb Attacher
 Move Mpi to namespace
 Options from maze
+Enable memory
 
 TODO
 ---
-Enable memory
 Enable vectorization
 
 Tensor from nissa

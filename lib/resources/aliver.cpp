@@ -83,16 +83,6 @@ namespace esnort
     possiblyWaitToAttachDebugger();
     device::initialize(Mpi::rank);
     threads::initialize();
-    
-    // threads.workOn([](const int threadID){logger()<<"ANNA";});
-    
-    // {
-    // 	ALLOWS_ALL_THREADS_TO_PRINT_FOR_THIS_SCOPE(runLog);
-    // 	ALLOWS_ALL_RANKS_TO_PRINT_FOR_THIS_SCOPE(runLog);
-    
-    // 	threads.workOn([](const int threadID){logger()<<"ANNA";});
-    // }
-    // threads.loopSplit(0,10,[](const int& rank,const int& i){printf("Rank %d prints again %d\n",rank,i);});
   }
   
   Aliver::~Aliver()

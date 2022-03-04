@@ -51,7 +51,7 @@ namespace esnort::envFlags
 				std::istringstream is(p);
 				is>>flag;
 				
-				LOGGER<<"  changed from "<<def<<" to: "<<flag;
+				LOGGER<<"  changed from default value "<<def<<" to: "<<flag;
 			      }
 			    else
 			      {
