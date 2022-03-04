@@ -8,18 +8,21 @@
 #include <filesystem>
 
 #include <debug/minimalCrash.hpp>
+#include <metaprogramming/inline.hpp>
 
 namespace esnort
 {
   /// Returns whether the given path exists
-  inline bool fileExists(const std::filesystem::path& path) ///< Path to open
+  INLINE_FUNCTION
+  bool fileExists(const std::filesystem::path& path) ///< Path to open
   {
     return
       std::filesystem::exists(path);
   }
   
   /// Returns the size of a file
-  inline std::uintmax_t fileSize(const std::filesystem::path& path) ///< Path to probe
+  INLINE_FUNCTION
+  std::uintmax_t fileSize(const std::filesystem::path& path) ///< Path to probe
   {
     return
       std::filesystem::file_size(path);
@@ -37,6 +40,7 @@ namespace esnort
   public:
     
     /// Open a file, crashing if impossible
+    INLINE_FUNCTION
     void open(const char* path,              ///< Path to open
 	      const char* mode,              ///< Mode used to open
 	      const bool crashIfFail=true)   ///< Crash or not if failing
@@ -55,6 +59,7 @@ namespace esnort
     }
     
     /// Check if open
+    INLINE_FUNCTION
     bool isOpen()
       const
     {
@@ -63,6 +68,7 @@ namespace esnort
     }
     
     /// Close
+    INLINE_FUNCTION
     void close()
     {
       if(isOpen())
@@ -76,6 +82,7 @@ namespace esnort
     }
     
     /// Returns rc
+    INLINE_FUNCTION
     int getRc()
       const
     {
@@ -99,6 +106,7 @@ namespace esnort
     RealFormat realFormat{RealFormat::GENERAL};
     
     /// Prints a char
+    INLINE_FUNCTION
     File& operator<<(const char& c) ///< Char to write
     {
       // Prints the char
@@ -110,6 +118,7 @@ namespace esnort
     }
     
     /// Prints an integer
+    INLINE_FUNCTION
     File& operator<<(const int32_t& i) ///< Integer to write
     {
       rc=
@@ -120,6 +129,7 @@ namespace esnort
     }
     
     /// Prints an unsigned integer
+    INLINE_FUNCTION
     File& operator<<(const uint32_t& i) ///< Unsigned integer to write
     {
       rc=
@@ -130,6 +140,7 @@ namespace esnort
     }
     
     /// Prints a long integer
+    INLINE_FUNCTION
     File& operator<<(const int64_t& l) ///< Long integer to write
     {
       rc=
@@ -140,6 +151,7 @@ namespace esnort
     }
     
     /// Prints a long unsigned integer
+    INLINE_FUNCTION
     File& operator<<(const uint64_t& l) ///< Long unsigned integer to write
     {
       rc=
@@ -150,6 +162,7 @@ namespace esnort
     }
     
     /// Prints a double
+    INLINE_FUNCTION
     File& operator<<(const double& d)
     {
       /// String to print real numbers
@@ -171,6 +184,7 @@ namespace esnort
     
     /// Prints a pointer
     template <typename T>           // Type pointed
+    INLINE_FUNCTION
     File& operator<<(const T* p)  ///< Pointer to be printed
     {
       rc=
@@ -182,6 +196,7 @@ namespace esnort
     
     /// Prints after putting a space
     template <typename T>         // Type of the obected to print
+    INLINE_FUNCTION
     File& operator*(T&& t)      ///< Object to be printed
     {
       return
@@ -189,6 +204,7 @@ namespace esnort
     }
     
     /// Prints a string
+    INLINE_FUNCTION
     File& operator<<(const char* str)
     {
       rc=
@@ -199,6 +215,7 @@ namespace esnort
     }
     
     /// Prints a c++ string
+    INLINE_FUNCTION
     File& operator<<(const std::string& str)
     {
       return
@@ -207,6 +224,7 @@ namespace esnort
     
     /// Print a C-style variadic message
     template <int MAX_LENGTH=256>  // Maximal length to be be printed
+    INLINE_FUNCTION
     File& printVariadicMessage(const char* format, ///< Format to print
 			       va_list ap)         ///< Variadic part
     {
@@ -231,25 +249,28 @@ namespace esnort
     }
     
     /// Default constructor
+    INLINE_FUNCTION
     File()
     {
     }
     
     /// Constructor opening
+    INLINE_FUNCTION
     File(const char* path,              ///< Path to open
 	 const char* mode,              ///< Mode used to open
 	 const bool crashIfFail=true)   ///< Crash or not if failing
     {
       open(path,mode,crashIfFail);
     }
+    
     /// Destroy
+    INLINE_FUNCTION
     ~File()
     {
       // Close if open
       if(isOpen())
 	this->close();
     }
-    
   };
 }
 

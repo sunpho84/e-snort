@@ -11,6 +11,8 @@
 
 #include <utility>
 
+#include <metaprogramming/inline.hpp>
+
 namespace esnort
 {
   /// Class which does something when created and something else when destroyed
@@ -34,6 +36,7 @@ namespace esnort
   public:
     
     /// Check if will undo
+    INLINE_FUNCTION
     bool willUndo()
       const
     {
@@ -42,6 +45,7 @@ namespace esnort
     }
     
     /// Move constructor
+    INLINE_FUNCTION
     ScopeDoer(ScopeDoer&& oth) :
       fEnd(std::move(oth.fEnd)),
       undoAtEnd(oth.undoAtEnd)
@@ -52,6 +56,7 @@ namespace esnort
     
     /// Create, do and set what to do at destruction
     template <typename FBegin> // Type of the function which is called at creation
+    INLINE_FUNCTION
     ScopeDoer(FBegin fBegin,
 	      FEnd fEnd) :
       fEnd(fEnd)
@@ -61,6 +66,7 @@ namespace esnort
     }
     
     /// Create, set what to do at destruction
+    INLINE_FUNCTION
     ScopeDoer(FEnd fEnd) :
       fEnd(fEnd)
     {
@@ -69,6 +75,7 @@ namespace esnort
     }
     
     /// Destroy undoing
+    INLINE_FUNCTION
     ~ScopeDoer()
     {
       if(undoAtEnd)
@@ -79,6 +86,7 @@ namespace esnort
   /// Set a variable for the scope, change it back at the end
   template <typename T,
 	    typename TV>
+  INLINE_FUNCTION
   auto getScopeChangeVar(T& ref,         ///< Reference
 			 const TV& val)  ///< Value to set
   {
@@ -96,7 +104,7 @@ namespace esnort
 		    oldVal;
 		});
   }
-
+  
 #define SET_FOR_CURRENT_SCOPE(VAR,VAL)					\
   auto NAME2(SET_VAR_AT_LINE,__LINE__)=getScopeChangeVar(VAR,VAL)
   

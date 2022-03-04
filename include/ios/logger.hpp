@@ -78,7 +78,8 @@ namespace esnort
       LoggerLine(const LoggerLine&)=delete;
       
       /// Starts a new line
-      void startNewLine(const bool actuallyPrint)
+      INLINE_FUNCTION
+      void startNewLine(const bool& actuallyPrint)
       {
 	if(not actuallyPrint)
 	  return;
@@ -87,7 +88,7 @@ namespace esnort
 	  Mpi::nRanks!=1 and not onlyMasterRankPrint;
 	
 	const bool prependThread=
-	  (threads::isInsideParallelSection() and 
+	  (threads::isInsideParallelSection() and
 	   not onlyMasterThreadPrint);
 	
 	/// Total number of the character written
@@ -126,6 +127,7 @@ namespace esnort
     public:
       
       /// Construct
+      INLINE_FUNCTION
       LoggerLine(const bool& actuallyPrint) :
 	actuallyPrint(actuallyPrint),
 	hasToEndLine(true),
@@ -135,11 +137,12 @@ namespace esnort
       {
 	if(threads::isInsideParallelSection() and not Logger::onlyMasterThreadPrint)
 	  Logger::lock.acquire();
-    
+	
 	startNewLine(actuallyPrint);
       }
       
       /// Move constructor
+      INLINE_FUNCTION
       LoggerLine(LoggerLine&& oth) :
 	actuallyPrint(oth.actuallyPrint),
 	hasToEndLine(true),
@@ -153,6 +156,7 @@ namespace esnort
       }
       
       /// Ends the line
+      INLINE_FUNCTION
       void endLine()
       {
 	if(actuallyPrint)
@@ -160,6 +164,7 @@ namespace esnort
       }
       
       /// Destroy (end the line)
+      INLINE_FUNCTION
       ~LoggerLine()
       {
 	if(not actuallyPrint)
@@ -212,6 +217,7 @@ namespace esnort
       template <typename T,                                           // Type of the quantity to print
 		ENABLE_THIS_TEMPLATE_IF(not canPrint<LoggerLine,T>    // SFINAE needed to avoid ambiguous overload
 		and canPrint<File,const T&>)>
+      INLINE_FUNCTION
       LoggerLine& operator<<(const T& t)                             ///< Object to print
       {
 	if(actuallyPrint)
@@ -222,6 +228,7 @@ namespace esnort
       }
       
       /// Print a C-style variadic message
+      INLINE_FUNCTION
       LoggerLine& printVariadicMessage(const char* format, ///< Format to print
 				       va_list ap)         ///< Variadic part
       {
@@ -233,6 +240,7 @@ namespace esnort
       }
       
       /// Changes the color of the line
+      INLINE_FUNCTION
       LoggerLine& operator<<(const TextColor& c)
       {
 	colorChanged=
@@ -246,6 +254,7 @@ namespace esnort
       }
       
       /// Changes the style of the line
+      INLINE_FUNCTION
       LoggerLine& operator<<(const TextStyle& c)
       {
 	styleChanged=
@@ -262,6 +271,7 @@ namespace esnort
       ///
       /// Then sets the flag \c hasToCrash to true, such that at
       /// destroy of the line, crash happens
+      INLINE_FUNCTION
       LoggerLine& operator<<(const Crasher& cr)
       {
 	this->hasToCrash=
@@ -272,6 +282,7 @@ namespace esnort
       }
       
       /// Prints a string, parsing newline
+      INLINE_FUNCTION
       LoggerLine& operator<<(const char* str)
       {
 	if(not actuallyPrint)
@@ -308,6 +319,7 @@ namespace esnort
       }
       
       /// Prints a c++ string
+      INLINE_FUNCTION
       LoggerLine& operator<<(const std::string& str)
       {
 	return

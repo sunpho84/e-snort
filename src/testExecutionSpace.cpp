@@ -21,6 +21,8 @@
 
 using namespace esnort;
 
+int j;
+
 int main(int narg,char** arg)
 {
 #if not COMPILING_FOR_DEVICE
@@ -43,6 +45,15 @@ int main(int narg,char** arg)
   logger()<<"Result: "<<a()<<" -> "<<d();
   
   ASM_BOOKMARK_END("TEST_ASSIGN");
+  
+  ASM_BOOKMARK_BEGIN("TEST_UNROLL");
+  j=0;
+  UNROLLED_FOR((I,0,10),
+	       {
+		 j+=I;
+	       });
+  LOGGER<<j;
+  ASM_BOOKMARK_END("TEST_UNROLL");
   
   return 0;
 }
