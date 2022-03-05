@@ -21,10 +21,36 @@
 
 using namespace esnort;
 
+  /// Declare a component with no special feature
+  ///
+  /// The component has no row/column tag or index, so it can be
+  /// included only once in a tensor
+#define DECLARE_COMP(NAME,TYPE,SIZE)			\
+  DECLARE_COMP_SIGNATURE(NAME,TYPE,SIZE);			\
+  								\
+  /*! NAME component */						\
+  using NAME=							\
+    TensorComp<NAME ## Signature,ANY,0>
+
+template <RwCl RC=RwCl::ROW,
+	  int Which=0>
+struct Spin :
+  Comp<Spin<RC,Which>,int>
+{
+  /// Size at compile time
+  static constexpr int sizeAtCompileTime()
+  {
+    return 4;
+  }
+};
+
 int j;
 
 int main(int narg,char** arg)
 {
+  Spin<RwCl::ROW,0> s;
+  s.sizeAtCompileTimeAssertingNotDynamic();
+  
 #if not COMPILING_FOR_DEVICE
   static_assert(StackedVariable<int>::execSpace()==esnort::ExecutionSpace::HOST,"We are issuing A on the host");
 #endif

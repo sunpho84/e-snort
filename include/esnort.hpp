@@ -12,9 +12,11 @@
 #include <debug/crash.hpp>
 #include <debug/demangle.hpp>
 #include <debug/minimalCrash.hpp>
+#include <expr/comp.hpp>
 #include <ios/file.hpp>
 #include <ios/logger.hpp>
 #include <ios/minimalLogger.hpp>
+#include <metaprogramming/arithmeticOperatorsViaCast.hpp>
 #include <metaprogramming/unrolledFor.hpp>
 #include <resources/aliver.hpp>
 
