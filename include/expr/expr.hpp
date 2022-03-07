@@ -70,6 +70,10 @@ namespace esnort
       return this->crtp();
     }
     
+    /// Returns the number of components of a Comps
+    static constexpr int nOfComps=
+    std::tuple_size<typename T::Comps>::value;
+    
     // template <bool B>
     // using dispatchFullyClosed=
     //   std::integral_constant<bool,B>;

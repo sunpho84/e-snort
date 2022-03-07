@@ -12,6 +12,7 @@
 
 namespace esnort
 {
+  /// Compnent
   template <compFeat::IsTransposable IsTransposable,
 	    typename Index,
 	    typename Derived>
@@ -22,6 +23,13 @@ namespace esnort
     using Base=BaseComp<Derived,Index>;
     
     using Base::Base;
+  };
+  
+  /// Predicate if a certain component has known size at compile time
+  template <typename T>
+  struct SizeIsKnownAtCompileTime
+  {
+    static constexpr bool value=T::sizeIsKnownAtCompileTime;
   };
 }
 

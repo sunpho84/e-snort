@@ -14,12 +14,14 @@
 #include <debug/minimalCrash.hpp>
 #include <expr/comp.hpp>
 #include <expr/compRwCl.hpp>
+#include <expr/indexComputer.hpp>
 #include <ios/file.hpp>
 #include <ios/logger.hpp>
 #include <ios/minimalLogger.hpp>
 #include <metaprogramming/arithmeticOperatorsViaCast.hpp>
 #include <metaprogramming/unrolledFor.hpp>
 #include <resources/aliver.hpp>
+#include <tuples/tupleDiscriminate.hpp>
 
 /// Global namespace
 namespace esnort

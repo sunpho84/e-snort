@@ -185,6 +185,11 @@ this cause problem in writing generic code?
 I believe it's easier to write generic code and short-circuit when
 needed.
 
+Expr
+---
+An expression is static polymorphic for a node in the AST
+Fund and Comps are written into the node
+
 DONE
 ---
 Move external variabiles to a specific file
@@ -195,10 +200,10 @@ Move Mpi to namespace
 Options from maze
 Enable memory
 Added unroller for
+Tuple
 
 TODO
 ---
-Tuple
 
 Components
 - where do we put F and Comps?

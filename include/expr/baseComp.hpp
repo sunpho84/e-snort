@@ -34,10 +34,14 @@ namespace esnort
     /// Returns the size at compile time, with assert
     static constexpr Index sizeAtCompileTimeAssertingNotDynamic()
     {
-      static_assert(C::sizeAtCompileTime,"Size not known at compile time!");
+      static_assert(sizeIsKnownAtCompileTime,"Size not known at compile time!");
       
       return C::sizeAtCompileTime;
     }
+    
+    /// Determine whether the size is known at compile time
+    static constexpr bool sizeIsKnownAtCompileTime=
+      (C::sizeAtCompileTime!=0);
     
     /// Default constructor
     INLINE_FUNCTION HOST_DEVICE_ATTRIB constexpr

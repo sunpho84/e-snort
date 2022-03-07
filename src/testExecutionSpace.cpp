@@ -52,12 +52,30 @@ struct SpaceTime :
 		  SpaceTime>;
   
   using Base::Base;
+  
+  /// Size at compile time
+  static constexpr int sizeAtCompileTime=0;
 };
 
 int j;
 
+// template <typename E>
+// struct SizeIsKnownAtCompileTime;
+
 int main(int narg,char** arg)
 {
+  
+  using SpinRow=Spin<RwCl::ROW,0>;
+  
+  using C=std::tuple<SpinRow,SpaceTime>;
+  
+  using I=IndexComputer<C>;
+  
+  I i(std::make_tuple<SpaceTime>(10));
+  
+  auto r=
+      TupleDiscriminate<SizeIsKnownAtCompileTime, C>::Valid{};
+  
   Spin<RwCl::ROW,0> s(1);
   s=1;
   // auto rr=Transp<Spin<RwCl::ROW>>::type{};
