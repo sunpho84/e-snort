@@ -69,6 +69,16 @@ namespace esnort
       
       return this->crtp();
     }
+    
+    // template <bool B>
+    // using dispatchFullyClosed=
+    //   std::integral_constant<bool,B>;
+    
+    // template <typename...Args>
+    // static constexpr bool isClosedWhenCalling(Args&&...args)
+    // {
+    // }
+    
   };
 }
 

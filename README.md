@@ -198,6 +198,13 @@ Added unroller for
 
 TODO
 ---
+Tuple
+
+Components
+- where do we put F and Comps?
+- maybe we call it callableExpr
+
+
 Enable vectorization
 
 Tensor from nissa

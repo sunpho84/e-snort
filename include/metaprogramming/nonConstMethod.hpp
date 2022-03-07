@@ -69,7 +69,7 @@ namespace esnort
   /// A const method NAME must be already present Example
   ///
   /// \code
-  // class nissa
+  // class esnort
   /// {
   ///   double e{0};
   ///
