@@ -12,7 +12,7 @@
 namespace esnort
 {
   /// Row or column
-  enum class RwCl{ROW,CLN,ANY};
+  enum class RwCl{ROW,CLN};
   
   /// Transposed of a row or column
   ///
@@ -29,11 +29,6 @@ namespace esnort
   template <>
   inline constexpr RwCl transpRwCl<RwCl::CLN> =
     RwCl::ROW;
-  
-  /// Transposed of any
-  template <>
-  inline constexpr RwCl transpRwCl<RwCl::ANY> =
-    RwCl::ANY;
 }
 
 #endif

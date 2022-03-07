@@ -13,6 +13,7 @@
 #include <debug/demangle.hpp>
 #include <debug/minimalCrash.hpp>
 #include <expr/comp.hpp>
+#include <expr/compRwCl.hpp>
 #include <ios/file.hpp>
 #include <ios/logger.hpp>
 #include <ios/minimalLogger.hpp>
