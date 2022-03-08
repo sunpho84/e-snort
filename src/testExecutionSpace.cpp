@@ -91,7 +91,7 @@ int main(int narg,char** arg)
   
   DynamicTens<OfComps<SpaceTime>,double,ExecutionSpace::HOST> dt(CompsList<SpaceTime>{5});
   
-  dt=dt;
+  dt(SpaceTime(0));
   LOGGER<<"AAAA";
   auto r=
       TupleDiscriminate<SizeIsKnownAtCompileTime, C>::Valid{};

@@ -36,6 +36,17 @@ namespace esnort
     /// Fundamental type
     using Fund=_Fund;
     
+    /// Executes where allocated
+    static constexpr ExecutionSpace execSpace()
+    {
+      return ES;
+    }
+    
+    static constexpr auto execSpaceChangeCost()
+    {
+      return ExecutionSpaceChangeCost::ALOT;
+    }
+    
     /// Components
     using Comps=CompsList<C...>;
     

@@ -14,7 +14,7 @@ namespace esnort
   /// Execution space possibilities
   enum class ExecutionSpace{HOST,DEVICE,UNDEFINED};
   
-  /// Estimates of the cost to change ghe execution space
+  /// Estimates of the cost to change the execution space
   enum class ExecutionSpaceChangeCost{NOTHING,LITTLE,ALOT};
   
   /// Different possibilities arising when performing an assignement,
