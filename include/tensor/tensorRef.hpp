@@ -31,15 +31,11 @@ namespace esnort
       return ptr;
     }
     
-    static constexpr ExecutionSpace execSpace()
-    {
-      return ExecSpace;
-    }
+    static constexpr ExecutionSpace execSpace=
+      ExecSpace;
     
-    static constexpr ExecutionSpaceChangeCost execSpaceChangeCost()
-    {
-      return ExecutionSpaceChangeCost::LITTLE;
-    }
+    static constexpr ExecutionSpaceChangeCost execSpaceChangeCost=
+      ExecutionSpaceChangeCost::LITTLE;
     
     const T& operator()() const HOST_DEVICE_ATTRIB
     {

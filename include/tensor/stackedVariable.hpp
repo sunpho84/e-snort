@@ -24,15 +24,11 @@ namespace esnort
     
 #undef THIS
     
-    static constexpr ExecutionSpace execSpace()
-    {
-      return ExecutionSpace::HOST;
-    }
+    static constexpr ExecutionSpace execSpace=
+      ExecutionSpace::HOST;
     
-    static constexpr ExecutionSpaceChangeCost execSpaceChangeCost()
-    {
-      return ExecutionSpaceChangeCost::LITTLE;
-    }
+    static constexpr ExecutionSpaceChangeCost execSpaceChangeCost=
+      ExecutionSpaceChangeCost::LITTLE;
     
     template <bool B>
     using ExecSpaceChangeDiscriminer=

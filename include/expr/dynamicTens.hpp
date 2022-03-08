@@ -19,37 +19,42 @@
 namespace esnort
 {
   /// Tensor
-  
+  ///
   /// Forward declaration
   template <typename C,
 	    typename F,
 	    ExecutionSpace ES>
   struct DynamicTens;
   
+#define THIS					\
+  DynamicTens<CompsList<C...>,_Fund,ES>
+  
   /// Tensor
   template <typename...C,
 	    typename _Fund,
 	    ExecutionSpace ES>
-  struct DynamicTens<CompsList<C...>,_Fund,ES> :
-    Expr<DynamicTens<CompsList<C...>,_Fund,ES>>,
+  struct THIS :
+    Expr<THIS>,
     DynamicCompsProvider<C...>
   {
+    using This=THIS;
+    
+#undef THIS
+    
+    using Expr<This>::operator=;
+    
+    /// Components
+    using Comps=CompsList<C...>;
+    
     /// Fundamental type
     using Fund=_Fund;
     
     /// Executes where allocated
-    static constexpr ExecutionSpace execSpace()
-    {
-      return ES;
-    }
+    static constexpr ExecutionSpace execSpace=ES;
     
-    static constexpr auto execSpaceChangeCost()
-    {
-      return ExecutionSpaceChangeCost::ALOT;
-    }
-    
-    /// Components
-    using Comps=CompsList<C...>;
+    /// Cost of changing the execution space
+    static constexpr auto execSpaceChangeCost=
+      ExecutionSpaceChangeCost::ALOT;
     
     /// Pointer to storage
     Fund* storage;
@@ -60,16 +65,6 @@ namespace esnort
     /// Determine if allocated
     bool allocated{false};
     
-    /// Gets the maximal value for the given comp
-    template <typename T>
-    constexpr auto _getMaxCompValue() const
-    {
-      if constexpr(T::sizeIsKnownAtCompileTime)
-	return T::sizeAtCompileTime;
-      else
-	return std::get<T>(this->dynamicSizes)();
-    }
-    
     /// Allocate the storage
     template <typename...TD>
     void allocate(const CompsList<TD...>& td)
@@ -79,7 +74,7 @@ namespace esnort
       
       tupleFillWithSubset(this->dynamicSizes,td);
       
-      storageSize=(_getMaxCompValue<C>()*...*1);
+      storageSize=indexMaxValue<C...>(this->dynamicSizes);
       
       storage=memory::manager<ES>.template provide<Fund>(storageSize);
       
@@ -91,13 +86,6 @@ namespace esnort
     explicit DynamicTens(const CompsList<TD...>& td)
     {
       allocate(td);
-    }
-    
-    template <typename...U>
-    HOST_DEVICE_ATTRIB constexpr INLINE_FUNCTION
-    decltype(auto) eval(const U&...cs) const
-    {
-      return storage[orderedIndex<C...>(this->dynamicSizes,cs...)];
     }
     
     /// Initialize the tensor without allocating
@@ -117,8 +105,21 @@ namespace esnort
 	memory::manager<ES>.release(storage);
       allocated=false;
     }
+    
+#define PROVIDE_EVAL(ATTRIB)						\
+    template <typename...U>						\
+    HOST_DEVICE_ATTRIB constexpr INLINE_FUNCTION			\
+    ATTRIB Fund& eval(const U&...cs) ATTRIB				\
+    {									\
+      return storage[orderedIndex<C...>(this->dynamicSizes,cs...)];	\
+    }
+    
+    PROVIDE_EVAL(const);
+    
+    PROVIDE_EVAL(/* non const */);
+    
+#undef PROVIDE_EVAL
   };
-
 }
 
 #endif

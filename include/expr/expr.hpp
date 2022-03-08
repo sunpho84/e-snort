@@ -11,7 +11,6 @@
 
 #include <type_traits>
 
-#include <assign/assign.hpp>
 #include <expr/executionSpace.hpp>
 #include <metaprogramming/crtp.hpp>
 #include <tuples/tupleFilter.hpp>
@@ -49,28 +48,29 @@ namespace esnort
       using Rhs=std::decay_t<decltype(rhs)>;
       
       /// Execution space for the lhs
-      constexpr ExecutionSpace lhsExecSpace=Lhs::execSpace();
+      constexpr ExecutionSpace lhsExecSpace=Lhs::execSpace;
       
       /// Execution space for the rhs
-      constexpr ExecutionSpace rhsExecSpace=Rhs::execSpace();
+      constexpr ExecutionSpace rhsExecSpace=Rhs::execSpace;
       
-      /// Decide which side of the assignment will change the
-      /// execution space. This is done in terms of an euristic cost
-      /// of the change, but we might refine in the future. The
-      /// assumption is that ultimately, the results will be stored in
-      /// any case on the lhs execution space, so we should avoid
-      /// moving the lhs unless it is much lest costly.
-      constexpr WhichSideToChange whichSideToChange=
-		  (Rhs::execSpaceChangeCost()>Lhs::execSpaceChangeCost())?
-		  (WhichSideToChange::LHS):
-      (WhichSideToChange::RHS);
-      
-      /// Issue the acutal assignmentx
-      Assign<lhsExecSpace,rhsExecSpace,whichSideToChange>::exec(lhs,rhs);
+      if constexpr(lhsExecSpace==rhsExecSpace)
+	lhs()=rhs();
+      else
+	{
+	  /// Decide which side of the assignment will change the
+	  /// execution space. This is done in terms of an euristic cost
+	  /// of the change, but we might refine in the future. The
+	  /// assumption is that ultimately, the results will be stored in
+	  /// any case on the lhs execution space, so we should avoid
+	  /// moving the lhs unless it is much lest costly.
+	  if constexpr (Lhs::execSpaceChangeCost<Rhs::execSpaceChangeCost)
+	    ;
+	  else
+	    lhs()=rhs.template changeExecSpaceTo<lhsExecSpace>()();
+	}
       
       return this->crtp();
     }
-    
     
     template <typename...C>
     HOST_DEVICE_ATTRIB constexpr INLINE_FUNCTION

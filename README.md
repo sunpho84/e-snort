@@ -201,17 +201,16 @@ Options from maze
 Enable memory
 Added unroller for
 Tuple
+Components
+Tensor from nissa
 
 TODO
 ---
 
-Components
-- where do we put F and Comps?
-- maybe we call it callableExpr
-
+Binder
+Assign
 
 Enable vectorization
 
-Tensor from nissa
 Reducer from nissa
 Grid from...?

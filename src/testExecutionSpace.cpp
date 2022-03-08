@@ -90,8 +90,12 @@ int main(int narg,char** arg)
   // I i(SpaceTime(10));
   
   DynamicTens<OfComps<SpaceTime>,double,ExecutionSpace::HOST> dt(CompsList<SpaceTime>{5});
+  DynamicTens<OfComps<SpaceTime>,double,ExecutionSpace::DEVICE> dtg(CompsList<SpaceTime>{5});
+  StackTens<OfComps<SpinRow>,double> st;
+  dtg=dt;
   
-  dt(SpaceTime(0));
+  dt(SpaceTime(0))=9;
+  st(SpinRow(2));
   LOGGER<<"AAAA";
   auto r=
       TupleDiscriminate<SizeIsKnownAtCompileTime, C>::Valid{};
@@ -103,13 +107,13 @@ int main(int narg,char** arg)
   // decltype(s)::Transp t;
   auto t=s.transp();
   
-  SpaceTime st;
-  auto _st=st.transp();
+  // SpaceTime st;
+  // auto _st=st.transp();
   
   s.sizeAtCompileTimeAssertingNotDynamic();
   
 #if not COMPILING_FOR_DEVICE
-  static_assert(StackedVariable<int>::execSpace()==esnort::ExecutionSpace::HOST,"We are issuing A on the host");
+  static_assert(StackedVariable<int>::execSpace==esnort::ExecutionSpace::HOST,"We are issuing A on the host");
 #endif
   
   ASM_BOOKMARK_BEGIN("TEST_ASSIGN");
