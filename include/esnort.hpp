@@ -14,6 +14,7 @@
 #include <debug/minimalCrash.hpp>
 #include <expr/comp.hpp>
 #include <expr/compRwCl.hpp>
+#include <expr/dynamicTens.hpp>
 #include <expr/indexComputer.hpp>
 #include <ios/file.hpp>
 #include <ios/logger.hpp>

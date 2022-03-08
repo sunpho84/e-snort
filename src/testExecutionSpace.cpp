@@ -62,17 +62,37 @@ int j;
 // template <typename E>
 // struct SizeIsKnownAtCompileTime;
 
+// struct S :
+//   IndexComputer<S>
+// {
+  
+// };
+
+  using SpinRow=Spin<RwCl::ROW,0>;
+
 int main(int narg,char** arg)
 {
-  
-  using SpinRow=Spin<RwCl::ROW,0>;
+  ASM_BOOKMARK_BEGIN("TEST_INDEX");
+  __asm volatile ("");
   
   using C=std::tuple<SpinRow,SpaceTime>;
+
+  std::integral_constant<int,index(CompsList<>{},SpinRow{3})>{};
   
-  using I=IndexComputer<C>;
+  ASM_BOOKMARK_BEGIN("TEST_INDEX");
+  j=index(CompsList<SpaceTime>{5},SpinRow{3},SpaceTime{1});
+  LOGGER<<j;
+  ASM_BOOKMARK_END("TEST_INDEX");
+  LOGGER<<j;
   
-  I i(std::make_tuple<SpaceTime>(10));
+  // using I=IndexComputer<C>;
   
+  // I i(SpaceTime(10));
+  
+  DynamicTens<OfComps<SpaceTime>,double,ExecutionSpace::HOST> dt(CompsList<SpaceTime>{5});
+  
+  dt=dt;
+  LOGGER<<"AAAA";
   auto r=
       TupleDiscriminate<SizeIsKnownAtCompileTime, C>::Valid{};
   

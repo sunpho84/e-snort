@@ -9,9 +9,9 @@
 ///
 /// \brief Implements a tensor comp
 
+#include <metaprogramming/arithmeticOperatorsViaCast.hpp>
 #include <metaprogramming/inline.hpp>
 #include <metaprogramming/nonConstMethod.hpp>
-#include <metaprogramming/arithmeticOperatorsViaCast.hpp>
 #include <metaprogramming/typeConversion.hpp>
 
 namespace esnort
@@ -19,7 +19,7 @@ namespace esnort
   /// A component
   template <typename _C,
 	    typename _Index>
-  struct BaseComp:
+  struct BaseComp :
     ArithmeticOperators<_Index,_C>
   {
     /// Value type
