@@ -128,10 +128,10 @@ namespace esnort
     
     return index(index,0,comps.crtp()...);
   }
-
-    /// Dispatch the internal index calculation
-    ///
-    /// This works when the passed components are already well ordered
+  
+  /// Dispatch the internal index calculation
+  ///
+  /// This works when the passed components are already well ordered
   template <typename...C,
 	    typename...Index>
   constexpr HOST_DEVICE_ATTRIB INLINE_FUNCTION
@@ -160,6 +160,19 @@ namespace esnort
     };
     
     return index(index,0,comps.crtp()...);
+  }
+  
+  /// Returns the index after reordering elements
+  template <typename...O,
+	    typename DynamicComps,
+	    typename...U>
+  constexpr HOST_DEVICE_ATTRIB INLINE_FUNCTION
+  auto orderedIndex(const DynamicComps& dynamicSizes,
+		    const U&...cs)
+  {
+    const auto tmp=std::make_tuple(cs...);
+    
+    return index(dynamicSizes,std::get<O>(tmp)...);
   }
 }
 

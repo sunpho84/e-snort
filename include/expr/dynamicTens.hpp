@@ -12,6 +12,7 @@
 #include <expr/dynamicCompsProvider.hpp>
 #include <expr/executionSpace.hpp>
 #include <expr/expr.hpp>
+#include <expr/indexComputer.hpp>
 #include <resources/memory.hpp>
 #include <tuples/tupleDiscriminate.hpp>
 
@@ -90,6 +91,13 @@ namespace esnort
     explicit DynamicTens(const CompsList<TD...>& td)
     {
       allocate(td);
+    }
+    
+    template <typename...U>
+    HOST_DEVICE_ATTRIB constexpr INLINE_FUNCTION
+    decltype(auto) eval(const U&...cs) const
+    {
+      return storage[orderedIndex<C...>(this->dynamicSizes,cs...)];
     }
     
     /// Initialize the tensor without allocating

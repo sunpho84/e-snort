@@ -199,6 +199,12 @@ namespace esnort
 				      std::tuple<Fs...>>::type;
     };
   }
+  
+  /// Filter the first occurrence of all types of the tuple \c Filter out of the tuple \ToBeFiltered
+  template <typename ToBeFiltered,
+	    typename Filter>
+  using TupleFilterAllTypes=
+    typename details::_TupleFilterAllTypes<ToBeFiltered,Filter>::type;
 }
 
 #endif

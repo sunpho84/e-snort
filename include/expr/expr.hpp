@@ -14,6 +14,7 @@
 #include <assign/assign.hpp>
 #include <expr/executionSpace.hpp>
 #include <metaprogramming/crtp.hpp>
+#include <tuples/tupleFilter.hpp>
 
 namespace esnort
 {
@@ -70,18 +71,20 @@ namespace esnort
       return this->crtp();
     }
     
-    /// Returns the number of components of a Comps
-    static constexpr int nOfComps=
-    std::tuple_size<typename T::Comps>::value;
     
-    // template <bool B>
-    // using dispatchFullyClosed=
-    //   std::integral_constant<bool,B>;
-    
-    // template <typename...Args>
-    // static constexpr bool isClosedWhenCalling(Args&&...args)
-    // {
-    // }
+    template <typename...C>
+    HOST_DEVICE_ATTRIB constexpr INLINE_FUNCTION
+    decltype(auto) operator()(const C&...cs)
+    {
+      //// Leftover components
+      using ResidualComps=
+	TupleFilterAllTypes<typename T::Comps,std::tuple<C...>>;
+      
+      if constexpr(std::tuple_size_v<ResidualComps> ==0)
+	return this->crtp().eval(cs...);
+      else
+	return compBind(this->crtp(),std::make_tuple(cs...));
+    }
     
   };
 }
