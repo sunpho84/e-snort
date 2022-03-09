@@ -136,6 +136,9 @@ namespace esnort
     {
       if(storageSize!=oth.storageSize)
 	CRASH<<"Storage size not agreeing";
+      
+      LOGGER<<"Copying a "<<execSpaceName<ES><<" dynamic tensor into a "<<execSpaceName<OtherES><<" one";
+      
       memory::memcpy<ES,OtherES>(storage,oth.storage,oth.storageSize);
       
       return *this;

@@ -12,6 +12,7 @@
 #include <type_traits>
 
 #include <expr/executionSpace.hpp>
+#include <ios/logger.hpp>
 #include <metaprogramming/crtp.hpp>
 #include <tuples/tupleFilter.hpp>
 
@@ -59,15 +60,19 @@ namespace esnort
 	{
 	  /// Decide which side of the assignment will change the
 	  /// execution space. This is done in terms of an euristic cost
-	  /// of the change, but we might refine in the future. The
+	  /// of the change, but we might refine it in the future. The
 	  /// assumption is that ultimately, the results will be stored in
 	  /// any case on the lhs execution space, so we should avoid
 	  /// moving the lhs unless it is much lest costly.
 	  if constexpr (Lhs::execSpaceChangeCost<Rhs::execSpaceChangeCost)
-	    ;
+	    {
+	      LOGGER<<"Needs to change the execution space of Lhs before assigning";
+	    }
 	  else
-#warning messagelhs()=rhs.template changeExecSpaceTo<lhsExecSpace>()()
-	    ;
+	    {
+#warning messagelhs()=rhs.template changeExecSpaceTo<lhsExecSpace>()();
+	      LOGGER<<"Needs to change the execution space of Rhs before assigning";
+	    }
 	}
       
       return this->crtp();

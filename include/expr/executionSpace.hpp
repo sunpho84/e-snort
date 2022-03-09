@@ -33,6 +33,31 @@ namespace esnort
       // 	CRASH<<"Cannot access device memory from host";
 #endif
     }
+  
+  namespace  internal
+  {
+    /// Convert the execution space name into a string
+    template <ExecutionSpace ES>
+    constexpr const char* execSpaceName()
+    {
+      switch(ES)
+	{
+	case ExecutionSpace::HOST:
+	  return "host";
+	  break;
+	case ExecutionSpace::DEVICE:
+	  return "device";
+	  break;
+	default:
+	  return "unspecified";
+	}
+    }
+  }
+  
+  /// Convert the execution space name into a string
+  template <ExecutionSpace ES>
+  constexpr const char* execSpaceName=
+    internal::execSpaceName<ES>();
 }
 
 #endif
