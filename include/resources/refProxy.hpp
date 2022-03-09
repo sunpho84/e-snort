@@ -34,7 +34,8 @@ namespace esnort
     }
     
     /// Implicit convert to T
-    operator T&()
+    INLINE_FUNCTION
+    operator auto&()
     {
       return ref;
     }
