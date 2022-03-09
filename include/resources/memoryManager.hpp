@@ -325,13 +325,12 @@ namespace esnort
       if constexpr(ES==ExecutionSpace::DEVICE)
 	device::malloc(ptr,size);
       else
-#else
+#endif
 	{
 	  const int rc=posix_memalign(&ptr,alignment,size);
 	  if(rc)
 	    CRASH<<"Failed to allocate "<<size<<" "<<name<<" memory with alignement "<<alignment;
 	}
-#endif
       
       MEMORY_LOGGER<<"ptr: "<<ptr;
       
