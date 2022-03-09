@@ -10,13 +10,13 @@ AUTOMAKE_OPTIONS= \
 lib_LIBRARIES= \
 	$(top_builddir)/lib/libesnort.a
 
-%D%/gitInfo.hpp: $(top_srcdir)/.git/HEAD $(top_srcdir)/.git/index $(top_srcdir)/config/getGitInfo.sh Makefile
+%D%/resources/gitInfo.cpp: $(top_srcdir)/.git/HEAD $(top_srcdir)/.git/index $(top_srcdir)/config/getGitInfo.sh Makefile
 	@echo "Reading git version"
 	@$(top_srcdir)/config/getGitInfo.sh $(top_srcdir) > $@
 $(top_srcdir)/.git/HEAD:
 $(top_srcdir)/.git/index:
 
-BUILT_SOURCES=%D%/gitInfo.hpp
+BUILT_SOURCES=%D%/resources/gitInfo.cpp
 
 # Library sources
 __top_builddir__lib_libesnort_a_SOURCES= \
@@ -32,5 +32,6 @@ __top_builddir__lib_libesnort_a_SOURCES= \
 	%D%/resources/globalVariablesDefinitions.cpp \
 	%D%/resources/Mpi.cpp \
 	%D%/resources/threads.cpp \
+	%D%/resources/gitInfo.cpp \
 	%D%/esnort.cpp
 

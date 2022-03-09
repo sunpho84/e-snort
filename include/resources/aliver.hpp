@@ -7,8 +7,6 @@
 
 /// \file aliver.hpp
 
-#include "../lib/gitInfo.hpp"
-
 #include <ios/logger.hpp>
 #include <metaprogramming/singleInstance.hpp>
 

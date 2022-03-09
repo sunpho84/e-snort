@@ -18,7 +18,7 @@ namespace esnort::device
   
   void memcpy(void* dst,const void* src,size_t count,cudaMemcpyKind kind)
   {
-    logger()<<"Cuda memcpy: "<<kind;
+    VERBOSE_LOGGER(3)<<"Cuda memcpy: "<<kind;
     decryptError(cudaMemcpy(dst,src,count,kind),"calling cudaMemcpy");
   }
   
@@ -26,7 +26,7 @@ namespace esnort::device
   {
     SCOPE_INDENT();
     
-    logger()<<"Synchronizing gpu";
+    VERBOSE_LOGGER(3)<<"Synchronizing gpu";
     decryptError(cudaDeviceSynchronize(),"Synchronizing");
   }
   
@@ -34,7 +34,7 @@ namespace esnort::device
   {
     SCOPE_INDENT();
     
-    logger()<<"Freeing on gpu: "<<ptr;
+    VERBOSE_LOGGER(3)<<"Freeing on gpu: "<<ptr;
     decryptError(cudaFree(ptr),"");
   }
 #endif
@@ -58,13 +58,16 @@ namespace esnort::device
   void initialize(const int& iDevice)
   {
 #if ENABLE_DEVICE_CODE
+    
+    LOGGER;
     decryptError(cudaGetDeviceCount(&_nDevices),"Counting nDevices");
+    LOGGER<<"Found "<<nDevices<<" CUDA Enabled devices";
     
     for(int i=0;i<nDevices;i++)
       {
 	cudaDeviceProp deviceProp;
 	decryptError(cudaGetDeviceProperties(&deviceProp,i),"Getting properties for device");
-	logger()<<" CUDA Enabled device "<<i<<"/"<<nDevices<<": "<<deviceProp.major<<"."<<deviceProp.minor;
+	LOGGER<<" CUDA Enabled device "<<i<<"/"<<nDevices<<": "<<deviceProp.major<<"."<<deviceProp.minor;
       }
     
     decryptError(cudaSetDevice(iDevice),"Unable to set the device");
@@ -72,7 +75,7 @@ namespace esnort::device
     
     Duration initDur;
     
-    logger()<<"cuda initialized in "<<durationInSec(initDur)<<" s, nDevices: "<<nDevices;
+    LOGGER<<"CUDA initialized in "<<durationInSec(initDur)<<" s, nDevices: "<<nDevices;
 #endif
   }
 }

@@ -50,13 +50,16 @@ namespace esnort::threads
     _nThreads=omp_get_num_threads();
 #endif
     
-    logger()<<"NThreads: "<<nThreads;
+    LOGGER;
+    LOGGER<<"NThreads: "<<nThreads;
+    LOGGER<<"Threads parameters:";
     
 #if ENABLE_THREADS
     {
       SCOPE_INDENT();
-      logger()<<"Threads <-> Core binding: "<<translateProcBindingToString(omp_get_proc_bind());
-      logger()<<"Threads dynamicity: "<<(omp_get_dynamic()?"true":"false");
+      
+      LOGGER<<"Threads <-> Core binding: "<<translateProcBindingToString(omp_get_proc_bind());
+      LOGGER<<"Threads dynamicity: "<<(omp_get_dynamic()?"true":"false");
     }
 #endif
   }

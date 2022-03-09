@@ -16,8 +16,11 @@ namespace esnort::envFlags
 {
   void readAll()
   {
+    LOGGER;
+    LOGGER<<"Flags ";
+    
     SCOPE_INDENT();
-
+    
 #define ADD_FLAG(NAME,DEFAULT,TAG,DESCRIPTION)		\
     std::make_tuple(&NAME,DEFAULT,TAG,DESCRIPTION)
     
@@ -40,7 +43,7 @@ namespace esnort::envFlags
 			    /// Description to be used to parse
 			    const char* descr=std::get<3>(f);
 			    
-			    LOGGER<<"- Flag "<<tag<<" ("<<descr<<") ";
+			    LOGGER<<"- "<<tag<<" ("<<descr<<") ";
 			    
 			    /// Search for the tag
 			    const char* p=getenv(tag);

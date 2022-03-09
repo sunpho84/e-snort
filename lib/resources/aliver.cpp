@@ -6,8 +6,6 @@
 
 #include <signal.h>
 
-#include "../lib/gitInfo.hpp"
-
 #include <debug/attachDebugger.hpp>
 #include <debug/signalTrap.hpp>
 #include <ios/logger.hpp>
@@ -15,6 +13,8 @@
 #include <resources/aliver.hpp>
 #include <resources/device.hpp>
 #include <resources/environmentFlags.hpp>
+#include <resources/gitInfo.hpp>
+
 #include <resources/Mpi.hpp>
 #include <resources/threads.hpp>
 
@@ -57,7 +57,9 @@ namespace esnort
   /// Prints the git info
   void printGitInfo()
   {
-    LOGGER<<"Commit "<<GIT_HASH<<" made at "<<GIT_TIME<<" by "<<GIT_COMMITTER<<" with message: \""<<GIT_LOG<<"\"";
+    using namespace git;
+    
+    LOGGER<<"Commit "<<hash<<" made at "<<time<<" by "<<committer<<" with message: \""<<log<<"\"";
   }
   
   /// Prints configure info

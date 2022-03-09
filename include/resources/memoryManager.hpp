@@ -293,7 +293,6 @@ namespace esnort
     {
       LOGGER<<"";
       LOGGER<<"Starting the "<<name<<" memory manager";
-      LOGGER<<"";
     }
     
     /// Destruct the memory manager

@@ -81,7 +81,7 @@ namespace esnort::device
     static_assert(__nv_is_extended_device_lambda_closure_type(std::remove_reference_t<F>),"We need an extended lambda closure");
 #endif
     
-    logger()<<"at line "<<line<<" of file "<<file<<" launching kernel on loop ["<<min<<","<<max<<") using blocks of size "<<blockDimension.x<<" and grid of size "<<gridDimension.x;
+    VERBOSE_LOGGER(3)<<"at line "<<line<<" of file "<<file<<" launching kernel on loop ["<<min<<","<<max<<") using blocks of size "<<blockDimension.x<<" and grid of size "<<gridDimension.x;
     
     cudaGenericKernel<<<gridDimension,blockDimension>>>(std::forward<F>(f),min,max);
     
@@ -96,7 +96,7 @@ namespace esnort::device
     SCOPE_INDENT();
     
     decryptError(cudaMalloc(&ptr,sizeInUnit*sizeof(T)),"");
-    logger()<<"Allocated on gpu: "<<ptr;
+    VERBOSE_LOGGER(3)<<"Allocated on gpu: "<<ptr;
   }
 #endif
   

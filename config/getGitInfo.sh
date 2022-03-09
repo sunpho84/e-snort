@@ -1,31 +1,31 @@
 #!/bin/bash
 
-if [ -f "$1/lib/gitInfo.hpp" ]
+if [ -f "$1/lib/resources/gitInfo.cpp" ]
 then
-    cat "$1/lib/gitInfo.hpp"
+    cat "$1/lib/resources/gitInfo.cpp"
 else
     
-    echo '#ifndef _GIT_INFO_HPP'
-    echo '#define _GIT_INFO_HPP'
+    echo 'namespace esnort::git'
+    echo '{'
     echo
     
-    echo -n ' #define GIT_HASH "'
+    echo -n ' const char* hash="'
     git rev-parse HEAD|tr -d "\n"
-    echo '"'
+    echo '";'
     
-    echo -n ' #define GIT_TIME "'
+    echo -n ' const char* time="'
     git log -1 --pretty=%ad|tr -d "\n"
-    echo '"'
+    echo '";'
     
-    echo -n ' #define GIT_COMMITTER "'
+    echo -n ' const char* committer="'
     git log -1 --pretty=%cn|tr -d "\n"
-    echo '"'
+    echo '";'
     
-    echo -n ' #define GIT_LOG "'
+    echo -n ' const char* log="'
     git log -1 --pretty=%B|tr -d "\n"|sed 's|\\|\\\\|g'
-    echo '"'
+    echo '";'
     
     echo
-    echo '#endif'
+    echo '}'
 
 fi
