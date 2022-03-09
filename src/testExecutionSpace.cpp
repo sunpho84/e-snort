@@ -90,13 +90,17 @@ int main(int narg,char** arg)
   // I i(SpaceTime(10));
   
   DynamicTens<OfComps<SpaceTime>,double,ExecutionSpace::HOST> dt(CompsList<SpaceTime>{5});
-  DynamicTens<OfComps<SpaceTime>,double,ExecutionSpace::DEVICE> dtg(CompsList<SpaceTime>{5});
   for(SpaceTime st=0;st<SpaceTime(5);st=st+SpaceTime(1))
     dt(st)=st();
   
+  DynamicTens<OfComps<SpaceTime>,double,ExecutionSpace::DEVICE> dtg(CompsList<SpaceTime>{5});
   dtg=dt;
+  
+  DynamicTens<OfComps<SpaceTime>,double,ExecutionSpace::HOST> dtd(CompsList<SpaceTime>{5});
+  dtd=dtg;
+  
   for(SpaceTime st=0;st<SpaceTime(5);st=st+SpaceTime(1))
-    LOGGER<<st()<<" "<<dtg(st);
+    LOGGER<<st()<<" "<<dtd(st);
   
   StackTens<OfComps<SpinRow>,double> st;
   dtg=dt;

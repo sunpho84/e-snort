@@ -174,6 +174,7 @@ namespace esnort
     HOST_DEVICE_ATTRIB constexpr INLINE_FUNCTION			\
     ATTRIB Fund& eval(const U&...cs) ATTRIB				\
     {									\
+      assertCorrectEvaluationStorage<ES>();				\
       return storage[orderedIndex<C...>(this->dynamicSizes,cs...)];	\
     }
     

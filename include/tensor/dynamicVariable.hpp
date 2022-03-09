@@ -88,7 +88,7 @@ namespace esnort
       DynamicVariable()
     {
 #if ENABLE_DEVICE_CODE
-      if(execSpace()==ExecutionSpace::DEVICE)
+      if(execSpace==ExecutionSpace::DEVICE)
 	device::memcpy(ptr,
 		     oth.getPtr(),
 		     sizeof(T),
