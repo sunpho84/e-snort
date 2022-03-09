@@ -203,12 +203,13 @@ Added unroller for
 Tuple
 Components
 Tensor from nissa
+Tensor as reference
 
 TODO
 ---
 
 Binder
-Assign
+Assign tensor to tensor: if everything is the same, do a memcpy, a parallel memcpy, a host-device memcpy if the execution space is not the same
 
 Enable vectorization
 

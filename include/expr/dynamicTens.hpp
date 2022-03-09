@@ -13,6 +13,7 @@
 #include <expr/executionSpace.hpp>
 #include <expr/expr.hpp>
 #include <expr/indexComputer.hpp>
+#include <metaprogramming/constnessChanger.hpp>
 #include <resources/memory.hpp>
 #include <tuples/tupleDiscriminate.hpp>
 
@@ -23,16 +24,18 @@ namespace esnort
   /// Forward declaration
   template <typename C,
 	    typename F,
-	    ExecutionSpace ES>
+	    ExecutionSpace ES,
+	    bool _IsRef=false>
   struct DynamicTens;
   
 #define THIS					\
-  DynamicTens<CompsList<C...>,_Fund,ES>
+  DynamicTens<CompsList<C...>,_Fund,ES,IsRef>
   
   /// Tensor
   template <typename...C,
 	    typename _Fund,
-	    ExecutionSpace ES>
+	    ExecutionSpace ES,
+	    bool IsRef>
   struct THIS :
     Expr<THIS>,
     DynamicCompsProvider<C...>
@@ -43,11 +46,18 @@ namespace esnort
     
     using Expr<This>::operator=;
     
+    /// List of dynamic comps
+    using DynamicComps=
+      typename DynamicCompsProvider<C...>::DynamicComps;
+    
     /// Components
     using Comps=CompsList<C...>;
     
     /// Fundamental type
     using Fund=_Fund;
+
+    /// Determine if it is reference
+    static constexpr bool isRef=IsRef;
     
     /// Executes where allocated
     static constexpr ExecutionSpace execSpace=ES;
@@ -57,13 +67,13 @@ namespace esnort
       ExecutionSpaceChangeCost::ALOT;
     
     /// Pointer to storage
-    Fund* storage;
+    ConstIf<isRef,Fund*> storage;
     
     /// Storage size
     int64_t storageSize;
     
     /// Determine if allocated
-    bool allocated{false};
+    ConstIf<isRef,bool> allocated{false};
     
     /// Allocate the storage
     template <typename...TD>
@@ -85,26 +95,63 @@ namespace esnort
     template <typename...TD>
     explicit DynamicTens(const CompsList<TD...>& td)
     {
-      allocate(td);
+      if constexpr(not isRef)
+	allocate(td);
+      else
+	CRASH<<"Trying to allocate a reference";
     }
     
     /// Initialize the tensor without allocating
     constexpr
     DynamicTens()
     {
-      if constexpr(DynamicCompsProvider<C...>::nDynamicComps==0)
-	allocate({});
+      if constexpr(not isRef)
+	{
+	  if constexpr(DynamicCompsProvider<C...>::nDynamicComps==0)
+	    allocate({});
+	  else
+	    allocated=false;
+	}
       else
-	allocated=false;
+	CRASH<<"Trying to create a reference to nothing";
+    }
+    
+    /// Initialize the tensor as a reference
+    constexpr
+    DynamicTens(Fund* storage,const DynamicComps& dynamicSizes) :
+      DynamicCompsProvider<C...>{dynamicSizes},
+      storage(storage)
+    {
+      if constexpr(not isRef)
+	CRASH<<"Trying to create as a reference a non-reference";
     }
     
     /// Destructor
     ~DynamicTens()
     {
-      if(allocated)
-	memory::manager<ES>.release(storage);
-      allocated=false;
+      if constexpr(not isRef)
+	{
+	  if(allocated)
+	    memory::manager<ES>.release(storage);
+	  allocated=false;
+	}
     }
+    
+    /////////////////////////////////////////////////////////////////
+    
+#define PROVIDE_GET_REF(ATTRIB)						\
+    auto getRef() ATTRIB						\
+    {									\
+      return DynamicTens<Comps,ATTRIB Fund,ES,true>(storage,this->dynamicSizes); \
+    }
+    
+    PROVIDE_GET_REF(const);
+    
+    PROVIDE_GET_REF(/* non const */);
+    
+#undef PROVIDE_GET_REF
+    
+    /////////////////////////////////////////////////////////////////
     
 #define PROVIDE_EVAL(ATTRIB)						\
     template <typename...U>						\

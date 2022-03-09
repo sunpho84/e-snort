@@ -66,26 +66,33 @@ namespace esnort
 	  if constexpr (Lhs::execSpaceChangeCost<Rhs::execSpaceChangeCost)
 	    ;
 	  else
-	    lhs()=rhs.template changeExecSpaceTo<lhsExecSpace>()();
+#warning messagelhs()=rhs.template changeExecSpaceTo<lhsExecSpace>()()
+	    ;
 	}
       
       return this->crtp();
     }
-    
-    template <typename...C>
-    HOST_DEVICE_ATTRIB constexpr INLINE_FUNCTION
-    decltype(auto) operator()(const C&...cs)
-    {
-      //// Leftover components
-      using ResidualComps=
-	TupleFilterAllTypes<typename T::Comps,std::tuple<C...>>;
-      
-      if constexpr(std::tuple_size_v<ResidualComps> ==0)
-	return this->crtp().eval(cs...);
-      else
-	return compBind(this->crtp(),std::make_tuple(cs...));
+
+#define PROVIDE_SUBSCRIBE(ATTRIB)					\
+    template <typename...C>						\
+    HOST_DEVICE_ATTRIB constexpr INLINE_FUNCTION			\
+    decltype(auto) operator()(const C&...cs) ATTRIB			\
+    {									\
+      /*! Leftover components */					\
+      using ResidualComps=						\
+	TupleFilterAllTypes<typename T::Comps,std::tuple<C...>>;	\
+									\
+      if constexpr(std::tuple_size_v<ResidualComps> ==0)		\
+	return this->crtp().eval(cs...);				\
+      else								\
+	return compBind(this->crtp(),std::make_tuple(cs...));		\
     }
     
+    PROVIDE_SUBSCRIBE(const);
+    
+    PROVIDE_SUBSCRIBE(/* non const */);
+    
+#undef PROVIDE_SUBSCRIBE
   };
 }
 

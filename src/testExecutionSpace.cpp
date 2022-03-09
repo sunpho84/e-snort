@@ -94,7 +94,11 @@ int main(int narg,char** arg)
   StackTens<OfComps<SpinRow>,double> st;
   dtg=dt;
   
-  dt(SpaceTime(0))=9;
+  {
+    auto rdt=dt.getRef();
+    rdt(SpaceTime{3})=0;
+  }
+  //dt(SpaceTime(0))=9;
   st(SpinRow(2));
   LOGGER<<"AAAA";
   auto r=
@@ -116,31 +120,31 @@ int main(int narg,char** arg)
   static_assert(StackedVariable<int>::execSpace==esnort::ExecutionSpace::HOST,"We are issuing A on the host");
 #endif
   
-  ASM_BOOKMARK_BEGIN("TEST_ASSIGN");
+  // ASM_BOOKMARK_BEGIN("TEST_ASSIGN");
   
-  StackedVariable<int> a;
-  a()=1;
+  // StackedVariable<int> a;
+  // a()=1;
   
-  DynamicVariable<int,ExecutionSpace::DEVICE> b;
-  b=a;
+  // DynamicVariable<int,ExecutionSpace::DEVICE> b;
+  // b=a;
   
-  DynamicVariable<int,ExecutionSpace::DEVICE> c;
-  c=b;
+  // DynamicVariable<int,ExecutionSpace::DEVICE> c;
+  // c=b;
   
-  StackedVariable<int> d;
-  d=c;
-  logger()<<"Result: "<<a()<<" -> "<<d();
+  // StackedVariable<int> d;
+  // d=c;
+  // logger()<<"Result: "<<a()<<" -> "<<d();
   
-  ASM_BOOKMARK_END("TEST_ASSIGN");
+  // ASM_BOOKMARK_END("TEST_ASSIGN");
   
-  ASM_BOOKMARK_BEGIN("TEST_UNROLL");
-  j=0;
-  UNROLLED_FOR((I,0,10),
-	       {
-		 j+=I;
-	       });
-  LOGGER<<j;
-  ASM_BOOKMARK_END("TEST_UNROLL");
+  // ASM_BOOKMARK_BEGIN("TEST_UNROLL");
+  // j=0;
+  // UNROLLED_FOR((I,0,10),
+  // 	       {
+  // 		 j+=I;
+  // 	       });
+  // LOGGER<<j;
+  // ASM_BOOKMARK_END("TEST_UNROLL");
   
   return 0;
 }
