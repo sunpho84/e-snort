@@ -70,7 +70,7 @@ namespace esnort
     ConstIf<isRef,Fund*> storage;
     
     /// Storage size
-    int64_t storageSize;
+    ConstIf<isRef,int64_t> storageSize;
     
     /// Determine if allocated
     ConstIf<isRef,bool> allocated{false};
@@ -118,12 +118,27 @@ namespace esnort
     
     /// Initialize the tensor as a reference
     constexpr
-    DynamicTens(Fund* storage,const DynamicComps& dynamicSizes) :
+    DynamicTens(Fund* storage,
+		const int64_t& storageSize,
+		const DynamicComps& dynamicSizes) :
       DynamicCompsProvider<C...>{dynamicSizes},
-      storage(storage)
+      storage(storage),
+      storageSize(storageSize)
     {
       if constexpr(not isRef)
 	CRASH<<"Trying to create as a reference a non-reference";
+    }
+    
+    /// Assign from another dynamic tensor of the very same type
+    template <ExecutionSpace OtherES,
+	      bool OtherIsRef>
+    DynamicTens& operator=(const DynamicTens<Comps,Fund,OtherES,OtherIsRef>& oth)
+    {
+      if(storageSize!=oth.storageSize)
+	CRASH<<"Storage size not agreeing";
+      memory::memcpy<OtherES,ES>(storage,oth.storage,oth.storageSize);
+      
+      return *this;
     }
     
     /// Destructor
@@ -134,6 +149,7 @@ namespace esnort
 	  if(allocated)
 	    memory::manager<ES>.release(storage);
 	  allocated=false;
+	  storageSize=0;
 	}
     }
     
@@ -142,7 +158,7 @@ namespace esnort
 #define PROVIDE_GET_REF(ATTRIB)						\
     auto getRef() ATTRIB						\
     {									\
-      return DynamicTens<Comps,ATTRIB Fund,ES,true>(storage,this->dynamicSizes); \
+      return DynamicTens<Comps,ATTRIB Fund,ES,true>(storage,storageSize,this->dynamicSizes); \
     }
     
     PROVIDE_GET_REF(const);

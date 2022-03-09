@@ -9,6 +9,8 @@
 
 #include <resources/memoryGlobalVariablesDeclarations.hpp>
 
+#include <resources/device.hpp>
+
 namespace esnort::memory
 {
   namespace internal
@@ -30,6 +32,32 @@ namespace esnort::memory
   template <ExecutionSpace ES>
   constexpr auto& manager=
     internal::_manager<ES>();
+  
+  template <ExecutionSpace Dst,
+	    ExecutionSpace Src,
+	    typename F>
+  INLINE_FUNCTION
+  void memcpy(F* dst,const F* src,const size_t& n)
+  {
+    const size_t size=sizeof(F)*n;
+    
+#if ENABLE_DEVICE_CODE
+    using namespace device;
+    
+    if constexpr (Dst==ExecutionSpace::DEVICE)
+      {
+	if constexpr (Src==ExecutionSpace::DEVICE)
+	  memcpyDeviceToDevice(dst,src,size);
+	else
+	  memcpyHostToDevice(dst,src,size);
+      }
+    else
+      if constexpr (Src==ExecutionSpace::DEVICE)
+	memcpyDeviceToHost(dst,src,size);
+      else
+#endif
+	::memcpy(dst,src,size);
+  }
 }
 
 #endif

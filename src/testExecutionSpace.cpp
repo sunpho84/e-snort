@@ -91,6 +91,13 @@ int main(int narg,char** arg)
   
   DynamicTens<OfComps<SpaceTime>,double,ExecutionSpace::HOST> dt(CompsList<SpaceTime>{5});
   DynamicTens<OfComps<SpaceTime>,double,ExecutionSpace::DEVICE> dtg(CompsList<SpaceTime>{5});
+  for(SpaceTime st=0;st<SpaceTime(5);st=st+SpaceTime(1))
+    dt(st)=st();
+  
+  dtg=dt;
+  for(SpaceTime st=0;st<SpaceTime(5);st=st+SpaceTime(1))
+    LOGGER<<st()<<" "<<dtg(st);
+  
   StackTens<OfComps<SpinRow>,double> st;
   dtg=dt;
   

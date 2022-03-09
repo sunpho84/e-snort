@@ -1,6 +1,7 @@
 #ifndef _DEVICE_HPP
 #define _DEVICE_HPP
 
+#include "expr/executionSpace.hpp"
 #ifdef HAVE_CONFIG_H
 # include <config.hpp>
 #endif
@@ -34,6 +35,20 @@ namespace esnort::device
   }
   
   void memcpy(void* dst,const void* src,size_t count,cudaMemcpyKind kind);
+  
+#define PROVIDE_MEMCPY(FROM_TO_TO)					\
+  INLINE_FUNCTION							\
+  void memcpy ## FROM_TO_TO(void* dst,const void* src,size_t count)	\
+  {									\
+    memcpy(dst,src,count,cudaMemcpy ## FROM_TO_TO);			\
+  }
+  
+  PROVIDE_MEMCPY(DeviceToDevice);
+  PROVIDE_MEMCPY(DeviceToHost);
+  PROVIDE_MEMCPY(HostToDevice);
+  //PROVIDE_MEMCPY(HostToHost);
+  
+#undef PROVIDE_MEMCPY
   
   void synchronize();
   
