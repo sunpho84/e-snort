@@ -56,6 +56,7 @@ namespace esnort
     using SelfOp<ValWithExtreme<T,E>>::operator=;
     
     /// Retrurn extreme value
+    INLINE_FUNCTION
     const T& extreme() const
     {
       return extr;
@@ -63,6 +64,7 @@ namespace esnort
     
     /// Reset to standard value
     template <typename V=T>
+    INLINE_FUNCTION
     void reset(const V& init)
     {
       switch(E)
@@ -78,33 +80,38 @@ namespace esnort
     
     /// Constructor
     template <typename V=T>
+    INLINE_FUNCTION
     explicit ValWithExtreme(const V& init=0)
     {
       reset(init);
     }
     
     /// Cast to const value reference
+    INLINE_FUNCTION
     const T& operator()() const
     {
       return val;
     }
     
     /// Implicit cast to const value reference
+    INLINE_FUNCTION
     operator const T&() const
     {
       return (*this)();
     }
     
     /// Cast to a proxy
+    INLINE_FUNCTION
     auto operator()()
     {
-      return RefProxy(val,[this](){updateExtreme();});
+      return RefProxy(val,[this]() INLINE_ATTRIBUTE {updateExtreme();});
     }
     
     /// Implicit cast to a proxy
+    INLINE_FUNCTION
     operator auto()
     {
-      return RefProxy(val,[this](){updateExtreme();});
+      return RefProxy(val,[this]() INLINE_ATTRIBUTE {updateExtreme();});
     }
   };
   

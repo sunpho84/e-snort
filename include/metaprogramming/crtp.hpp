@@ -5,6 +5,8 @@
 # include <config.hpp>
 #endif
 
+/// \file crtp.hpp
+
 #include <metaprogramming/inline.hpp>
 
 namespace esnort
