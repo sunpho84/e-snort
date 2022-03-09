@@ -136,7 +136,7 @@ namespace esnort
     {
       if(storageSize!=oth.storageSize)
 	CRASH<<"Storage size not agreeing";
-      memory::memcpy<OtherES,ES>(storage,oth.storage,oth.storageSize);
+      memory::memcpy<ES,OtherES>(storage,oth.storage,oth.storageSize);
       
       return *this;
     }

@@ -116,7 +116,7 @@ namespace esnort
     void* popFromCache(const Size& size,
 		       const Size& alignment)
     {
-      MEMORY_LOGGER<<"Trying to find "<<size<<" bytes with alignment "<<alignment<<"in the cache "<<size;
+      MEMORY_LOGGER<<"Trying to find "<<size<<" bytes with alignment "<<alignment<<" in the cache ";
       
       /// List of memory with searched size
       auto cachedIt=cached.find(size);
