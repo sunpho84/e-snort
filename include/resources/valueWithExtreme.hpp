@@ -107,12 +107,13 @@ namespace esnort
       return RefProxy(val,[this]() INLINE_ATTRIBUTE {updateExtreme();});
     }
     
-    /// Implicit cast to a proxy
-    INLINE_FUNCTION
-    operator auto()
-    {
-      return RefProxy(val,[this]() INLINE_ATTRIBUTE {updateExtreme();});
-    }
+    // Causing crash before gcc11, try changing the lambda maybe
+    // /// Implicit cast to a proxy
+    // INLINE_FUNCTION
+    // operator auto()
+    // {
+    //   return RefProxy(val,[this]() INLINE_ATTRIBUTE {updateExtreme();});
+    // }
   };
   
   /// Class to keep a value and its maximum
