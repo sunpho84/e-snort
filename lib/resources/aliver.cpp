@@ -72,19 +72,12 @@ namespace esnort
     LOGGER<<"\n Ciao!\n";
   }
   
-  void trapSignal()
-  {
-    signal(SIGBUS,signalHandler);
-    signal(SIGSEGV,signalHandler);
-    signal(SIGFPE,signalHandler);
-    signal(SIGXCPU,signalHandler);
-    signal(SIGABRT,signalHandler);
-    signal(SIGINT,signalHandler);
-  }
   
   Aliver::Aliver()
   {
     Mpi::initialize();
+    
+    setSignalTraps();
     
     printBanner();
     printVersionContacts();

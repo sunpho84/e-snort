@@ -12,7 +12,6 @@
 
 namespace esnort
 {
-  /// Called when signal received
   void signalHandler(int sig)
   {
     //master_printf("maximal memory used: %ld\n",max_required_memory);
@@ -34,4 +33,15 @@ namespace esnort
     //print_all_vect_content();
     MINIMAL_CRASH("signal %d (%s) detected, exiting",sig,name);
   }
+  
+  void setSignalTraps()
+  {
+    signal(SIGBUS,signalHandler);
+    signal(SIGSEGV,signalHandler);
+    signal(SIGFPE,signalHandler);
+    signal(SIGXCPU,signalHandler);
+    signal(SIGABRT,signalHandler);
+    signal(SIGINT,signalHandler);
+  }
+  
 }
