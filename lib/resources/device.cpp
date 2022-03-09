@@ -4,6 +4,8 @@
 
 /// \file device.cpp
 
+#include <cstdarg>
+
 #define DEFINE_HIDDEN_VARIABLES_ACCESSORS
 # include <resources/deviceHiddenVariablesDeclarations.hpp>
 #undef DEFINE_HIDDEN_VARIABLES_ACCESSORS
