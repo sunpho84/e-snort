@@ -40,7 +40,7 @@ namespace esnort
       return ref;
     }
     
-    /// Create from referencee and action
+    /// Create from reference and action
     RefProxy(T& value,
 	     DestructionAction&& destruct) :
       ref(value),

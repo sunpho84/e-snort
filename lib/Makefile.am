@@ -20,10 +20,11 @@ BUILT_SOURCES=%D%/gitInfo.hpp
 
 # Library sources
 __top_builddir__lib_libesnort_a_SOURCES= \
+	%D%/debug/attachDebugger.cpp \
 	%D%/debug/backtracing.cpp \
 	%D%/debug/demangle.cpp \
-	%D%/debug/attachDebugger.cpp \
 	%D%/debug/minimalCrash.cpp \
+	%D%/debug/signalTrap.cpp \
 	%D%/ios/minimalLogger.cpp \
 	%D%/resources/aliver.cpp \
 	%D%/resources/device.cpp \

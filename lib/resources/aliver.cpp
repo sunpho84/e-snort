@@ -4,9 +4,12 @@
 
 /// \file aliver.cpp
 
+#include <signal.h>
+
 #include "../lib/gitInfo.hpp"
 
 #include <debug/attachDebugger.hpp>
+#include <debug/signalTrap.hpp>
 #include <ios/logger.hpp>
 #include <metaprogramming/singleInstance.hpp>
 #include <resources/aliver.hpp>
@@ -67,6 +70,16 @@ namespace esnort
   void printBailout()
   {
     LOGGER<<"\n Ciao!\n";
+  }
+  
+  void trapSignal()
+  {
+    signal(SIGBUS,signalHandler);
+    signal(SIGSEGV,signalHandler);
+    signal(SIGFPE,signalHandler);
+    signal(SIGXCPU,signalHandler);
+    signal(SIGABRT,signalHandler);
+    signal(SIGINT,signalHandler);
   }
   
   Aliver::Aliver()
