@@ -9,6 +9,7 @@
 
 #include <expr/comp.hpp>
 #include <expr/comps.hpp>
+#include <expr/baseTens.hpp>
 #include <expr/dynamicCompsProvider.hpp>
 #include <expr/executionSpace.hpp>
 #include <expr/expr.hpp>
@@ -37,14 +38,14 @@ namespace esnort
 	    ExecutionSpace ES,
 	    bool IsRef>
   struct THIS :
-    Expr<THIS>,
+    BaseTens<THIS,_Fund,ES>,
     DynamicCompsProvider<C...>
   {
     using This=THIS;
     
 #undef THIS
     
-    using Expr<This>::operator=;
+    using BaseTens<This,_Fund,ES>::operator=;
     
     /// List of dynamic comps
     using DynamicComps=
@@ -127,21 +128,6 @@ namespace esnort
     {
       if constexpr(not isRef)
 	CRASH<<"Trying to create as a reference a non-reference";
-    }
-    
-    /// Assign from another dynamic tensor of the very same type
-    template <ExecutionSpace OtherES,
-	      bool OtherIsRef>
-    DynamicTens& operator=(const DynamicTens<Comps,Fund,OtherES,OtherIsRef>& oth)
-    {
-      if(storageSize!=oth.storageSize)
-	CRASH<<"Storage size not agreeing";
-      
-      LOGGER<<"Copying a "<<execSpaceName<ES><<" dynamic tensor into a "<<execSpaceName<OtherES><<" one";
-      
-      memory::memcpy<ES,OtherES>(storage,oth.storage,oth.storageSize);
-      
-      return *this;
     }
     
     /// Destructor

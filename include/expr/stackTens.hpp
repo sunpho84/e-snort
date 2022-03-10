@@ -7,6 +7,7 @@
 
 /// \file expr/stackTens.hpp
 
+#include <expr/baseTens.hpp>
 #include <expr/comps.hpp>
 #include <expr/dynamicCompsProvider.hpp>
 #include <expr/executionSpace.hpp>
@@ -29,13 +30,13 @@ namespace esnort
   template <typename...C,
 	    typename _Fund>
   struct THIS :
-    Expr<THIS>
+    BaseTens<THIS,_Fund,ExecutionSpace::HOST>
   {
     using This=THIS;
     
 #undef THIS
     
-    using Expr<This>::operator=;
+    using BaseTens<This,_Fund,ExecutionSpace::HOST>::operator=;
     
     static_assert((C::sizeIsKnownAtCompileTime &...),"Trying to instantiate a stack tensor with dynamic comps");
     
