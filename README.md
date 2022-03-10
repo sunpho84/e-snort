@@ -192,26 +192,30 @@ Fund and Comps are written into the node
 
 DONE
 ---
-Move external variabiles to a specific file
-Convert device to namespace
-Enable threads
-Gdb Attacher
-Move Mpi to namespace
-Options from maze
-Enable memory
-Added unroller for
-Tuple
-Components
-Tensor from nissa
-Tensor as reference
-Assign tensor to tensor
+- Move external variabiles to a specific file
+- Convert device to namespace
+- Enable threads
+- Gdb Attacher
+- Move Mpi to namespace
+- Options from maze
+- Enable memory
+- Added unroller for
+- Tuple
+- Components
+- Tensor from nissa
+- Tensor as reference
+- Assign tensor to tensor
 
 TODO
 ---
 
-Binder
+- Spawning expr assignment in the different case, how will we deal with \*=, -= etc? Do they have any usage, or should we divert to the =a*b case?
+- Binder
 
-Enable vectorization
+- Enable vectorization
 
-Reducer from nissa
-Grid from...?
+- Reducer from nissa
+- Grid from...?
+- Neighbors
+- MPI io
+- Random generator
