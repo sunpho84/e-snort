@@ -62,6 +62,7 @@ namespace esnort
       
       /// Result
       static constexpr bool value=
+	sizeof...(T1)==sizeof...(T2) and
 	((howManyTimeInList<T1,T2...> ==1)&...);
     };
   }

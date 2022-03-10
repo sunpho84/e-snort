@@ -33,12 +33,25 @@ namespace esnort
       return this->operator=<T>(oth);
     }
     
+    /// Returns whether can assign: this is actually used when no other assignability is defined
+    constexpr bool canAssign() const
+    {
+      return false;
+    }
+    
+    static constexpr bool canAssignAtCompileTime=false;
+    
     /// Assert assignability
     template <typename U>
     constexpr void assertCanAssign(const Expr<U>& rhs)
     {
       static_assert(tuplesContainsSameTypes<typename T::Comps,typename U::Comps>,"Cannot assign two expressions which differ for the components");
       
+      static_assert(T::canAssignAtCompileTime,"Trying to assign to a non-assignable expression");
+      
+      if(not this->crtp().canAssign())
+	CRASH<<"Trying to assign to a non-assignable expression";
+
       if constexpr(U::hasDynamicComps)
 	if(this->crtp().getDynamicSizes()!=rhs.crtp().getDynamicSizes())
 	  CRASH<<"Dynamic comps not agreeing";

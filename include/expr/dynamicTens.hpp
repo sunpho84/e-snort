@@ -90,6 +90,12 @@ namespace esnort
     /// Determine if allocated
     ConstIf<isRef,bool> allocated{false};
     
+    /// Returns whether can assign
+    bool canAssign()
+    {
+      return (not isRef) or allocated;
+    }
+    
     /// Allocate the storage
     template <typename...T,
 	      typename...I>

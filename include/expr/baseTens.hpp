@@ -53,6 +53,11 @@ namespace esnort
       return *this;
     }
     
+    
+    /// Return whether can be assigned at compile time
+    static constexpr bool canAssignAtCompileTime=
+      not std::is_const_v<F>;
+    
     /// Returns a const reference
     auto getRef() const;
     

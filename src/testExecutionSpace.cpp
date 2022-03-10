@@ -109,7 +109,6 @@ int main(int narg,char** arg)
     LOGGER<<st()<<" "<<dtd(st);
   
   {
-#warning put a check on allocation
     DynamicTens<OfComps<SpinRow,SpaceTime>,double,ExecutionSpace::DEVICE> dt(SpaceTime{3});
     DynamicTens<OfComps<SpaceTime,SpinRow>,double,ExecutionSpace::DEVICE> td(SpaceTime{4});
     
@@ -119,6 +118,9 @@ int main(int narg,char** arg)
   return 0;
   
   StackTens<OfComps<SpinRow>,double> st;
+  DynamicTens<OfComps<SpinRow,SpaceTime>,double,ExecutionSpace::HOST> dst;
+  st=dst;
+  
   dtg=dt;
   
   {
