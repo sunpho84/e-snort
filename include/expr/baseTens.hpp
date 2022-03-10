@@ -47,12 +47,18 @@ namespace esnort
       if(t.storageSize!=oth.storageSize)
 	CRASH<<"Storage size not agreeing";
       
-      LOGGER<<"Copying a "<<execSpaceName<ES><<" tensor into a "<<execSpaceName<OtherES><<" one";
+      LOGGER<<"Copying a "<<execSpaceName<OtherES><<" tensor into a "<<execSpaceName<ES><<" one";
       
       memory::memcpy<ES,OtherES>(t.storage,oth.storage,oth.storageSize);
       
       return *this;
     }
+    
+    /// Returns a const reference
+    auto getRef() const;
+    
+    /// Returns a reference
+    auto getRef();
     
     // /// Initialize knowing the dynamic comps
     // explicit constexpr

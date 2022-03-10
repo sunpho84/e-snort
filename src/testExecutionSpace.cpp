@@ -89,34 +89,36 @@ int main(int narg,char** arg)
   
   // I i(SpaceTime(10));
   
-  DynamicTens<OfComps<SpaceTime>,double,ExecutionSpace::HOST> dt(SpaceTime{5});
-  for(SpaceTime st=0;st<SpaceTime(5);st=st+SpaceTime(1))
+  StackTens<OfComps<SpinRow>,double> dt;
+  for(SpinRow st=0;st<SpinRow(4);st=st+SpinRow(1))
     dt(st)=st();
 
-  {
-    DynamicTens<OfComps<SpinRow>,double,ExecutionSpace::HOST> dt;
-    StackTens<OfComps<SpinRow>,double> st=dt;
-    st=dt;
-    st.fillDynamicTens();
-  }
+  // {
+  //   DynamicTens<OfComps<SpinRow>,double,ExecutionSpace::HOST> dt;
+  //   StackTens<OfComps<SpinRow>,double> st;
+  //   st=dt;
+  //   st.fillDynamicTens();
+  // }
   
-  DynamicTens<OfComps<SpaceTime>,double,ExecutionSpace::DEVICE> dtg(CompsList<SpaceTime>{5});
+  DynamicTens<OfComps<SpinRow>,double,ExecutionSpace::DEVICE> dtg;
   dtg=dt;
   
-  DynamicTens<OfComps<SpaceTime>,double,ExecutionSpace::HOST> dtd(CompsList<SpaceTime>{5});
+  DynamicTens<OfComps<SpinRow>,double,ExecutionSpace::HOST> dtd;
   dtd=dtg;
   
-  for(SpaceTime st=0;st<SpaceTime(5);st=st+SpaceTime(1))
+  for(SpinRow st=0;st<SpinRow(4);st=st+SpinRow(1))
     LOGGER<<st()<<" "<<dtd(st);
+
+  return 0;
   
   StackTens<OfComps<SpinRow>,double> st;
   dtg=dt;
   
   {
     auto rdt=dt.getRef();
-    rdt(SpaceTime{3})=0;
+    rdt(SpinRow{3})=0;
   }
-  //dt(SpaceTime(0))=9;
+  //dt(SpinRow(0))=9;
   st(SpinRow(2));
   LOGGER<<"AAAA";
   auto r=
@@ -129,7 +131,7 @@ int main(int narg,char** arg)
   // decltype(s)::Transp t;
   auto t=s.transp();
   
-  // SpaceTime st;
+  // SpinRow st;
   // auto _st=st.transp();
   
   s.sizeAtCompileTimeAssertingNotDynamic();

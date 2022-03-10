@@ -184,20 +184,6 @@ namespace esnort
     
     /////////////////////////////////////////////////////////////////
     
-#define PROVIDE_GET_REF(ATTRIB)						\
-    auto getRef() ATTRIB						\
-    {									\
-      return DynamicTens<Comps,ATTRIB Fund,ES,true>(storage,storageSize,this->dynamicSizes); \
-    }
-    
-    PROVIDE_GET_REF(const);
-    
-    PROVIDE_GET_REF(/* non const */);
-    
-#undef PROVIDE_GET_REF
-    
-    /////////////////////////////////////////////////////////////////
-    
 #define PROVIDE_EVAL(ATTRIB)						\
     template <typename...U>						\
     HOST_DEVICE_ATTRIB constexpr INLINE_FUNCTION			\
@@ -221,6 +207,26 @@ namespace esnort
     
     return res;
   }
+  
+  /////////////////////////////////////////////////////////////////
+  
+#define PROVIDE_GET_REF(ATTRIB)						\
+  template <typename T,							\
+	    typename...C,						\
+	    typename F,							\
+	    ExecutionSpace ES>						\
+  auto BaseTens<T,CompsList<C...>,F,ES>::getRef() ATTRIB		\
+  {									\
+    decltype(auto) t=this->crtp();					\
+									\
+    return DynamicTens<CompsList<C...>,ATTRIB F,ES,true>(t.storage,t.storageSize,t.getDynamicSizes()); \
+    }
+  
+  PROVIDE_GET_REF(const);
+  
+  PROVIDE_GET_REF(/* non const */);
+  
+#undef PROVIDE_GET_REF
 }
 
 #endif
