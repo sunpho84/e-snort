@@ -30,13 +30,14 @@ namespace esnort
   template <typename...C,
 	    typename _Fund>
   struct THIS :
-    BaseTens<THIS,_Fund,ExecutionSpace::HOST>
+    BaseTens<THIS,CompsList<C...>,_Fund,ExecutionSpace::HOST>
   {
     using This=THIS;
     
 #undef THIS
     
-    using BaseTens<This,_Fund,ExecutionSpace::HOST>::operator=;
+    /// Importing assignment operator from BaseTens
+    using BaseTens<This,CompsList<C...>,_Fund,ExecutionSpace::HOST>::operator=;
     
     static_assert((C::sizeIsKnownAtCompileTime &...),"Trying to instantiate a stack tensor with dynamic comps");
     
@@ -53,6 +54,12 @@ namespace esnort
     /// Cost of changing the execution space
     static constexpr auto execSpaceChangeCost=
       ExecutionSpaceChangeCost::ALOT;
+    
+    /// Returns empty dynamic sizes
+    constexpr const CompsList<> getDynamicSizes() const
+    {
+      return {};
+    }
     
     /// Size of stored data
     static constexpr auto storageSize=
@@ -74,6 +81,21 @@ namespace esnort
     PROVIDE_EVAL(/* non const */);
     
 #undef PROVIDE_EVAL
+    
+    /// Default constructor
+    constexpr INLINE_FUNCTION
+    StackTens(const CompsList<> ={})
+    {
+    }
+    
+    /// Default constructor
+    template <typename TOth,
+	      ExecutionSpace OthES>
+    constexpr INLINE_FUNCTION
+    StackTens(const BaseTens<TOth,Comps,Fund,OthES>& oth)
+    {
+      (*this)=oth.crtp();
+    }
   };
 }
 

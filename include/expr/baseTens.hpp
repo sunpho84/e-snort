@@ -7,27 +7,39 @@
 
 /// \file expr/baseTens.hpp
 
+#include <expr/comps.hpp>
+#include "expr/dynamicCompsProvider.hpp"
 #include <expr/executionSpace.hpp>
 #include <expr/expr.hpp>
 #include <resources/memory.hpp>
 
 namespace esnort
 {
-  /// Tensor
+  /// Base Tensor
   ///
   /// Forward declaration
   template <typename T,
+	    typename C,
 	    typename F,
 	    ExecutionSpace ES>
-  struct BaseTens :
+  struct BaseTens;
+
+  /// Base Tensor
+  template <typename T,
+	    typename...C,
+	    typename F,
+	    ExecutionSpace ES>
+  struct BaseTens<T,CompsList<C...>,F,ES> :
+    DynamicCompsProvider<C...>,
     Expr<T>
   {
     using Expr<T>::operator=;
     
     /// Assign from another dynamic tensor of the very same type
     template <typename OtherT,
+	      typename OtherC,
 	      ExecutionSpace OtherES>
-    BaseTens& operator=(const BaseTens<OtherT,F,OtherES>& _oth)
+    BaseTens& operator=(const BaseTens<OtherT,OtherC,F,OtherES>& _oth)
     {
       T& t=this->crtp();
       const OtherT& oth=_oth.crtp();
@@ -41,8 +53,19 @@ namespace esnort
       
       return *this;
     }
+    
+    // /// Initialize knowing the dynamic comps
+    // explicit constexpr
+    // BaseTens(const CompsList<C...>& c) :
+    //   DynamicCompsProvider<C...>{c}
+    // {
+    // }
+    
+    /// Default constructor
+    constexpr BaseTens()
+    {
+    }
   };
-  
 }
 
 #endif

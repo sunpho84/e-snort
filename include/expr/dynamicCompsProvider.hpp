@@ -10,6 +10,7 @@
 #include <expr/comp.hpp>
 #include <expr/comps.hpp>
 #include <tuples/tupleDiscriminate.hpp>
+#include <tuples/tupleSubset.hpp>
 
 namespace esnort
 {
@@ -27,11 +28,16 @@ namespace esnort
     using DynamicComps=
       typename DynamicStaticComps::Invalid;
     
-    /// Sizes of the dynamic components
-    DynamicComps dynamicSizes;
-    
     static constexpr int nDynamicComps=
       std::tuple_size_v<DynamicComps>;
+    
+    /// Returns dynamic comps from a list
+    template <typename...T,
+	      typename...I>
+    static DynamicComps filterDynamicComps(const BaseComp<T,I>&...td)
+    {
+      return tupleGetSubset<DynamicComps>(std::make_tuple(td.crtp()...));
+    }
   };
 }
 

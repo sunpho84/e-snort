@@ -205,6 +205,7 @@ DONE
 - Tensor from nissa
 - Tensor as reference
 - Assign tensor to tensor
+- Added BaseTens to allow different kind of tensor copy
 
 TODO
 ---

@@ -31,6 +31,9 @@ namespace esnort
   
 #define THIS					\
   DynamicTens<CompsList<C...>,_Fund,ES,IsRef>
+
+#define BASE					\
+  BaseTens<THIS,CompsList<C...>,_Fund,ES>
   
   /// Tensor
   template <typename...C,
@@ -38,18 +41,20 @@ namespace esnort
 	    ExecutionSpace ES,
 	    bool IsRef>
   struct THIS :
-    BaseTens<THIS,_Fund,ES>,
-    DynamicCompsProvider<C...>
+    BASE
   {
     using This=THIS;
-    
+    using Base=BASE;
+
 #undef THIS
+#undef BASE
     
-    using BaseTens<This,_Fund,ES>::operator=;
+    /// Importing assignment operator from BaseTens
+    using Base::operator=;
     
     /// List of dynamic comps
     using DynamicComps=
-      typename DynamicCompsProvider<C...>::DynamicComps;
+      typename Base::DynamicComps;
     
     /// Components
     using Comps=CompsList<C...>;
@@ -67,6 +72,15 @@ namespace esnort
     static constexpr auto execSpaceChangeCost=
       ExecutionSpaceChangeCost::ALOT;
     
+    /// Sizes of the dynamic components
+    DynamicComps dynamicSizes;
+    
+    /// Returns the dynamic sizes
+    const DynamicComps& getDynamicSizes() const
+    {
+      return dynamicSizes();
+    }
+    
     /// Pointer to storage
     ConstIf<isRef,Fund*> storage;
     
@@ -77,13 +91,17 @@ namespace esnort
     ConstIf<isRef,bool> allocated{false};
     
     /// Allocate the storage
-    template <typename...TD>
-    void allocate(const CompsList<TD...>& td)
+    template <typename...T,
+	      typename...I>
+    void allocate(const DynamicComps& _dynamicSizes)
     {
+      if constexpr(isRef)
+	CRASH<<"Trying to allocate a reference";
+      
       if(allocated)
 	CRASH<<"Already allocated";
       
-      tupleFillWithSubset(this->dynamicSizes,td);
+      dynamicSizes=_dynamicSizes;
       
       storageSize=indexMaxValue<C...>(this->dynamicSizes);
       
@@ -92,14 +110,26 @@ namespace esnort
       allocated=true;
     }
     
-    /// Initialize the tensor with the knowledge of the dynamic sizes
-    template <typename...TD>
-    explicit DynamicTens(const CompsList<TD...>& td)
+    /// Allocate the storage
+    template <typename...T,
+	      typename...I>
+    void allocate(const BaseComp<T,I>&...td)
     {
-      if constexpr(not isRef)
-	allocate(td);
-      else
-	CRASH<<"Trying to allocate a reference";
+      allocate(Base::filterDynamicComps(td...));
+    }
+    
+    /// Initialize the tensor with the knowledge of the dynamic sizes as a list
+    template <typename...T,
+	      typename...I>
+    explicit DynamicTens(const BaseComp<T,I>&...td) :
+      DynamicTens(Base::filterDynamicComps(td...))
+    {
+    }
+    
+    /// Initialize the tensor with the knowledge of the dynamic sizes
+    explicit DynamicTens(const DynamicComps& td)
+    {
+      allocate(td);
     }
     
     /// Initialize the tensor without allocating
@@ -109,10 +139,10 @@ namespace esnort
       if constexpr(not isRef)
 	{
 	  if constexpr(DynamicCompsProvider<C...>::nDynamicComps==0)
-	    allocate({});
+	    allocate();
 	  else
 	    allocated=false;
-	}
+	  }
       else
 	CRASH<<"Trying to create a reference to nothing";
     }
@@ -122,12 +152,22 @@ namespace esnort
     DynamicTens(Fund* storage,
 		const int64_t& storageSize,
 		const DynamicComps& dynamicSizes) :
-      DynamicCompsProvider<C...>{dynamicSizes},
+      dynamicSizes(dynamicSizes),
       storage(storage),
       storageSize(storageSize)
     {
       if constexpr(not isRef)
 	CRASH<<"Trying to create as a reference a non-reference";
+    }
+    
+    /// Default constructor
+    template <typename TOth,
+	      ExecutionSpace OthES>
+    constexpr INLINE_FUNCTION
+    DynamicTens(const BaseTens<TOth,Comps,Fund,OthES>& oth) :
+      DynamicCompsProvider<Comps>(oth.crtp().getDynamicSizes())
+    {
+      (*this)=oth.crtp();
     }
     
     /// Destructor
@@ -173,6 +213,14 @@ namespace esnort
     
 #undef PROVIDE_EVAL
   };
+  
+  template <typename T>
+  auto Expr<T>::fillDynamicTens() const
+  {
+    DynamicTens<typename T::Comps,typename T::Fund,T::execSpace> res(this->crtp().getDynamicSizes());
+    
+    return res;
+  }
 }
 
 #endif

@@ -77,7 +77,10 @@ namespace esnort
       
       return this->crtp();
     }
-
+    
+    /// Returns the expression as a dynamic tensor
+    auto fillDynamicTens() const;
+    
 #define PROVIDE_SUBSCRIBE(ATTRIB)					\
     template <typename...C>						\
     HOST_DEVICE_ATTRIB constexpr INLINE_FUNCTION			\
