@@ -107,7 +107,15 @@ int main(int narg,char** arg)
   
   for(SpinRow st=0;st<4;st++)
     LOGGER<<st()<<" "<<dtd(st);
-
+  
+  {
+#warning put a check on allocation
+    DynamicTens<OfComps<SpinRow,SpaceTime>,double,ExecutionSpace::DEVICE> dt(SpaceTime{3});
+    DynamicTens<OfComps<SpaceTime,SpinRow>,double,ExecutionSpace::DEVICE> td(SpaceTime{4});
+    
+    dt=td;
+  }
+  
   return 0;
   
   StackTens<OfComps<SpinRow>,double> st;

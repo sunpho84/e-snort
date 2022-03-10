@@ -78,7 +78,7 @@ namespace esnort
     /// Returns the dynamic sizes
     const DynamicComps& getDynamicSizes() const
     {
-      return dynamicSizes();
+      return dynamicSizes;
     }
     
     /// Pointer to storage

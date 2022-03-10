@@ -14,6 +14,7 @@
 #include <expr/executionSpace.hpp>
 #include <ios/logger.hpp>
 #include <metaprogramming/crtp.hpp>
+#include <tuples/tupleHasType.hpp>
 #include <tuples/tupleFilter.hpp>
 
 namespace esnort
@@ -32,30 +33,33 @@ namespace esnort
       return this->operator=<T>(oth);
     }
     
-    /// Assign from another expression
+    /// Assert assignability
     template <typename U>
-    T& operator=(const Expr<U>& u)
+    constexpr void assertCanAssign(const Expr<U>& rhs)
     {
+      static_assert(tuplesContainsSameTypes<typename T::Comps,typename U::Comps>,"Cannot assign two expressions which differ for the components");
+      
+      if constexpr(U::hasDynamicComps)
+	if(this->crtp().getDynamicSizes()!=rhs.crtp().getDynamicSizes())
+	  CRASH<<"Dynamic comps not agreeing";
+    }
+    
+    /// Assign from another expression
+    template <typename Lhs>
+    T& operator=(const Expr<Lhs>& u)
+    {
+      assertCanAssign(u);
+      
       /// Gets the lhs by casting to actual type
       decltype(auto) lhs=this->crtp();
       
       /// Gets the rhs by casting to actual type
       decltype(auto) rhs=u.crtp();
       
-      /// Type of the lhs
-      using Lhs=std::decay_t<decltype(lhs)>;
-      
-      /// Type of the rhs
-      using Rhs=std::decay_t<decltype(rhs)>;
-      
-      /// Execution space for the lhs
-      constexpr ExecutionSpace lhsExecSpace=Lhs::execSpace;
-      
-      /// Execution space for the rhs
-      constexpr ExecutionSpace rhsExecSpace=Rhs::execSpace;
-      
-      if constexpr(lhsExecSpace==rhsExecSpace)
-	lhs()=rhs();
+      if constexpr(T::execSpace==Lhs::execSpace)
+	{
+	  #warning lhs()=rhs();
+	}
       else
 	{
 	  /// Decide which side of the assignment will change the
@@ -64,7 +68,7 @@ namespace esnort
 	  /// assumption is that ultimately, the results will be stored in
 	  /// any case on the lhs execution space, so we should avoid
 	  /// moving the lhs unless it is much lest costly.
-	  if constexpr (Lhs::execSpaceChangeCost<Rhs::execSpaceChangeCost)
+	  if constexpr(T::execSpaceChangeCost<Lhs::execSpaceChangeCost)
 	    {
 	      LOGGER<<"Needs to change the execution space of Lhs before assigning";
 	    }

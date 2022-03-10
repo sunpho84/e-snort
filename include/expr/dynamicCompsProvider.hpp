@@ -28,8 +28,13 @@ namespace esnort
     using DynamicComps=
       typename DynamicStaticComps::Invalid;
     
+    /// Number of dynamic components
     static constexpr int nDynamicComps=
       std::tuple_size_v<DynamicComps>;
+    
+    /// Check if the expression has any dynamic component
+    static constexpr bool hasDynamicComps=
+      nDynamicComps!=0;
     
     /// Returns dynamic comps from a list
     template <typename...T,

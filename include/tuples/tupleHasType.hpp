@@ -38,6 +38,39 @@ namespace esnort
   constexpr bool tupleHasType=
     TypeIsInList<N,Tp>::template t<T>::value;
   
+  namespace internal
+  {
+    /// Returns whether the two tuples T1 and T2 contains the same types
+    ///
+    /// Internal procedure forward declaration
+    template <typename T1,
+	      typename T2>
+    struct _TuplesContainsSameTypes;
+    
+    /// Returns whether the two tuples T1 and T2 contains the same types
+    ///
+    /// Internal procedure
+    template <typename...T1,
+	      typename...T2>
+    struct _TuplesContainsSameTypes<std::tuple<T1...>,std::tuple<T2...>>
+    {
+      /// Compares a single component
+      template <typename T,
+		typename...U>
+      static constexpr int howManyTimeInList=
+	(std::is_same_v<T,U>+...);
+      
+      /// Result
+      static constexpr bool value=
+	((howManyTimeInList<T1,T2...> ==1)&...);
+    };
+  }
+  
+  /// Returns whether the two tuples T1 and T2 contains the same types, no matter the order
+  template <typename T1,
+	    typename T2>
+  constexpr bool tuplesContainsSameTypes=
+    internal::_TuplesContainsSameTypes<T1,T2>::value;
 }
 
 #endif
