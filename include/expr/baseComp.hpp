@@ -9,18 +9,20 @@
 ///
 /// \brief Implements a tensor comp
 
-#include <metaprogramming/arithmeticOperatorsViaCast.hpp>
+#include <metaprogramming/crtp.hpp>
 #include <metaprogramming/inline.hpp>
 #include <metaprogramming/nonConstMethod.hpp>
 #include <metaprogramming/typeConversion.hpp>
 
 namespace esnort
 {
+  DEFINE_CRTP_INHERITANCE_DISCRIMINER_FOR_TYPE(BaseComp);
+  
   /// A component
   template <typename _C,
 	    typename _Index>
   struct BaseComp :
-    ArithmeticOperators<_Index,_C>
+    Crtp<_C,crtp::BaseCompDiscriminer>
   {
     /// Value type
     using Index=_Index;
@@ -78,6 +80,21 @@ namespace esnort
     /// Forbid assignement to a temporary
     BaseComp& operator=(const BaseComp& oth) && = delete;
     
+#define PROVIDE_CAST_TO_VALUE(ATTRIB)					\
+									\
+    /*! Convert to actual reference with or without const attribute */	\
+    INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB			\
+    operator ATTRIB Index&() ATTRIB					\
+    {									\
+      return i;								\
+    }
+    
+    PROVIDE_CAST_TO_VALUE(const);
+    
+    PROVIDE_CAST_TO_VALUE(/* non const */);
+    
+#undef PROVIDE_CAST_TO_VALUE
+    
     /// Convert to actual reference with const attribute
     INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
     const Index& operator()() const
@@ -85,26 +102,11 @@ namespace esnort
       return i;
     }
     
-    PROVIDE_ALSO_NON_CONST_METHOD_WITH_ATTRIB(toPod,HOST_DEVICE_ATTRIB);
-    
-#define PROVIDE_CAST_TO_VALUE(ATTRIB)					\
-    /*! Convert to actual reference with or without const attribute */	\
-    INLINE_FUNCTION HOST_DEVICE_ATTRIB constexpr			\
-    explicit operator ATTRIB Index&() ATTRIB				\
-    {									\
-      return (*this)();							\
-    }
-    
-    PROVIDE_CAST_TO_VALUE(const);
-    PROVIDE_CAST_TO_VALUE(/* non const */);
-    
-#undef PROVIDE_CAST_TO_VALUE
-    
     /// Convert to actual reference with const attribute, to be removed
     INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
     const Index& nastyConvert() const
     {
-      return toPod();
+      return *(this)();
     }
     
     PROVIDE_ALSO_NON_CONST_METHOD_WITH_ATTRIB(nastyConvert,HOST_DEVICE_ATTRIB);

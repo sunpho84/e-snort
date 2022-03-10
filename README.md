@@ -206,6 +206,8 @@ DONE
 - Tensor as reference
 - Assign tensor to tensor
 - Added BaseTens to allow different kind of tensor copy
+- Added ref inside BaseTens
+- Comp is able to convert to index automatically
 
 TODO
 ---

@@ -36,10 +36,18 @@ namespace esnort
 #undef PROVIDE_POSTFIX_OPERATOR
     
 #define PROVIDE_OPERATOR(OP,RETURNED_TYPE)				\
+    									\
     INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB			\
     RETURNED_TYPE operator OP(const ArithmeticOperators& oth) const	\
     {									\
       return ((CastToExec)(this->crtp())) OP ((CastToExec)oth.crtp());	\
+    }									\
+    									\
+    template <typename Oth>						\
+    INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB			\
+    RETURNED_TYPE operator OP(const Oth& oth) const			\
+    {									\
+      return ((CastToExec)(this->crtp())) OP oth;			\
     }
     
     PROVIDE_OPERATOR(+,ReturnedType);

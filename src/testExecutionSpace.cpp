@@ -90,9 +90,8 @@ int main(int narg,char** arg)
   // I i(SpaceTime(10));
   
   StackTens<OfComps<SpinRow>,double> dt;
-  for(SpinRow st=0;st<SpinRow(4);st=st+SpinRow(1))
+  for(SpinRow st=0;st<4;st++)
     dt(st)=st();
-
   // {
   //   DynamicTens<OfComps<SpinRow>,double,ExecutionSpace::HOST> dt;
   //   StackTens<OfComps<SpinRow>,double> st;
@@ -101,12 +100,12 @@ int main(int narg,char** arg)
   // }
   
   DynamicTens<OfComps<SpinRow>,double,ExecutionSpace::DEVICE> dtg;
-  dtg=dt;
+  dtg=dt.getRef();
   
   DynamicTens<OfComps<SpinRow>,double,ExecutionSpace::HOST> dtd;
   dtd=dtg;
   
-  for(SpinRow st=0;st<SpinRow(4);st=st+SpinRow(1))
+  for(SpinRow st=0;st<4;st++)
     LOGGER<<st()<<" "<<dtd(st);
 
   return 0;

@@ -37,9 +37,8 @@ namespace esnort
     
     /// Assign from another dynamic tensor of the very same type
     template <typename OtherT,
-	      typename OtherC,
 	      ExecutionSpace OtherES>
-    BaseTens& operator=(const BaseTens<OtherT,OtherC,F,OtherES>& _oth)
+    BaseTens& operator=(const BaseTens<OtherT,CompsList<C...>,F,OtherES>& _oth)
     {
       T& t=this->crtp();
       const OtherT& oth=_oth.crtp();
