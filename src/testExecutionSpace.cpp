@@ -109,10 +109,38 @@ int main(int narg,char** arg)
     LOGGER<<st()<<" "<<dtd(st);
   
   {
-    DynamicTens<OfComps<SpinRow,SpaceTime>,double,ExecutionSpace::DEVICE> dt(SpaceTime{3});
-    DynamicTens<OfComps<SpaceTime,SpinRow>,double,ExecutionSpace::DEVICE> td(SpaceTime{4});
+    DynamicTens<OfComps<SpinRow,SpaceTime>,double,ExecutionSpace::HOST> dt(SpaceTime{3});
+    for(SpinRow s=0;s<4;s++)
+      for(SpaceTime st=0;st<3;st++)
+	dt(st,s)=st()+3*s;
     
-    dt=td;
+    DynamicTens<OfComps<SpaceTime,SpinRow>,double,ExecutionSpace::HOST> td(SpaceTime{3});
+    
+    td=dt;
+    
+    for(SpinRow s=0;s<4;s++)
+      for(SpaceTime st=0;st<3;st++)
+	LOGGER<<td(st,s)<<" "<<st()+3*s;
+  }
+  
+  {
+    DynamicTens<OfComps<SpinRow,SpaceTime>,double,ExecutionSpace::HOST> t(SpaceTime{3});
+    for(SpinRow s=0;s<4;s++)
+      for(SpaceTime st=0;st<3;st++)
+	t(st,s)=st()+3*s;
+    DynamicTens<OfComps<SpinRow,SpaceTime>,double,ExecutionSpace::DEVICE> dt(SpaceTime{3});
+    dt=t;
+    
+    DynamicTens<OfComps<SpaceTime,SpinRow>,double,ExecutionSpace::DEVICE> td(SpaceTime{3});
+    
+    td=dt;
+    
+    DynamicTens<OfComps<SpaceTime,SpinRow>,double,ExecutionSpace::HOST> d(SpaceTime{3});
+    
+    d=td;
+    for(SpinRow s=0;s<4;s++)
+      for(SpaceTime st=0;st<3;st++)
+	LOGGER<<d(st,s)<<" "<<st()+3*s;
   }
   
   return 0;

@@ -5,6 +5,7 @@
 # include <config.hpp>
 #endif
 
+#include <debug/minimalCrash.hpp>
 #include <metaprogramming/inline.hpp>
 
 /// \file expr/executionSpace.hpp
@@ -21,17 +22,22 @@ namespace esnort
   HOST_DEVICE_ATTRIB INLINE_FUNCTION
   constexpr void assertCorrectEvaluationStorage()
     {
-#if COMPILING_FOR_DEVICE
-      static_assert(ES==ExecutionSpace::DEVICE,"Cannot exec on host");
-	// __trap();
-#else
-      static_assert(ES==ExecutionSpace::HOST,"Cannot exec on device");
-      // if constexpr(ES==ExecutionSpace::DEVICE)
-      // 	CRASH<<"Cannot access device memory from host";
+#if ENABLE_DEVICE_CODE
+      
+# ifdef __CUDA_ARCH__
+      //static_assert(ES==ExecutionSpace::DEVICE,"Cannot exec on host");
+      if constexpr(ES==ExecutionSpace::HOST)
+       __trap();
+# else
+       //static_assert(ES==ExecutionSpace::HOST,"Cannot exec on device");
+      if constexpr(ES==ExecutionSpace::DEVICE)
+	MINIMAL_CRASH("Cannot access device memory from host");
+# endif
+      
 #endif
     }
   
-  namespace  internal
+  namespace internal
   {
     /// Convert the execution space name into a string
     template <ExecutionSpace ES>

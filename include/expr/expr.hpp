@@ -11,6 +11,7 @@
 
 #include <type_traits>
 
+#include <expr/compLoops.hpp>
 #include <expr/executionSpace.hpp>
 #include <ios/logger.hpp>
 #include <metaprogramming/crtp.hpp>
@@ -66,17 +67,66 @@ namespace esnort
     {
       assertCanAssign(u);
       
+      constexpr int nDynamicComps=T::nDynamicComps;
+      
+#if ENABLE_DEVICE_CODE
       if constexpr(Lhs::execSpace==ExecutionSpace::DEVICE)
 	{
+	  static_assert(nDynamicComps==1,"Needs exactly one dynamic comps to run on device");
+	  
 	  /// For the time being, we assume that there is a single
 	  /// dynamic component, and we loop with the gpu threads on
 	  /// it, then we loop internally on the others
 	  LOGGER<<"Using device kernel";
+	  
+	  const auto dynamicSize=std::get<0>(this->crtp().getDynamicSizes());
+	  
+	  using DC=std::tuple_element_t<0,typename T::DynamicComps>;
+	  
+	  auto lhs=this->crtp().getRef();
+	  const auto rhs=u.crtp().getRef();
+	  
+	  DEVICE_LOOP(dc,DC(0),dynamicSize,
+		      loopAnAllComps<typename T::StaticComps>(this->crtp().dynamicSizes,
+							      [=] DEVICE_ATTRIB (const auto&...comps) mutable INLINE_ATTRIBUTE
+							      {
+								lhs(comps...)=rhs(comps...);
+							      },
+							      dc);
+		      );
 	}
       else
+#endif
 	{
+	  static_assert(nDynamicComps<=1,"Need at most one dynamic comps to run on host");
+	  
+	  auto task=
+	    [this,&u](const auto&...comps) INLINE_ATTRIBUTE
+	    {
+	      this->crtp()(comps...)=u.crtp()(comps...);
+	    };
+	  
 	  /// We use threads only if there is at least one dynamic component
-	  LOGGER<<"Using thread kernel";
+#if ENABLE_THREADS
+	  if constexpr(nDynamicComps==1)
+	    {
+	      LOGGER<<"Using thread kernel";
+	      
+	      using DC=std::tuple_element_t<0,typename T::DynamicComps>;
+	      
+	      const auto dynamicSize=std::get<0>(this->crtp().getDynamicSizes());
+	      
+#pragma omp parallel for
+	      for(DC dc=0;dc<dynamicSize;dc++)
+		loopAnAllComps<typename T::StaticComps>(this->crtp().dynamicSizes,task,dc);
+	    }
+	  else
+#endif
+	    {
+	      LOGGER<<"Using direct assign";
+	      
+	      loopAnAllComps<typename T::Comps>(this->crtp().dynamicSizes,task);
+	    }
 	}
       
       return this->crtp();

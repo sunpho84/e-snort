@@ -190,6 +190,7 @@ namespace esnort
     ATTRIB Fund& eval(const U&...cs) ATTRIB				\
     {									\
       assertCorrectEvaluationStorage<ES>();				\
+      									\
       return storage[orderedIndex<C...>(this->dynamicSizes,cs...)];	\
     }
     
