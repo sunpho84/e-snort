@@ -106,7 +106,7 @@ namespace esnort
     INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
     const Index& nastyConvert() const
     {
-      return *(this)();
+      return (*this)();
     }
     
     PROVIDE_ALSO_NON_CONST_METHOD_WITH_ATTRIB(nastyConvert,HOST_DEVICE_ATTRIB);

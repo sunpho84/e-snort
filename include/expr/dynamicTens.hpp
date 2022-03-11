@@ -93,8 +93,6 @@ namespace esnort
     }
     
     /// Allocate the storage
-    template <typename...T,
-	      typename...I>
     void allocate(const DynamicComps& _dynamicSizes)
     {
       if constexpr(isRef)
