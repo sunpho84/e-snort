@@ -87,7 +87,7 @@ namespace esnort
 	  const auto rhs=u.crtp().getRef();
 	  
 	  DEVICE_LOOP(dc,DC(0),dynamicSize,
-		      loopAnAllComps<typename T::StaticComps>(this->crtp().dynamicSizes,
+		      deviceLoopAnAllComps<typename T::StaticComps>(this->crtp().dynamicSizes,
 							      [=] DEVICE_ATTRIB (const auto&...comps) mutable INLINE_ATTRIBUTE
 							      {
 								lhs(comps...)=rhs(comps...);

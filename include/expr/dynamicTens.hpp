@@ -171,8 +171,10 @@ namespace esnort
     }
     
     /// Destructor
+    HOST_DEVICE_ATTRIB
     ~DynamicTens()
     {
+#ifndef __CUDA_ARCH__
       if constexpr(not isRef)
 	{
 	  if(allocated)
@@ -180,6 +182,7 @@ namespace esnort
 	  allocated=false;
 	  storageSize=0;
 	}
+#endif
     }
     
     /////////////////////////////////////////////////////////////////
