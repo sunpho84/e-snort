@@ -68,10 +68,6 @@ namespace esnort
     /// Executes where allocated
     static constexpr ExecutionSpace execSpace=ES;
     
-    /// Cost of changing the execution space
-    static constexpr auto execSpaceChangeCost=
-      ExecutionSpaceChangeCost::ALOT;
-    
     /// Sizes of the dynamic components
     DynamicComps dynamicSizes;
     

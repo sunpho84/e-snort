@@ -23,7 +23,7 @@ namespace esnort
 	    typename F,
 	    ExecutionSpace ES>
   struct BaseTens;
-
+  
   /// Base Tensor
   template <typename T,
 	    typename...C,
@@ -33,6 +33,7 @@ namespace esnort
     DynamicCompsProvider<C...>,
     Expr<T>
   {
+    /// Import assignment operator from Expr
     using Expr<T>::operator=;
     
     /// Assign from another dynamic tensor of the very same type
@@ -44,7 +45,7 @@ namespace esnort
       const OtherT& oth=_oth.crtp();
       
       if(t.storageSize!=oth.storageSize)
-	CRASH<<"Storage size not agreeing";
+	CRASH<<"Storage sizes not agreeing";
       
       LOGGER<<"Copying a "<<execSpaceName<OtherES><<" tensor into a "<<execSpaceName<ES><<" one";
       
@@ -63,13 +64,6 @@ namespace esnort
     
     /// Returns a reference
     auto getRef();
-    
-    // /// Initialize knowing the dynamic comps
-    // explicit constexpr
-    // BaseTens(const CompsList<C...>& c) :
-    //   DynamicCompsProvider<C...>{c}
-    // {
-    // }
     
     /// Default constructor
     constexpr BaseTens()

@@ -118,7 +118,7 @@ int main(int narg,char** arg)
   return 0;
   
   StackTens<OfComps<SpinRow>,double> st;
-  DynamicTens<OfComps<SpinRow,SpaceTime>,double,ExecutionSpace::HOST> dst;
+  DynamicTens<OfComps<SpinRow>,double,ExecutionSpace::HOST> dst;
   st=dst;
   
   dtg=dt;

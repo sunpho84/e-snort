@@ -51,10 +51,13 @@ namespace esnort
       
       if(not this->crtp().canAssign())
 	CRASH<<"Trying to assign to a non-assignable expression";
-
+      
       if constexpr(U::hasDynamicComps)
 	if(this->crtp().getDynamicSizes()!=rhs.crtp().getDynamicSizes())
 	  CRASH<<"Dynamic comps not agreeing";
+      
+      static_assert(T::execSpace==U::execSpace or
+		    U::execSpace==ExecutionSpace::UNDEFINED,"Cannot assign among different execution space, first change one of them");
     }
     
     /// Assign from another expression
@@ -63,33 +66,17 @@ namespace esnort
     {
       assertCanAssign(u);
       
-      /// Gets the lhs by casting to actual type
-      decltype(auto) lhs=this->crtp();
-      
-      /// Gets the rhs by casting to actual type
-      decltype(auto) rhs=u.crtp();
-      
-      if constexpr(T::execSpace==Lhs::execSpace)
+      if constexpr(Lhs::execSpace==ExecutionSpace::DEVICE)
 	{
-	  #warning lhs()=rhs();
+	  /// For the time being, we assume that there is a single
+	  /// dynamic component, and we loop with the gpu threads on
+	  /// it, then we loop internally on the others
+	  LOGGER<<"Using device kernel";
 	}
       else
 	{
-	  /// Decide which side of the assignment will change the
-	  /// execution space. This is done in terms of an euristic cost
-	  /// of the change, but we might refine it in the future. The
-	  /// assumption is that ultimately, the results will be stored in
-	  /// any case on the lhs execution space, so we should avoid
-	  /// moving the lhs unless it is much lest costly.
-	  if constexpr(T::execSpaceChangeCost<Lhs::execSpaceChangeCost)
-	    {
-	      LOGGER<<"Needs to change the execution space of Lhs before assigning";
-	    }
-	  else
-	    {
-#warning messagelhs()=rhs.template changeExecSpaceTo<lhsExecSpace>()();
-	      LOGGER<<"Needs to change the execution space of Rhs before assigning";
-	    }
+	  /// We use threads only if there is at least one dynamic component
+	  LOGGER<<"Using thread kernel";
 	}
       
       return this->crtp();

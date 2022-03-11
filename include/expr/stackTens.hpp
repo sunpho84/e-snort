@@ -51,10 +51,6 @@ namespace esnort
     static constexpr auto execSpace=
       ExecutionSpace::HOST;
     
-    /// Cost of changing the execution space
-    static constexpr auto execSpaceChangeCost=
-      ExecutionSpaceChangeCost::ALOT;
-    
     /// Returns empty dynamic sizes
     constexpr const CompsList<> getDynamicSizes() const
     {

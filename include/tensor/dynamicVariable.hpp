@@ -39,9 +39,6 @@ namespace esnort
     static constexpr ExecutionSpace execSpace=
       ExecSpace;
     
-    static constexpr ExecutionSpaceChangeCost execSpaceChangeCost=
-      ExecutionSpaceChangeCost::LITTLE;
-    
     T* ptr{nullptr};
     
     const T* getPtr() const

@@ -34,9 +34,6 @@ namespace esnort
     static constexpr ExecutionSpace execSpace=
       ExecSpace;
     
-    static constexpr ExecutionSpaceChangeCost execSpaceChangeCost=
-      ExecutionSpaceChangeCost::LITTLE;
-    
     const T& operator()() const HOST_DEVICE_ATTRIB
     {
       return *ptr;

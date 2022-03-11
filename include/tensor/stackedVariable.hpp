@@ -27,9 +27,6 @@ namespace esnort
     static constexpr ExecutionSpace execSpace=
       ExecutionSpace::HOST;
     
-    static constexpr ExecutionSpaceChangeCost execSpaceChangeCost=
-      ExecutionSpaceChangeCost::LITTLE;
-    
     template <bool B>
     using ExecSpaceChangeDiscriminer=
       std::integral_constant<bool,B>;

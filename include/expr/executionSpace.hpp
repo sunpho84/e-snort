@@ -16,9 +16,6 @@ namespace esnort
   /// Execution space possibilities
   enum class ExecutionSpace{HOST,DEVICE,UNDEFINED};
   
-  /// Estimates of the cost to change the execution space
-  enum class ExecutionSpaceChangeCost{NOTHING,LITTLE,ALOT};
-  
   /// Check that we are accessing device vector only on device code
   template <ExecutionSpace ES>
   HOST_DEVICE_ATTRIB INLINE_FUNCTION
