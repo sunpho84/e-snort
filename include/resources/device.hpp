@@ -16,6 +16,12 @@
 #include <metaprogramming/singleInstance.hpp>
 #include <resources/deviceHiddenVariablesDeclarations.hpp>
 
+#if ENABLE_DEVICE_CODE
+  /// Crash on device error, providing a meaningful error
+# define DEVICE_CRASH_ON_ERROR(ARGS...)					\
+    device::crashOnError(__LINE__,__FILE__,__PRETTY_FUNCTION__,ARGS)
+#endif
+
 namespace esnort::device
 {
 #if ENABLE_DEVICE_CODE
@@ -33,6 +39,8 @@ namespace esnort::device
     if(i<max)
       f(i);
   }
+  
+  void crashOnError(const int line,const char* file,const char* function,const cudaError_t rc,const char *mess);
   
   void memcpy(void* dst,const void* src,size_t count,cudaMemcpyKind kind);
   
@@ -84,19 +92,18 @@ namespace esnort::device
     VERBOSE_LOGGER(3)<<"at line "<<line<<" of file "<<file<<" launching kernel on loop ["<<min<<","<<max<<") using blocks of size "<<blockDimension.x<<" and grid of size "<<gridDimension.x;
     
     cudaGenericKernel<<<gridDimension,blockDimension>>>(std::forward<F>(f),min,max);
+    DEVICE_CRASH_ON_ERROR(cudaPeekAtLastError(),"Spawning the generic kernel");
     
     synchronize();
   }
-  
-  void decryptError(cudaError_t rc,const char *templ,...);
   
   template <typename T>
   void malloc(T& ptr,const size_t& sizeInUnit)
   {
     SCOPE_INDENT();
     
-    decryptError(cudaMalloc(&ptr,sizeInUnit*sizeof(T)),"");
-    VERBOSE_LOGGER(3)<<"Allocated on gpu: "<<ptr;
+    DEVICE_CRASH_ON_ERROR(cudaMalloc(&ptr,sizeInUnit*sizeof(T)),"allocating on device");
+    VERBOSE_LOGGER(3)<<"Allocated on device: "<<ptr;
   }
 #endif
   

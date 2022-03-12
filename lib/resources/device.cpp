@@ -19,7 +19,7 @@ namespace esnort::device
   void memcpy(void* dst,const void* src,size_t count,cudaMemcpyKind kind)
   {
     VERBOSE_LOGGER(3)<<"Cuda memcpy: "<<kind;
-    decryptError(cudaMemcpy(dst,src,count,kind),"calling cudaMemcpy");
+    DEVICE_CRASH_ON_ERROR(cudaMemcpy(dst,src,count,kind),"calling cudaMemcpy");
   }
   
   void synchronize()
@@ -27,7 +27,7 @@ namespace esnort::device
     SCOPE_INDENT();
     
     VERBOSE_LOGGER(3)<<"Synchronizing gpu";
-    decryptError(cudaDeviceSynchronize(),"Synchronizing");
+    DEVICE_CRASH_ON_ERROR(cudaDeviceSynchronize(),"Synchronizing");
   }
   
   void free(void* ptr)
@@ -35,22 +35,16 @@ namespace esnort::device
     SCOPE_INDENT();
     
     VERBOSE_LOGGER(3)<<"Freeing on gpu: "<<ptr;
-    decryptError(cudaFree(ptr),"");
+    DEVICE_CRASH_ON_ERROR(cudaFree(ptr),"");
   }
 #endif
   
 #if ENABLE_DEVICE_CODE
-  void decryptError(cudaError_t rc,const char *templ,...)
+  void crashOnError(const int line,const char* file,const char* function,const cudaError_t rc,const char *err)
   {
     if(rc!=cudaSuccess)
       {
-	va_list ap;
-	va_start(ap,templ);
-	char mess[1024];
-	vsnprintf(mess,1024,templ,ap);
-	va_end(ap);
-	
-	CRASH<<mess<<", cuda raised error: "<<cudaGetErrorString(rc);
+	minimalCrash(file,line,__PRETTY_FUNCTION__,"%s, cuda raised error %d, err: %s",cudaGetErrorString(rc),rc,err);
       }
   }
 #endif
@@ -60,17 +54,17 @@ namespace esnort::device
 #if ENABLE_DEVICE_CODE
     
     LOGGER;
-    decryptError(cudaGetDeviceCount(&_nDevices),"Counting nDevices");
+    DEVICE_CRASH_ON_ERROR(cudaGetDeviceCount(&_nDevices),"Counting nDevices");
     LOGGER<<"Found "<<nDevices<<" CUDA Enabled devices";
     
     for(int i=0;i<nDevices;i++)
       {
 	cudaDeviceProp deviceProp;
-	decryptError(cudaGetDeviceProperties(&deviceProp,i),"Getting properties for device");
+	DEVICE_CRASH_ON_ERROR(cudaGetDeviceProperties(&deviceProp,i),"Getting properties for device");
 	LOGGER<<" CUDA Enabled device "<<i<<"/"<<nDevices<<": "<<deviceProp.major<<"."<<deviceProp.minor;
       }
     
-    decryptError(cudaSetDevice(iDevice),"Unable to set the device");
+    DEVICE_CRASH_ON_ERROR(cudaSetDevice(iDevice),"Unable to set the device");
     synchronize();
     
     Duration initDur;
