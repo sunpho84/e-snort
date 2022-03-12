@@ -44,7 +44,7 @@ namespace esnort::device
   {
     if(rc!=cudaSuccess)
       {
-	minimalCrash(file,line,__PRETTY_FUNCTION__,"%s, cuda raised error %d, err: %s",cudaGetErrorString(rc),rc,err);
+	minimalCrash(file,line,function,"%s, cuda raised error %d, err: %s",cudaGetErrorString(rc),rc,err);
       }
   }
 #endif

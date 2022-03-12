@@ -29,7 +29,7 @@ namespace esnort::Mpi
 	char err[MPI_MAX_ERROR_STRING];
 	MPI_Error_string(rc,err,&len);
 	
-	minimalCrash(file,line,__PRETTY_FUNCTION__,"%s, raised error %d, err: %s",mess,rc,err);
+	minimalCrash(file,line,function,"%s, raised error %d, err: %s",mess,rc,err);
       }
     
 #endif
