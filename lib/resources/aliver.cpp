@@ -97,6 +97,7 @@ namespace esnort
   {
     printBailout();
     
+    device::finalize();
     Mpi::finalize();
   }
 }

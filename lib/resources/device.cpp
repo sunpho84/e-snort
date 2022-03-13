@@ -72,4 +72,16 @@ namespace esnort::device
     LOGGER<<"CUDA initialized in "<<durationInSec(initDur)<<" s, nDevices: "<<nDevices;
 #endif
   }
+  
+  void finalize()
+  {
+#if ENABLE_DEVICE_CODE
+    
+    LOGGER;
+    
+    synchronize();
+    DEVICE_CRASH_ON_ERROR(cudaDeviceReset(),"Unable to reset the device");
+    LOGGER<<"CUDA finalized";
+#endif
+  }
 }

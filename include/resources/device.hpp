@@ -109,6 +109,8 @@ namespace esnort::device
   
   void initialize(const int& iDevice);
   
+  void finalize();
+  
 #define DEVICE_LOOP(INDEX,EXT_START,EXT_END,BODY...)			\
   device::launchKernel(__LINE__,__FILE__,EXT_START,EXT_END,[=] DEVICE_ATTRIB (const std::common_type_t<decltype((EXT_END)),decltype((EXT_START))>& INDEX) mutable {BODY})
 }

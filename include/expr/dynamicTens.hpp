@@ -223,7 +223,7 @@ namespace esnort
   {									\
     decltype(auto) t=this->crtp();					\
 									\
-    LOGGER<<"Building reference to "<<execSpaceName<ES><<" tensor-like";\
+    LOGGER<<"Building reference to "<<execSpaceName<ES><<" tensor-like, pointer: "<<t.storage; \
 									\
     return DynamicTens<CompsList<C...>,ATTRIB F,ES,true>(t.storage,t.storageSize,t.getDynamicSizes()); \
     }

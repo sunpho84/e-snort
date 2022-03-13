@@ -212,6 +212,7 @@ DONE
 TODO
 ---
 
+- Remove aliver as it is not starting correctly the devices... why!?
 - Spawning expr assignment in the different case, how will we deal with \*=, -= etc? Do they have any usage, or should we divert to the =a*b case?
 - Binder
 
