@@ -108,12 +108,11 @@ namespace esnort
 	    typename...ProcessedComps>
   constexpr INLINE_FUNCTION DEVICE_ATTRIB
   static void deviceLoopAnAllComps(const CompsList<DynamicComps>& dynamicSizes,
-			     Function function,
-			     const ProcessedComps&...processedComps)
+				   Function function,
+				   const ProcessedComps&...processedComps)
   {
     internal::_CompsLooper<Comps>::loop(dynamicSizes,function,processedComps...);
   }
-  
 }
 
 #endif
