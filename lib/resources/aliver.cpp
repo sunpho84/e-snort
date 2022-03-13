@@ -89,7 +89,6 @@ namespace esnort
     envFlags::readAll();
     
     possiblyWaitToAttachDebugger();
-    device::initialize(Mpi::rank);
     threads::initialize();
   }
   

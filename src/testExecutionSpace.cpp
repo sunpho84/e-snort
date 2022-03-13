@@ -72,7 +72,9 @@ int j;
 
 int main(int narg,char** arg)
 {
-  ASM_BOOKMARK_BEGIN("TEST_INDEX");
+  device::initialize(Mpi::rank);
+  
+    ASM_BOOKMARK_BEGIN("TEST_INDEX");
   __asm volatile ("");
   
   using C=std::tuple<SpinRow,SpaceTime>;
