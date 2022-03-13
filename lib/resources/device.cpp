@@ -79,8 +79,8 @@ namespace esnort::device
     
     LOGGER;
     
-    synchronize();
-    DEVICE_CRASH_ON_ERROR(cudaDeviceReset(),"Unable to reset the device");
+    // synchronize();
+    // DEVICE_CRASH_ON_ERROR(cudaDeviceReset(),"Unable to reset the device");
     LOGGER<<"CUDA finalized";
 #endif
   }

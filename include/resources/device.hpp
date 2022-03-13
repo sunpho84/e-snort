@@ -30,8 +30,8 @@ namespace esnort::device
 	    typename IMax>
   __global__
   void cudaGenericKernel(F f,
-				const IMin& min,
-				const IMax& max)
+			 const IMin min,
+			 const IMax max)
   {
     const auto i=
       min+blockIdx.x*blockDim.x+threadIdx.x;
