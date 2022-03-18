@@ -46,7 +46,7 @@ AC_MSG_RESULT([enabling SIMD... $enable_SIMD])
 
 if test "$enable_SIMD" == "yes"
 then
-     USE_SIMD=1
+     ENABLE_SIMD=1
      case "$CXX" in
      	nvcc)
 	for i in $X86_FEATURE_CFLAGS
@@ -57,9 +57,9 @@ then
      	*) AC_MSG_ERROR(["Unknown compiler"])
      esac
 else
-	USE_SIMD=0	
+	ENABLE_SIMD=0	
 fi
-AC_DEFINE_UNQUOTED([USE_SIMD],${ENABLE_SIMD},[Enable SIMD])
+AC_DEFINE_UNQUOTED([ENABLE_SIMD],${ENABLE_SIMD},[Enable SIMD])
 SUMMARY_RESULT="$SUMMARY_RESULT
 SIMD             : $enable_SIMD"
 
@@ -84,7 +84,7 @@ AC_ARG_ENABLE(MPI,
 	AS_HELP_STRING([--disable-MPI],[Enable MPI]),
 	enable_MPI="${enableval}",
 	enable_MPI="yes")
-AM_CONDITIONAL([USE_MPI],[test "$enable_MPI" == "yes" ],[true],[false])
+AM_CONDITIONAL([ENABLE_MPI],[test "$enable_MPI" == "yes" ],[true],[false])
 AC_MSG_RESULT([enabling MPI... $enable_MPI])
 SUMMARY_RESULT="$SUMMARY_RESULT
 MPI              : $enable_MPI"
@@ -97,7 +97,7 @@ then
 		CPPFLAGS="$MPI_CXXFLAGS $CPPFLAGS"
 		LIBS="$MPI_CXXLIBS $LIBS"
 		LDFLAGS="$MPI_CXXLDFLAGS $LDFLAGS"
-		AC_DEFINE([USE_MPI],1,[Enable MPI])
+		AC_DEFINE([ENABLE_MPI],1,[Enable MPI])
 	else
 		AC_MSG_ERROR(["Unable to find MPI"])
 	fi

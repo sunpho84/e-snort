@@ -10,7 +10,7 @@
 /// \brief Incapsulate all functionalities of MPI into a more
 /// convenient form
 
-#ifdef USE_MPI
+#ifdef ENABLE_MPI
 # include <mpi.h>
 #endif
 
@@ -45,7 +45,7 @@ namespace esnort::Mpi
 		   const char* format,     ///< Additional error message
 		   ...);
   
-#ifdef USE_MPI
+#ifdef ENABLE_MPI
   /// Provides the \c MPI_Datatype of an any unknown type
   template <typename T>
   inline MPI_Datatype type()
@@ -82,7 +82,7 @@ namespace esnort::Mpi
   T allReduce(const T& in)
   {
     
-#ifdef USE_MPI
+#ifdef ENABLE_MPI
     
     /// Result
     T out;
@@ -106,7 +106,7 @@ namespace esnort::Mpi
   /// Barrier among all MPI process
   inline void barrier()
   {
-#ifdef USE_MPI
+#ifdef ENABLE_MPI
     MPI_CRASH_ON_ERROR(MPI_Barrier(MPI_COMM_WORLD),"Waiting");
 #endif
   }
@@ -120,7 +120,7 @@ namespace esnort::Mpi
 		 const size_t& size,     ///< Size of the quantity to broadcast
 		 int root=MASTER_RANK)   ///< Rank from which to broadcast
   {
-#ifdef USE_MPI
+#ifdef ENABLE_MPI
     minimalLogger("%p %d",x,rank);
     MPI_CRASH_ON_ERROR(MPI_Bcast(x,size,MPI_CHAR,root,MPI_COMM_WORLD),"Broadcasting");
 #endif
@@ -146,7 +146,7 @@ namespace esnort::Mpi
 		 int root=MASTER_RANK)   ///< Rank from which to broadcast
   {
     
-#ifdef USE_MPI
+#ifdef ENABLE_MPI
     Binarizer bin=
       val.binarize();
     

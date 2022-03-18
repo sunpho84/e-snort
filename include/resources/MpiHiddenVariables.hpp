@@ -13,7 +13,7 @@ namespace esnort::Mpi
 {
   DEFINE_OR_DECLARE_HIDDEN_VARIABLE_WITH_CONST_ACCESSOR(bool,inited,{false});
   
-#if USE_MPI
+#if ENABLE_MPI
   
   DEFINE_OR_DECLARE_HIDDEN_VARIABLE_WITH_CONST_ACCESSOR(int,rank,{0});
   
