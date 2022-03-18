@@ -212,12 +212,15 @@ DONE
 TODO
 ---
 
-- Remove aliver as it is not starting correctly the devices... why!?
+- Enable vectorization
+- Compl, conj, transp
+- Products
+- Sums
 - Spawning expr assignment in the different case, how will we deal with \*=, -= etc? Do they have any usage, or should we divert to the =a*b case?
 - Binder
 
-- Enable vectorization
 
+- Remove aliver as it is not starting correctly the devices... why!?
 - Reducer from nissa
 - Grid from...?
 - Neighbors

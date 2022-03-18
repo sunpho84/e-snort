@@ -42,7 +42,8 @@ namespace esnort::Mpi
 		   const char *file,      ///< File where the error must be checked
 		   const char *function,  ///< Function where the error was possibly raised
 		   const int rc,          ///< Exit condition of the called routine
-		   const char* mess);     ///< Additional error message
+		   const char* format,     ///< Additional error message
+		   ...);
   
 #ifdef USE_MPI
   /// Provides the \c MPI_Datatype of an any unknown type

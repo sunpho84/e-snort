@@ -16,16 +16,21 @@ namespace esnort::Mpi
 		   const char *file,
 		   const char *function,
 		   const int rc,
-		   const char* mess)
+		   const char* format,
+		   ...)
   {
 #ifdef USE_MPI
     
     if(rc!=MPI_SUCCESS and rank==0)
       {
-	/// Length of the error message
-	int len;
+	char mess[128];
+	va_list ap;
+	va_start(ap,format);
+	vsnprintf(mess,128,format,ap);
+	va_end(ap);
 	
 	/// Error message
+	int len;
 	char err[MPI_MAX_ERROR_STRING];
 	MPI_Error_string(rc,err,&len);
 	

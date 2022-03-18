@@ -40,7 +40,7 @@ namespace esnort::device
       f(i);
   }
   
-  void crashOnError(const int line,const char* file,const char* function,const cudaError_t rc,const char *mess);
+  void crashOnError(const int line,const char* file,const char* function,const cudaError_t rc,const char *format,...);
   
   void memcpy(void* dst,const void* src,size_t count,cudaMemcpyKind kind);
   

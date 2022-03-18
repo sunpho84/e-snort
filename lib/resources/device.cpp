@@ -35,16 +35,22 @@ namespace esnort::device
     SCOPE_INDENT();
     
     VERBOSE_LOGGER(3)<<"Freeing on gpu: "<<ptr;
-    DEVICE_CRASH_ON_ERROR(cudaFree(ptr),"");
+    DEVICE_CRASH_ON_ERROR(cudaFree(ptr),"Freeing %p",ptr);
   }
 #endif
   
 #if ENABLE_DEVICE_CODE
-  void crashOnError(const int line,const char* file,const char* function,const cudaError_t rc,const char *err)
+  void crashOnError(const int line,const char* file,const char* function,const cudaError_t rc,const char *format,...)
   {
     if(rc!=cudaSuccess)
       {
-	minimalCrash(file,line,function,"%s, cuda raised error %d, err: %s",cudaGetErrorString(rc),rc,err);
+	char mess[128];
+	va_list ap;
+	va_start(ap,format);
+	vsnprintf(mess,128,format,ap);
+	va_end(ap);
+	
+	minimalCrash(file,line,function,"%s, cuda raised error %d, err: %s",cudaGetErrorString(rc),rc,mess);
       }
   }
 #endif
@@ -79,8 +85,8 @@ namespace esnort::device
     
     LOGGER;
     
-    // synchronize();
-    // DEVICE_CRASH_ON_ERROR(cudaDeviceReset(),"Unable to reset the device");
+    synchronize();
+    DEVICE_CRASH_ON_ERROR(cudaDeviceReset(),"Unable to reset the device");
     LOGGER<<"CUDA finalized";
 #endif
   }
