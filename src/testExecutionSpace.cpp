@@ -70,7 +70,7 @@ int j;
 
   using SpinRow=Spin<RwCl::ROW,0>;
 
-int main(int narg,char** arg)
+int in_main(int narg,char** arg)
 {
   device::initialize(Mpi::rank);
   
@@ -204,6 +204,13 @@ int main(int narg,char** arg)
   // 	       });
   // LOGGER<<j;
   // ASM_BOOKMARK_END("TEST_UNROLL");
+  
+  return 0;
+}
+
+int main(int narg,char** arg)
+{
+  esnort::runProgram(narg,arg,in_main);
   
   return 0;
 }

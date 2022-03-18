@@ -12,16 +12,22 @@
 
 namespace esnort
 {
-  /// Class used to provocate initialization of Mpi
-  struct Aliver :
-    public SingleInstance<Aliver>
+  /// Initialize
+  void initialize(int narg,char** arg);
+  
+  /// Finalize
+  void finalize();
+  
+  /// Run the program
+  template <typename F>
+  void runProgram(int narg,char** arg,F f)
   {
-    /// Creates
-    Aliver();
+    initialize(narg,arg);
     
-    /// Destroys
-    ~Aliver();
-  };
+    f(narg,arg);
+    
+    finalize();
+  }
 }
 
 #endif

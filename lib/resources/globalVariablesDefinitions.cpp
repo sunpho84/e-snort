@@ -8,7 +8,6 @@
 
 # include <debug/attachDebuggerGlobalVariablesDeclarations.hpp>
 # include <ios/loggerGlobalVariablesDeclarations.hpp>
-# include <resources/aliverGlobalVariablesDeclarations.hpp>
 # include <resources/memoryGlobalVariablesDeclarations.hpp>
 # include <resources/timerGlobalVariablesDeclarations.hpp>
 

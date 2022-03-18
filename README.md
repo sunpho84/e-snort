@@ -208,6 +208,7 @@ DONE
 - Added BaseTens to allow different kind of tensor copy
 - Added ref inside BaseTens
 - Comp is able to convert to index automatically
+- Remove aliver as it is not starting correctly the devices... why!?
 
 TODO
 ---
@@ -220,7 +221,6 @@ TODO
 - Binder
 
 
-- Remove aliver as it is not starting correctly the devices... why!?
 - Reducer from nissa
 - Grid from...?
 - Neighbors

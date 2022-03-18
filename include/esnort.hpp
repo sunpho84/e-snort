@@ -33,7 +33,6 @@
 /// Global namespace
 namespace esnort
 {
-  extern Aliver aliver;
 }
 
 #endif

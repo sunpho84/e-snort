@@ -53,7 +53,7 @@ namespace esnort
   {
     LOGGER<<"\nInitializing "<<PACKAGE_NAME<<" library, v"<<PACKAGE_VERSION<<", send bug report to <"<<PACKAGE_BUGREPORT<<">";
   }
-    
+  
   /// Prints the git info
   void printGitInfo()
   {
@@ -74,8 +74,7 @@ namespace esnort
     LOGGER<<"\n Ciao!\n";
   }
   
-  
-  Aliver::Aliver()
+  void initialize(int narg,char** arg)
   {
     Mpi::initialize();
     
@@ -92,7 +91,7 @@ namespace esnort
     threads::initialize();
   }
   
-  Aliver::~Aliver()
+  void finalize()
   {
     printBailout();
     
