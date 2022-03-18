@@ -35,6 +35,34 @@ SUMMARY_RESULT="---"
 
 AX_ASSEMBLY_REPORT
 
+# Check all x86 features supported
+AX_CHECK_X86_FEATURES
+#check if we enable SID
+AC_ARG_ENABLE(SIMD,
+	AS_HELP_STRING([--enable-SIMD],[Enable SIMD]),
+	enable_SIMD="${enableval}",
+	enable_SIMD="yes")
+AC_MSG_RESULT([enabling SIMD... $enable_SIMD])
+
+if test "$enable_SIMD" == "yes"
+then
+     USE_SIMD=1
+     case "$CXX" in
+     	nvcc)
+	for i in $X86_FEATURE_CFLAGS
+	do
+		CXXFLAGS="$CXXFLAGS -Xcompiler $i"
+	done;;
+     	clang|clang++|g++|gcc) CXXFLAGS="$CXXFLAGS $X86_FEATURE_CFLAGS";;
+     	*) AC_MSG_ERROR(["Unknown compiler"])
+     esac
+else
+	USE_SIMD=0	
+fi
+AC_DEFINE_UNQUOTED([USE_SIMD],${ENABLE_SIMD},[Enable SIMD])
+SUMMARY_RESULT="$SUMMARY_RESULT
+SIMD             : $enable_SIMD"
+
 #check if we enable splitting MPI autosearch
 AC_ARG_ENABLE(MPI-autosearch,
 	AS_HELP_STRING([--enable-MPI-autosearch],[Enable MPI autosearch]),
@@ -59,7 +87,7 @@ AC_ARG_ENABLE(MPI,
 AM_CONDITIONAL([USE_MPI],[test "$enable_MPI" == "yes" ],[true],[false])
 AC_MSG_RESULT([enabling MPI... $enable_MPI])
 SUMMARY_RESULT="$SUMMARY_RESULT
-MPI enabled         : $enable_MPI"
+MPI              : $enable_MPI"
 
 if test "$enable_MPI" == "yes"
 then
