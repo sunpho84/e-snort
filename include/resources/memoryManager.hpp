@@ -15,6 +15,7 @@
 #include <ios/logger.hpp>
 #include <metaprogramming/crtp.hpp>
 #include <resources/device.hpp>
+#include <resources/memoryGlobalVariablesDeclarations.hpp>
 #include <resources/valueWithExtreme.hpp>
 
 namespace esnort
@@ -56,9 +57,6 @@ namespace esnort
     
     /// Size of cached memory
     ValWithMax<Size> cachedSize;
-    
-    /// Use or not cache
-    bool useCache{true};
     
     /// Number of cached memory reused
     Size nCachedReused{0};
@@ -177,13 +175,13 @@ namespace esnort
     /// Enable cache usage
     void enableCache()
     {
-      useCache=true;
+      memory::useCache=true;
     }
     
     /// Disable cache usage
     void disableCache()
     {
-      useCache=false;
+      memory::useCache=false;
       
       clearCache();
     }
@@ -217,7 +215,7 @@ namespace esnort
     template <typename T>
     void release(T* &ptr) ///< Pointer getting freed
     {
-      if(useCache)
+      if(memory::useCache)
 	moveToCache(static_cast<void*>(ptr));
       else
 	{

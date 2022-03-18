@@ -7,7 +7,7 @@
 
 /// \file memory.hpp
 
-#include <resources/memoryGlobalVariablesDeclarations.hpp>
+#include <resources/memoryManagerGlobalVariablesDeclarations.hpp>
 
 #include <resources/device.hpp>
 

@@ -9,6 +9,7 @@
 # include <debug/attachDebuggerGlobalVariablesDeclarations.hpp>
 # include <ios/loggerGlobalVariablesDeclarations.hpp>
 # include <resources/memoryGlobalVariablesDeclarations.hpp>
+# include <resources/memoryManagerGlobalVariablesDeclarations.hpp>
 # include <resources/timerGlobalVariablesDeclarations.hpp>
 
 #undef DEFINE_GLOBAL_VARIABLES
