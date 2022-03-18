@@ -1,3 +1,4 @@
+#include "resources/memory.hpp"
 #ifdef HAVE_CONFIG_H
 # include "config.hpp"
 #endif
@@ -88,14 +89,16 @@ namespace esnort
     envFlags::readAll();
     
     possiblyWaitToAttachDebugger();
+    memory::initialize();
     threads::initialize();
   }
   
   void finalize()
   {
-    printBailout();
-    
+    memory::finalize();
     device::finalize();
     Mpi::finalize();
+    printBailout();
+    
   }
 }

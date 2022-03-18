@@ -29,9 +29,10 @@ __top_builddir__lib_libesnort_a_SOURCES= \
 	%D%/resources/aliver.cpp \
 	%D%/resources/device.cpp \
 	%D%/resources/environmentFlags.cpp \
+	%D%/resources/gitInfo.cpp \
 	%D%/resources/globalVariablesDefinitions.cpp \
+	%D%/resources/memory.cpp \
 	%D%/resources/Mpi.cpp \
 	%D%/resources/threads.cpp \
-	%D%/resources/gitInfo.cpp \
 	%D%/esnort.cpp
 

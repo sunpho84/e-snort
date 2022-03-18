@@ -39,6 +39,9 @@ namespace esnort
     
   private:
     
+    /// Store initialization
+    bool inited;
+    
     /// Name of the memory manager
     const char* const name;
     
@@ -287,25 +290,49 @@ namespace esnort
     
     /// Create the memory manager
     MemoryManager(const char* name) :
-      name(name),
-      usedSize(0),
-      cachedSize(0)
+      name(name)
     {
-      LOGGER<<"";
-      LOGGER<<"Starting the "<<name<<" memory manager";
+    }
+    
+    void initialize()
+    {
+      if(not inited)
+	{
+	  inited=true;
+	  usedSize=0;
+	  cachedSize=0;
+	  
+	  LOGGER<<"";
+	  LOGGER<<"Starting the "<<name<<" memory manager";
+	}
+      else
+	CRASH<<"Trying to initialize the already initialized "<<name<<" memory manager";
+    }
+    
+    void finalize()
+    {
+      if(inited)
+	{
+	  inited=false;
+	  
+	  LOGGER<<"";
+	  LOGGER<<"Stopping the "<<name<<" memory manager";
+	  
+	  printStatistics();
+	  
+	  releaseAllUsedMemory();
+	  
+	  clearCache();
+	}
+      else
+	CRASH<<"Trying to finalize the not-initialized "<<name<<" memory manager";
     }
     
     /// Destruct the memory manager
     ~MemoryManager()
     {
-      LOGGER<<"";
-      LOGGER<<"Stopping the "<<name<<" memory manager";
-      
-      printStatistics();
-      
-      releaseAllUsedMemory();
-      
-      clearCache();
+      if(inited)
+	finalize();
     }
     
     /// Get memory

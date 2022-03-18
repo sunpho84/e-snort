@@ -58,6 +58,12 @@ namespace esnort::memory
 #endif
 	::memcpy(dst,src,size);
   }
+  
+  /// Initializes the memory managers
+  void initialize();
+  
+  /// Finalize the memory managers
+  void finalize();
 }
 
 #endif
