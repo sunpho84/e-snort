@@ -61,7 +61,7 @@ namespace esnort
     
     /// Fundamental type
     using Fund=_Fund;
-
+    
     /// Determine if it is reference
     static constexpr bool isRef=IsRef;
     
@@ -232,7 +232,35 @@ namespace esnort
   
   PROVIDE_GET_REF(/* non const */);
   
+  /////////////////////////////////////////////////////////////////
+  
 #undef PROVIDE_GET_REF
+  
+#define PROVIDE_SIMDIFY(ATTRIB)						\
+  template <typename T,							\
+	    typename...C,						\
+	    typename F,							\
+	    ExecutionSpace ES>						\
+auto BaseTens<T,CompsList<C...>,F,ES>::simdify() ATTRIB			\
+									\
+  {									\
+    decltype(auto) t=this->crtp();					\
+									\
+    LOGGER<<"Building simdified view "<<execSpaceName<ES><<" tensor-like, pointer: "<<t.storage; \
+    									\
+    									\
+    using Traits=CompsListSimdifiableTraits<CompsList<C...>,F>;		\
+									\
+    using SimdFund=typename Traits::SimdFund;				\
+									\
+    return DynamicTens<typename Traits::Comps,ATTRIB SimdFund,ES,true>((ATTRIB SimdFund*)t.storage,t.storageSize/sizeof(SimdFund),t.getDynamicSizes()); \
+  }
+  
+  PROVIDE_SIMDIFY(const);
+  
+  PROVIDE_SIMDIFY(/* non const */);
+  
+#undef PROVIDE_SIMDIFY
 }
 
 #endif

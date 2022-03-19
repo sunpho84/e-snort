@@ -8,10 +8,11 @@
 /// \file expr/baseTens.hpp
 
 #include <expr/comps.hpp>
-#include "expr/dynamicCompsProvider.hpp"
+#include <expr/dynamicCompsProvider.hpp>
 #include <expr/executionSpace.hpp>
 #include <expr/expr.hpp>
 #include <resources/memory.hpp>
+#include <resources/SIMD.hpp>
 
 namespace esnort
 {
@@ -54,6 +55,15 @@ namespace esnort
       return *this;
     }
     
+    using _SimdifyTraits=
+      CompsListSimdifiableTraits<CompsList<C...>,F>;
+    
+    /// States whether the tensor can be simdified
+    static constexpr int canSimdify=
+#if ENABLE_DEVICE_CODE
+      (ES==ExecutionSpace::HOST) and
+#endif
+      _SimdifyTraits::canSimdify;
     
     /// Return whether can be assigned at compile time
     static constexpr bool canAssignAtCompileTime=
@@ -64,6 +74,12 @@ namespace esnort
     
     /// Returns a reference
     auto getRef();
+    
+    /// Returns a const simdified view
+    auto simdify() const;
+    
+    /// Returns a simdified view
+    auto simdify();
     
     /// Default constructor
     constexpr BaseTens()

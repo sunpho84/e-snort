@@ -27,6 +27,7 @@
 #include <metaprogramming/unrolledFor.hpp>
 
 #include <resources/aliver.hpp>
+#include <resources/SIMD.hpp>
 
 #include <tuples/tupleDiscriminate.hpp>
 

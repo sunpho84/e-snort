@@ -23,11 +23,26 @@ using namespace esnort;
 
 /////////////////////////////////////////////////////////////////
 
-
-
 template <RwCl _RC=RwCl::ROW,
 	  int _Which=0>
 struct Spin :
+  Comp<compFeat::IsTransposable::TRUE,
+       int,
+       Spin<_RC,_Which>>
+{
+  using Base=  Comp<compFeat::IsTransposable::TRUE,
+       int,
+		    Spin<_RC,_Which>>;
+  
+  using Base::Base;
+  
+  /// Size at compile time
+  static constexpr int sizeAtCompileTime=4;
+};
+
+template <RwCl _RC=RwCl::ROW,
+	  int _Which=0>
+struct Span :
   Comp<compFeat::IsTransposable::TRUE,
        int,
        Spin<_RC,_Which>>
@@ -69,6 +84,7 @@ int j;
 // };
 
   using SpinRow=Spin<RwCl::ROW,0>;
+  using SpanRow=Span<RwCl::ROW,0>;
 
 int in_main(int narg,char** arg)
 {
@@ -78,7 +94,7 @@ int in_main(int narg,char** arg)
   __asm volatile ("");
   
   using C=std::tuple<SpinRow,SpaceTime>;
-
+  
   std::integral_constant<int,index(CompsList<>{},SpinRow{3})>{};
   
   ASM_BOOKMARK_BEGIN("TEST_INDEX");
@@ -92,6 +108,12 @@ int in_main(int narg,char** arg)
   // I i(SpaceTime(10));
   
   StackTens<OfComps<SpinRow>,double> dt;
+  StackTens<OfComps<SpanRow>,double> pt;
+  auto d=std::bool_constant<dt.canSimdify>{};
+  auto re=dt.simdify();
+  auto p=pt.simdify();
+  re=p;
+  
   for(SpinRow st=0;st<4;st++)
     dt(st)=st();
   // {

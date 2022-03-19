@@ -88,8 +88,8 @@ namespace esnort
 	      int Size>
     constexpr auto _simdTypeProvider()
     {
-      CASES(float,4,,
-	    CASES(double,8,d,));
+      CASES(float,8,,
+	    CASES(double,4,d,));
     }
     
 #undef CASES
@@ -103,14 +103,25 @@ namespace esnort
   /// Provides the largest SIMD type supporting a vector of type F and size Size
   template <typename F,
 	    int Size>
-  using SimdTypeProvider=
-    decltype(internal::_simdTypeProvider<F,Size>());
-  
-  /// Check if there is a SIMD type for the asked type and size
-  template <typename F,
-	    int Size>
-  constexpr bool canSimdify=
-    not std::is_same_v<void,SimdTypeProvider<F,Size>>;
+  struct SimdOfTypeTraits
+  {
+    using type=decltype(internal::_simdTypeProvider<F,Size>());
+    
+    /// Check if there is a SIMD type for the asked type and size
+    static constexpr bool canSimdify()
+    {
+      return not std::is_same_v<void,type>;
+    }
+    
+    /// Returns the non-simdified size
+    static constexpr int nonSimdifiedSize()
+    {
+      if constexpr(canSimdify())
+	return Size*sizeof(F)/sizeof(type);
+      else
+	return Size;
+    }
+  };
 }
 
 #endif
