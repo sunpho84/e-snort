@@ -61,8 +61,8 @@ namespace esnort
 		typename...ProcessedComps>
       constexpr INLINE_FUNCTION DEVICE_ATTRIB
       static void deviceLoop(const DynamicComps& dynamicSizes,
-                       Function function,
-		       const ProcessedComps&...processedComps)
+			     Function function,
+			     const ProcessedComps&...processedComps)
       {
 	/// Loop task
 	auto task=
@@ -90,11 +90,11 @@ namespace esnort
   
   /// Execute the given loop on all components
   template <typename Comps,
-	    typename DynamicComps,
+	    typename...DynamicComps,
 	    typename Function,
 	    typename...ProcessedComps>
   constexpr INLINE_FUNCTION
-  static void loopAnAllComps(const CompsList<DynamicComps>& dynamicSizes,
+  static void loopOnAllComps(const CompsList<DynamicComps...>& dynamicSizes,
 			     Function function,
 			     const ProcessedComps&...processedComps)
   {
@@ -103,11 +103,11 @@ namespace esnort
   
   /// Execute the given loop on all components
   template <typename Comps,
-	    typename DynamicComps,
+	    typename...DynamicComps,
 	    typename Function,
 	    typename...ProcessedComps>
   constexpr INLINE_FUNCTION DEVICE_ATTRIB
-  static void deviceLoopAnAllComps(const CompsList<DynamicComps>& dynamicSizes,
+  static void deviceLoopOnAllComps(const CompsList<DynamicComps...>& dynamicSizes,
 				   Function function,
 				   const ProcessedComps&...processedComps)
   {

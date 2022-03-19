@@ -87,7 +87,7 @@ namespace esnort
 	  const auto rhs=u.crtp().getRef();
 	  
 	  DEVICE_LOOP(dc,DC(0),dynamicSize,
-		      deviceLoopAnAllComps<typename T::StaticComps>(this->crtp().dynamicSizes,
+		      deviceLoopOnAllComps<typename T::StaticComps>(this->crtp().dynamicSizes,
 							      [=] DEVICE_ATTRIB (const auto&...comps) mutable INLINE_ATTRIBUTE
 							      {
 								lhs(comps...)=rhs(comps...);
@@ -118,14 +118,14 @@ namespace esnort
 	      
 #pragma omp parallel for
 	      for(DC dc=0;dc<dynamicSize;dc++)
-		loopAnAllComps<typename T::StaticComps>(this->crtp().dynamicSizes,task,dc);
+		loopOnAllComps<typename T::StaticComps>(this->crtp().dynamicSizes,task,dc);
 	    }
 	  else
 #endif
 	    {
 	      LOGGER<<"Using direct assign";
 	      
-	      loopAnAllComps<typename T::Comps>(this->crtp().dynamicSizes,task);
+	      loopOnAllComps<typename T::Comps>(this->crtp().dynamicSizes,task);
 	    }
 	}
       

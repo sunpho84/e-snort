@@ -52,6 +52,13 @@ namespace esnort
     /// Importing assignment operator from BaseTens
     using Base::operator=;
     
+    DynamicTens& operator=(const DynamicTens& oth)
+    {
+      static_cast<Base>(*this)=static_cast<Base>(oth);
+      
+      return *this;
+    }
+    
     /// List of dynamic comps
     using DynamicComps=
       typename Base::DynamicComps;
