@@ -34,26 +34,59 @@ namespace esnort
     DynamicCompsProvider<C...>,
     Expr<T>
   {
-    /// Import assignment operator from Expr
-    using Expr<T>::operator=;
+    // /// Import assignment operator from Expr
+    // using Expr<T>::operator=;
+    
+    // INLINE_FUNCTION
+    // BaseTens& operator=(const BaseTens& oth)
+    // {
+    //   this->Expr<T>::operator=(oth);
+      
+    //   return *this;
+    // }
+    /// Assign from another dynamic tensor of the very same type
+    template <typename OtherT,
+	      typename OtherF,
+	      ExecutionSpace OtherES>
+    INLINE_FUNCTION
+    BaseTens& assign(const BaseTens<OtherT,CompsList<C...>,OtherF,OtherES>& _oth)
+    {
+      this->Expr<T>::operator=(_oth);
+      // T& t=DE_CRTPFY(T,this);
+      // const OtherT& oth=DE_CRTPFY(const OtherT,&_oth);
+      
+      // if(t.storageSize!=oth.storageSize)
+      // 	CRASH<<"Storage sizes not agreeing";
+      
+      // LOGGER<<"Copying a "<<execSpaceName<OtherES><<" tensor into a "<<execSpaceName<ES><<" one";
+      
+      // memory::memcpy<ES,OtherES>(t.storage,oth.storage,oth.storageSize);
+      
+      return *this;
+    }
+    
+    /// Define the copy-assignment operator
+    INLINE_FUNCTION
+    BaseTens& operator=(const BaseTens& oth)
+    {
+      return this->assign(oth);
+    }
+    
+    /// Define the move-assignment operator
+    INLINE_FUNCTION
+    BaseTens& operator=(BaseTens&& oth)
+    {
+      return this->assign(std::move(oth));
+    }
     
     /// Assign from another dynamic tensor of the very same type
     template <typename OtherT,
+	      typename OtherF,
 	      ExecutionSpace OtherES>
     INLINE_FUNCTION
-    BaseTens& operator=(const BaseTens<OtherT,CompsList<C...>,F,OtherES>& _oth)
+    BaseTens& operator=(const BaseTens<OtherT,CompsList<C...>,OtherF,OtherES>& _oth)
     {
-      T& t=DE_CRTPFY(T,this);
-      const OtherT& oth=DE_CRTPFY(const OtherT,&_oth);
-      
-      if(t.storageSize!=oth.storageSize)
-	CRASH<<"Storage sizes not agreeing";
-      
-      LOGGER<<"Copying a "<<execSpaceName<OtherES><<" tensor into a "<<execSpaceName<ES><<" one";
-      
-      memory::memcpy<ES,OtherES>(t.storage,oth.storage,oth.storageSize);
-      
-      return *this;
+      return this->assign(_oth);
     }
     
     using _SimdifyTraits=

@@ -15,6 +15,7 @@
 #include <expr/deviceAssign.hpp>
 #include <expr/directAssign.hpp>
 #include <expr/executionSpace.hpp>
+#include <expr/simdAssign.hpp>
 #include <expr/threadAssign.hpp>
 #include <ios/logger.hpp>
 #include <metaprogramming/crtp.hpp>
@@ -27,13 +28,11 @@ namespace esnort
   template <typename T>
   struct Expr
   {
-    // Seems unnecessary
-    /// Define the assignment operator with the same expression type,
-    /// in terms of the templated version
+    // /// Define the move-assignment operator
     // INLINE_FUNCTION
-    // Expr& operator=(const Expr& oth)
+    // Expr& operator=(Expr&& oth)
     // {
-    //   return this->operator=<T>(oth);
+    //   return this->operator=<T>(std::forward<Expr>(oth));
     // }
     
     /// Returns whether can assign: this is actually used when no other assignability is defined
@@ -46,6 +45,7 @@ namespace esnort
     
     /// Assert assignability
     template <typename U>
+    INLINE_FUNCTION
     constexpr void assertCanAssign(const Expr<U>& _rhs)
     {
       static_assert(tuplesContainsSameTypes<typename T::Comps,typename U::Comps>,"Cannot assign two expressions which differ for the components");
@@ -55,7 +55,7 @@ namespace esnort
       auto& lhs=DE_CRTPFY(T,this);
       const auto& rhs=DE_CRTPFY(const U,&_rhs);
       
-      if(not lhs.canAssign())
+      if constexpr(not T::canAssignAtCompileTime)
 	CRASH<<"Trying to assign to a non-assignable expression";
       
       if constexpr(U::hasDynamicComps)
@@ -69,7 +69,7 @@ namespace esnort
     /// Assign from another expression
     template <typename Rhs>
     INLINE_FUNCTION
-    T& operator=(const Expr<Rhs>& u)
+    T& assign(const Expr<Rhs>& u)
     {
       assertCanAssign(u);
       
@@ -78,7 +78,7 @@ namespace esnort
       
 #if ENABLE_SIMD
       if constexpr(T::canSimdify and Rhs::canSimdify)
-	lhs.simdify()=rhs.simdify();
+	simdAssign(lhs,rhs);
       else
 #endif
 #if ENABLE_DEVICE_CODE
@@ -94,6 +94,24 @@ namespace esnort
 	    directAssign(lhs,rhs);
       
       return lhs;
+    }
+    
+    /// Assign from another expression
+    template <typename Rhs>
+    INLINE_FUNCTION
+    T& operator=(const Expr<Rhs>& u)
+    {
+      this->assign(u);
+      
+      return DE_CRTPFY(T,this);
+    }
+    
+    /// Define the assignment operator with the same expression type,
+    /// in terms of the templated version
+    INLINE_FUNCTION
+    Expr& operator=(const Expr& oth)
+    {
+      return this->assign(oth);
     }
     
     /// Returns the expression as a dynamic tensor

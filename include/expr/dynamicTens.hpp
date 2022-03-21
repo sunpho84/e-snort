@@ -55,7 +55,7 @@ namespace esnort
     INLINE_FUNCTION
     DynamicTens& operator=(const DynamicTens& oth)
     {
-      static_cast<Base>(*this)=static_cast<Base>(oth);
+      this->Base::operator=(oth);
       
       return *this;
     }
@@ -231,7 +231,7 @@ namespace esnort
   {									\
     decltype(auto) t=DE_CRTPFY(ATTRIB T,this);				\
 									\
-    LOGGER<<"Building reference to "<<execSpaceName<ES><<" tensor-like, pointer: "<<t.storage; \
+    /*LOGGER<<"Building reference to "<<execSpaceName<ES><<" tensor-like, pointer: "<<t.storage;*/ \
 									\
     return DynamicTens<CompsList<C...>,ATTRIB F,ES,true>(t.storage,t.storageSize,t.getDynamicSizes()); \
     }
@@ -255,7 +255,7 @@ namespace esnort
   {									\
     decltype(auto) t=DE_CRTPFY(ATTRIB T,this);				\
 									\
-    LOGGER<<"Building simdified view "<<execSpaceName<ES><<" tensor-like, pointer: "<<t.storage; \
+    /*LOGGER<<"Building simdified view "<<execSpaceName<ES><<" tensor-like, pointer: "<<t.storage;*/ \
     									\
     									\
     using Traits=CompsListSimdifiableTraits<CompsList<C...>,F>;		\

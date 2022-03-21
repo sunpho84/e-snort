@@ -89,10 +89,11 @@ int j;
 StackTens<OfComps<SpinRow>,double> dt;
 StackTens<OfComps<SpinRow>,double> pt;
 
+
 void testSimdifiedAssign()
 {
   ASM_BOOKMARK_BEGIN("TEST_SIMDIFIED_ASSIGN");
-  dt=pt;
+  dt.simdify()=pt.simdify();
   ASM_BOOKMARK_END("TEST_SIMDIFIED_ASSIGN");
 }
 
@@ -121,7 +122,7 @@ int in_main(int narg,char** arg)
   for(SpinRow st=0;st<4;st++)
     pt(st)=st();
   
-  testSimdifiedAssign();
+  //testSimdifiedAssign();
   
   for(SpinRow st=0;st<4;st++)
     LOGGER<<st()<<" "<<dt(st);

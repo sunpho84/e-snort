@@ -26,18 +26,33 @@ namespace esnort
 #define THIS					\
     StackTens<CompsList<C...>,_Fund>
   
+#define BASE					\
+  BaseTens<THIS,CompsList<C...>,_Fund,ExecutionSpace::HOST>
+  
   /// Tensor
   template <typename...C,
 	    typename _Fund>
   struct THIS :
-    BaseTens<THIS,CompsList<C...>,_Fund,ExecutionSpace::HOST>
+    BASE
   {
     using This=THIS;
     
+    using Base=BASE;
+    
+#undef BASE
+    
 #undef THIS
     
-    /// Importing assignment operator from BaseTens
-    using BaseTens<This,CompsList<C...>,_Fund,ExecutionSpace::HOST>::operator=;
+    // /// Importing assignment operator from BaseTens
+    // using BaseTens<This,CompsList<C...>,_Fund,ExecutionSpace::HOST>::operator=;
+    
+    INLINE_FUNCTION
+    StackTens& operator=(const StackTens& oth)
+    {
+      this->Base::operator=(oth);
+      
+      return *this;
+    }
     
     static_assert((C::sizeIsKnownAtCompileTime &...),"Trying to instantiate a stack tensor with dynamic comps");
     
