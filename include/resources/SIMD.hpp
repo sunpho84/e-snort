@@ -17,7 +17,7 @@
 #include <tuples/tupleCat.hpp>
 
 constexpr bool haveAvx512Instructions=
-#ifdef HAVE_AVX512F_INSTRUCTIONS
+#if ENABLE_SIMD and defined(HAVE_AVX512F_INSTRUCTIONS)
 	    true
 #else
 	    false
@@ -25,7 +25,7 @@ constexpr bool haveAvx512Instructions=
 	    ;
 
 constexpr bool haveAvxInstructions=
-#ifdef HAVE_AVX_INSTRUCTIONS
+#if ENABLE_SIMD and defined(HAVE_AVX_INSTRUCTIONS)
 	    true
 #else
 	    false
@@ -33,7 +33,7 @@ constexpr bool haveAvxInstructions=
 	    ;
 
 constexpr bool haveMmxInstructions=
-#ifdef HAVE_MMX_INSTRUCTIONS
+#if ENABLE_SIMD and defined(HAVE_MMX_INSTRUCTIONS)
 	    true
 #else
 	    false
@@ -53,19 +53,19 @@ namespace esnort
 #define CASE_ELSE(SIZE,NAME,ELSE)		\
     ELSE
     
-#ifdef HAVE_AVX512F_INSTRUCTIONS
+#if ENABLE_SIMD and defined(HAVE_AVX512F_INSTRUCTIONS)
 # define CASE_AVX512 CASE
 #else
 # define CASE_AVX512 CASE_ELSE
 #endif
     
-#ifdef HAVE_AVX_INSTRUCTIONS
+#if ENABLE_SIMD and defined(HAVE_AVX_INSTRUCTIONS)
 # define CASE_AVX CASE
 #else
 # define CASE_AVX CASE_ELSE
 #endif
 
-#ifdef HAVE_MMX_INSTRUCTIONS
+#if ENABLE_SIMD and defined(HAVE_MMX_INSTRUCTIONS)
 # define CASE_MMX CASE
 #else
 # define CASE_MMX CASE_ELSE
@@ -110,7 +110,7 @@ namespace esnort
     /// Check if there is a SIMD type for the asked type and size
     static constexpr bool canSimdify()
     {
-      return not std::is_same_v<void,type>;
+      return Size!=0 and not std::is_same_v<void,type>;
     }
     
     /// Returns the non-simdified size

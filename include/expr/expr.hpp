@@ -23,19 +23,18 @@
 
 namespace esnort
 {
-  DEFINE_CRTP_INHERITANCE_DISCRIMINER_FOR_TYPE(Expr)
-  
   /// Base type representing an expression
   template <typename T>
-  struct Expr :
-    Crtp<T,crtp::ExprDiscriminer>
+  struct Expr
   {
+    // Seems unnecessary
     /// Define the assignment operator with the same expression type,
     /// in terms of the templated version
-    Expr& operator=(const Expr& oth)
-    {
-      return this->operator=<T>(oth);
-    }
+    // INLINE_FUNCTION
+    // Expr& operator=(const Expr& oth)
+    // {
+    //   return this->operator=<T>(oth);
+    // }
     
     /// Returns whether can assign: this is actually used when no other assignability is defined
     constexpr bool canAssign() const
@@ -44,20 +43,23 @@ namespace esnort
     }
     
     static constexpr bool canAssignAtCompileTime=false;
-        
+    
     /// Assert assignability
     template <typename U>
-    constexpr void assertCanAssign(const Expr<U>& rhs)
+    constexpr void assertCanAssign(const Expr<U>& _rhs)
     {
       static_assert(tuplesContainsSameTypes<typename T::Comps,typename U::Comps>,"Cannot assign two expressions which differ for the components");
       
       static_assert(T::canAssignAtCompileTime,"Trying to assign to a non-assignable expression");
       
-      if(not this->crtp().canAssign())
+      auto& lhs=DE_CRTPFY(T,this);
+      const auto& rhs=DE_CRTPFY(const U,&_rhs);
+      
+      if(not lhs.canAssign())
 	CRASH<<"Trying to assign to a non-assignable expression";
       
       if constexpr(U::hasDynamicComps)
-	if(this->crtp().getDynamicSizes()!=rhs.crtp().getDynamicSizes())
+	if(lhs.getDynamicSizes()!=rhs.getDynamicSizes())
 	  CRASH<<"Dynamic comps not agreeing";
       
       static_assert(T::execSpace==U::execSpace or
@@ -65,25 +67,31 @@ namespace esnort
     }
     
     /// Assign from another expression
-    template <typename Lhs>
-    T& operator=(const Expr<Lhs>& u)
+    template <typename Rhs>
+    INLINE_FUNCTION
+    T& operator=(const Expr<Rhs>& u)
     {
       assertCanAssign(u);
       
-      auto& lhs=this->crtp();
-      const auto& rhs=u.crtp();
+      auto& lhs=DE_CRTPFY(T,this);
+      const auto& rhs=DE_CRTPFY(const Rhs,&u);
       
-#if ENABLE_DEVICE_CODE
-      if constexpr(Lhs::execSpace==ExecutionSpace::DEVICE)
-	deviceAssign(lhs,rhs);
+#if ENABLE_SIMD
+      if constexpr(T::canSimdify and Rhs::canSimdify)
+	lhs.simdify()=rhs.simdify();
       else
 #endif
-#if ENABLE_THREADS
-	if constexpr(Lhs::nDynamicComps==1)
-	  threadAssign(lhs,rhs);
+#if ENABLE_DEVICE_CODE
+	if constexpr(Rhs::execSpace==ExecutionSpace::DEVICE)
+	  deviceAssign(lhs,rhs);
 	else
 #endif
-	  directAssign(lhs,rhs);
+#if ENABLE_THREADS
+	  if constexpr(Rhs::nDynamicComps==1)
+	    threadAssign(lhs,rhs);
+	  else
+#endif
+	    directAssign(lhs,rhs);
       
       return lhs;
     }
@@ -99,11 +107,13 @@ namespace esnort
       /*! Leftover components */					\
       using ResidualComps=						\
 	TupleFilterAllTypes<typename T::Comps,std::tuple<C...>>;	\
-									\
+      									\
+      ATTRIB auto& t=DE_CRTPFY(ATTRIB T,this);				\
+      									\
       if constexpr(std::tuple_size_v<ResidualComps> ==0)		\
-	return this->crtp().eval(cs...);				\
+	return t.eval(cs...);						\
       else								\
-	return compBind(this->crtp(),std::make_tuple(cs...));		\
+	return compBind(t,std::make_tuple(cs...));			\
     }
     
     PROVIDE_SUBSCRIBE(const);

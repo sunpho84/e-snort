@@ -86,6 +86,16 @@ int j;
   using SpinRow=Spin<RwCl::ROW,0>;
   using SpanRow=Span<RwCl::ROW,0>;
 
+StackTens<OfComps<SpinRow>,double> dt;
+StackTens<OfComps<SpinRow>,double> pt;
+
+void testSimdifiedAssign()
+{
+  ASM_BOOKMARK_BEGIN("TEST_SIMDIFIED_ASSIGN");
+  dt=pt;
+  ASM_BOOKMARK_END("TEST_SIMDIFIED_ASSIGN");
+}
+
 int in_main(int narg,char** arg)
 {
   device::initialize(Mpi::rank);
@@ -95,7 +105,6 @@ int in_main(int narg,char** arg)
   
   using C=std::tuple<SpinRow,SpaceTime>;
   
-  std::integral_constant<int,index(CompsList<>{},SpinRow{3})>{};
   
   ASM_BOOKMARK_BEGIN("TEST_INDEX");
   j=index(CompsList<SpaceTime>{5},SpinRow{3},SpaceTime{1});
@@ -106,16 +115,17 @@ int in_main(int narg,char** arg)
   // using I=IndexComputer<C>;
   
   // I i(SpaceTime(10));
-  
-  StackTens<OfComps<SpinRow>,double> dt;
-  StackTens<OfComps<SpanRow>,double> pt;
-  auto d=std::bool_constant<dt.canSimdify>{};
-  auto re=dt.simdify();
-  auto p=pt.simdify();
-  re=p;
+
+  LOGGER<<"Begin assign";
   
   for(SpinRow st=0;st<4;st++)
-    dt(st)=st();
+    pt(st)=st();
+  
+  testSimdifiedAssign();
+  
+  for(SpinRow st=0;st<4;st++)
+    LOGGER<<st()<<" "<<dt(st);
+  
   // {
   //   DynamicTens<OfComps<SpinRow>,double,ExecutionSpace::HOST> dt;
   //   StackTens<OfComps<SpinRow>,double> st;

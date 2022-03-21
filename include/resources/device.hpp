@@ -74,13 +74,13 @@ namespace esnort::device
 		    const IMax max,
 		    F&& f)
   {
+#if ENABLE_DEVICE_CODE
     /// Length of the loop
     const auto length=
       max-min;
     
     const int nCudaThreads=128;
     
-#if ENABLE_DEVICE_CODE
     /// Dimension of the block
     const dim3 blockDimension(nCudaThreads);
     

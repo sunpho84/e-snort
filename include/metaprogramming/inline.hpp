@@ -20,4 +20,11 @@
 #define INLINE_FUNCTION				\
   INLINE_ATTRIBUTE inline
 
+/// Clang has its own way to express inline of a lambda
+#ifdef __clang__
+# define MUTABLE_INLINE_ATTRIBUTE INLINE_ATTRIBUTE mutable
+#else
+# define MUTABLE_INLINE_ATTRIBUTE mutable INLINE_ATTRIBUTE
+#endif
+
 #endif

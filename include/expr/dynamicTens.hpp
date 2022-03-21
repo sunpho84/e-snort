@@ -52,6 +52,7 @@ namespace esnort
     /// Importing assignment operator from BaseTens
     using Base::operator=;
     
+    INLINE_FUNCTION
     DynamicTens& operator=(const DynamicTens& oth)
     {
       static_cast<Base>(*this)=static_cast<Base>(oth);
@@ -228,7 +229,7 @@ namespace esnort
 	    ExecutionSpace ES>						\
   auto BaseTens<T,CompsList<C...>,F,ES>::getRef() ATTRIB		\
   {									\
-    decltype(auto) t=this->crtp();					\
+    decltype(auto) t=DE_CRTPFY(ATTRIB T,this);				\
 									\
     LOGGER<<"Building reference to "<<execSpaceName<ES><<" tensor-like, pointer: "<<t.storage; \
 									\
@@ -248,10 +249,11 @@ namespace esnort
 	    typename...C,						\
 	    typename F,							\
 	    ExecutionSpace ES>						\
-auto BaseTens<T,CompsList<C...>,F,ES>::simdify() ATTRIB			\
+  INLINE_FUNCTION							\
+  auto BaseTens<T,CompsList<C...>,F,ES>::simdify() ATTRIB		\
 									\
   {									\
-    decltype(auto) t=this->crtp();					\
+    decltype(auto) t=DE_CRTPFY(ATTRIB T,this);				\
 									\
     LOGGER<<"Building simdified view "<<execSpaceName<ES><<" tensor-like, pointer: "<<t.storage; \
     									\

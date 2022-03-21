@@ -40,10 +40,11 @@ namespace esnort
     /// Assign from another dynamic tensor of the very same type
     template <typename OtherT,
 	      ExecutionSpace OtherES>
+    INLINE_FUNCTION
     BaseTens& operator=(const BaseTens<OtherT,CompsList<C...>,F,OtherES>& _oth)
     {
-      T& t=this->crtp();
-      const OtherT& oth=_oth.crtp();
+      T& t=DE_CRTPFY(T,this);
+      const OtherT& oth=DE_CRTPFY(const OtherT,&_oth);
       
       if(t.storageSize!=oth.storageSize)
 	CRASH<<"Storage sizes not agreeing";

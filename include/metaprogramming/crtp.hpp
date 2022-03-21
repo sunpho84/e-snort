@@ -41,6 +41,9 @@ namespace esnort
   /// Access to the inheriting class
 #define CRTP_THIS				\
   this->crtp()
+  
+#define DE_CRTPFY(TYPE,PTR)			\
+  (*static_cast<TYPE*>(PTR))
 }
 
 #endif

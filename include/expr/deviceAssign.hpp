@@ -31,20 +31,22 @@ namespace esnort
     /// it, then we loop internally on the others
     LOGGER<<"Using device kernel";
     
-    const auto dynamicSizes=std::get<0>(lhs.getDynamicSizes());
+    const auto dynamicSizes=lhs.getDynamicSizes();
+    
+    const auto dynamicSize=std::get<0>(dynamicSizes);
     
     using DC=std::tuple_element_t<0,typename Lhs::DynamicComps>;
     
     auto lhsRef=lhs.getRef();
     const auto rhsRef=rhs.getRef();
     
-    DEVICE_LOOP(dc,DC(0),dynamicSizes,
+    DEVICE_LOOP(dc,DC(0),dynamicSize,
 		deviceLoopOnAllComps<typename Lhs::StaticComps>(dynamicSizes,
-							      [=] DEVICE_ATTRIB (const auto&...comps) mutable INLINE_ATTRIBUTE
-							      {
-								lhs(comps...)=rhs(comps...);
-							      },
-							      dc);
+								[lhsRef,rhsRef] DEVICE_ATTRIB (const auto&...comps) MUTABLE_INLINE_ATTRIBUTE
+								{
+								  lhsRef(comps...)=rhsRef(comps...);
+								},
+								dc);
 		);
   }
 }

@@ -26,24 +26,23 @@ namespace esnort
     CompsList<Tc...>;
   
   /////////////////////////////////////////////////////////////////
-
+  
   template <typename Index,
 	    int Size>
-    struct NonSimdifiedComp :
+  struct NonSimdifiedComp :
     Comp<compFeat::IsTransposable::FALSE,
 	 Index,
 	 NonSimdifiedComp<Index,Size>>
-    {
-      using Base=Comp<compFeat::IsTransposable::FALSE,
-		      Index,
-		      NonSimdifiedComp<Index,Size>>;
-      
-      using Base::Base;
-      
-      /// Size at compile time
-      static constexpr int sizeAtCompileTime=Size;
-    };
+  {
+    using Base=Comp<compFeat::IsTransposable::FALSE,
+		    Index,
+		    NonSimdifiedComp<Index,Size>>;
     
+    using Base::Base;
+    
+    /// Size at compile time
+    static constexpr int sizeAtCompileTime=Size;
+  };
   
   /// Returns whether the last component can simdify
   ///

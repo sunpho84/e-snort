@@ -24,7 +24,7 @@ namespace esnort
   {
     LOGGER<<"Using direct assign";
     
-    loopOnAllComps<typename Lhs::Comps>(lhs.dynamicSizes,getAssigner(lhs,rhs));
+    loopOnAllComps<typename Lhs::Comps>(lhs.getDynamicSizes(),getAssigner(lhs,rhs));
   }
 }
 
