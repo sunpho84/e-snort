@@ -44,13 +44,14 @@ namespace esnort
 {
   namespace internal
   {
-#define CASE(SIZE,NAME,ELSE)				\
-    if constexpr(Size% SIZE ==0)			\
-      return NAME{};					\
-    else						\
-      ELSE						\
-    
-#define CASE_ELSE(SIZE,NAME,ELSE)		\
+#define CASE(SIZE_PER_REAL,REG_SIZE,SUFF,ELSE)				\
+    if constexpr(((NReals*SIZE_PER_REAL)%REG_SIZE ==0) and		\
+		 (REG_SIZE>=(NReals*SIZE_PER_REAL)))			\
+      return __m ## REG_SIZE ## SUFF{};					\
+    else								\
+      ELSE								\
+	
+#define CASE_ELSE(SIZE_PER_REAL,REG_SIZE,SUFF,ELSE)	\
     ELSE
     
 #if ENABLE_SIMD and defined(HAVE_AVX512F_INSTRUCTIONS)
@@ -74,9 +75,9 @@ namespace esnort
 #define CASES(TYPE,SIZE_PER_EL,SUFF,ELSE)				\
     if constexpr(std::is_same_v<F,TYPE>)				\
       {									\
-	CASE_AVX512((4*SIZE_PER_EL),__m512 ## SUFF,			\
-		    CASE_AVX((2*SIZE_PER_EL),__m256 ## SUFF,		\
-			     CASE_MMX(SIZE_PER_EL,__m128 ## SUFF,)));	\
+	CASE_AVX512(SIZE_PER_EL,512,SUFF,				\
+		    CASE_AVX(SIZE_PER_EL,256,SUFF,			\
+			     CASE_MMX(SIZE_PER_EL,128,SUFF,)));		\
       }									\
     else								\
       ELSE;
@@ -85,11 +86,11 @@ namespace esnort
     ///
     /// Internal implementation
     template <typename F,
-	      int Size>
+	      int NReals>
     constexpr auto _simdTypeProvider()
     {
-      CASES(float,8,,
-	    CASES(double,4,d,));
+      CASES(float,32,,
+	    CASES(double,64,d,));
     }
     
 #undef CASES
