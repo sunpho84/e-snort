@@ -15,9 +15,12 @@
 
 #include <expr/comp.hpp>
 #include <expr/compRwCl.hpp>
+#include <expr/deviceAssign.hpp>
+#include <expr/directAssign.hpp>
 #include <expr/dynamicTens.hpp>
 #include <expr/indexComputer.hpp>
 #include <expr/stackTens.hpp>
+#include <expr/threadAssign.hpp>
 
 #include <ios/file.hpp>
 #include <ios/logger.hpp>

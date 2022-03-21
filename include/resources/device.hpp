@@ -61,6 +61,7 @@ namespace esnort::device
   void synchronize();
   
   void free(void* ptr);
+#endif
   
   /// Launch the kernel over the passed range
   template <typename IMin,
@@ -79,6 +80,7 @@ namespace esnort::device
     
     const int nCudaThreads=128;
     
+#if ENABLE_DEVICE_CODE
     /// Dimension of the block
     const dim3 blockDimension(nCudaThreads);
     
@@ -95,17 +97,21 @@ namespace esnort::device
     DEVICE_CRASH_ON_ERROR(cudaPeekAtLastError(),"Spawning the generic kernel");
     
     synchronize();
+#endif
   }
   
   template <typename T>
   void malloc(T& ptr,const size_t& sizeInUnit)
   {
+#if ENABLE_DEVICE_CODE
     SCOPE_INDENT();
     
     DEVICE_CRASH_ON_ERROR(cudaMalloc(&ptr,sizeInUnit*sizeof(T)),"allocating on device");
     VERBOSE_LOGGER(3)<<"Allocated on device: "<<ptr;
-  }
+#else
+    CRASH<<"Not computed for device";
 #endif
+  }
   
   void initialize(const int& iDevice);
   

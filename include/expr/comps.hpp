@@ -27,8 +27,6 @@ namespace esnort
   
   /////////////////////////////////////////////////////////////////
 
-#warning put into other files
-
   template <typename Index,
 	    int Size>
     struct NonSimdifiedComp :
