@@ -19,7 +19,7 @@ namespace esnort::Mpi
 		   const char* format,
 		   ...)
   {
-#ifdef USE_MPI
+#ifdef ENABLE_MPI
     
     if(rc!=MPI_SUCCESS and rank==0)
       {
@@ -45,7 +45,7 @@ namespace esnort::Mpi
   /// Initialize MPI
   void initialize()
   {
-#ifdef USE_MPI
+#if ENABLE_MPI
     
     /// Takes the time
     Duration initDur;
@@ -68,7 +68,7 @@ namespace esnort::Mpi
   /// Finalize MPI
   void finalize()
   {
-#ifdef USE_MPI
+#if ENABLE_MPI
     
     MPI_CRASH_ON_ERROR(MPI_Finalize(),"Finalizing");
     
