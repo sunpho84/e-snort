@@ -11,8 +11,8 @@ AM_CPPFLAGS= \
 bin_PROGRAMS+= \
 	$(top_builddir)/bin/smallTest
 
-__top_builddir__bin_testExecutionSpace_SOURCES= \
-	%D%/testExecutionSpace.cpp
+# __top_builddir__bin_testExecutionSpace_SOURCES= 
+# 	%D%/testExecutionSpace.cpp
 
 __top_builddir__bin_smallTest_SOURCES= \
 	%D%/smallTest.cpp

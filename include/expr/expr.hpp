@@ -77,7 +77,7 @@ namespace esnort
       const auto& rhs=DE_CRTPFY(const Rhs,&u);
       
 #if ENABLE_SIMD
-      if constexpr(T::canSimdify and Rhs::canSimdify)
+      if constexpr(T::canSimdify and Rhs::canSimdify and std::is_same_v<LastComp<typename T::Comps>,LastComp<typename Rhs::Comps>>)
 	simdAssign(lhs,rhs);
       else
 #endif
@@ -101,9 +101,7 @@ namespace esnort
     INLINE_FUNCTION
     T& operator=(const Expr<Rhs>& u)
     {
-      this->assign(u);
-      
-      return DE_CRTPFY(T,this);
+      return this->assign(u);
     }
     
     /// Define the assignment operator with the same expression type,

@@ -40,16 +40,25 @@ namespace esnort
     using Base=BASE;
     
 #undef BASE
-    
 #undef THIS
     
-    // /// Importing assignment operator from BaseTens
-    // using BaseTens<This,CompsList<C...>,_Fund,ExecutionSpace::HOST>::operator=;
+    /// Import base class assigners
+    using Base::operator=;
     
+    /// Copy-assign
     INLINE_FUNCTION
     StackTens& operator=(const StackTens& oth)
     {
-      this->Base::operator=(oth);
+      Base::operator=(oth);
+      
+      return *this;
+    }
+    
+    /// Move-assign
+    INLINE_FUNCTION
+    StackTens& operator=(StackTens&& oth)
+    {
+      Base::operator=(std::move(oth));
       
       return *this;
     }

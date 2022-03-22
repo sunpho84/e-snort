@@ -209,11 +209,11 @@ DONE
 - Added ref inside BaseTens
 - Comp is able to convert to index automatically
 - Remove aliver as it is not starting correctly the devices... why!?
+- Enable vectorization
+- Put order into the assignment mess: which assigner is acutally called?!
 
 TODO
 ---
-
-- Enable vectorization
 - Compl, conj, transp
 - Products
 - Sums

@@ -45,17 +45,27 @@ namespace esnort
   {
     using This=THIS;
     using Base=BASE;
-
-#undef THIS
+    
 #undef BASE
+#undef THIS
     
     /// Importing assignment operator from BaseTens
     using Base::operator=;
     
+    /// Copy assign
     INLINE_FUNCTION
     DynamicTens& operator=(const DynamicTens& oth)
     {
-      this->Base::operator=(oth);
+      Base::operator=(oth);
+      
+      return *this;
+    }
+    
+    /// Move assign
+    INLINE_FUNCTION
+    DynamicTens& operator=(DynamicTens&& oth)
+    {
+      Base::operator=(std::move(oth));
       
       return *this;
     }

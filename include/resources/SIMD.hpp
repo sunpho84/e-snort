@@ -7,6 +7,8 @@
 
 /// \file SIMD.hpp
 
+#include <metaprogramming/inline.hpp>
+
 #if ENABLE_SIMD
 # include <immintrin.h>
 #endif
@@ -42,6 +44,13 @@ constexpr bool haveMmxInstructions=
 
 namespace esnort
 {
+  // using m512d=SIMDVector<double,8>;
+  // using m512=SIMDVector<float,16>;
+  // using m256d=SIMDVector<double,4>;
+  // using m256=SIMDVector<float,8>;
+  // using m128d=SIMDVector<double,2>;
+  // using m128=SIMDVector<float,4>;
+  
   namespace internal
   {
 #define CASE(SIZE_PER_REAL,REG_SIZE,SUFF,ELSE)				\

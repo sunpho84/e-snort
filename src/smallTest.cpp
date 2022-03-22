@@ -24,16 +24,19 @@ struct Spin :
   static constexpr int sizeAtCompileTime=4;
 };
 
-  using SpinRow=Spin<RwCl::ROW,0>;
+using SpinRow=Spin<RwCl::ROW,0>;
+using SpinCln=Spin<RwCl::CLN,0>;
 
-StackTens<OfComps<SpinRow>,double> dt;
-StackTens<OfComps<SpinRow>,double> pt;
+StackTens<OfComps<SpinRow,SpinCln>,double> dt;
+StackTens<OfComps<SpinRow,SpinCln>,double> pt;
 
+// double data[4],dota[4];
 
 void testSimdifiedAssign()
 {
   ASM_BOOKMARK_BEGIN("TEST_SIMDIFIED_ASSIGN");
   //std::bool_constant<dt.canSimdify>& a=1;
+  //_mm256_store_pd(data,_mm256_load_pd(dota));
   dt=pt;
   ASM_BOOKMARK_END("TEST_SIMDIFIED_ASSIGN");
 }

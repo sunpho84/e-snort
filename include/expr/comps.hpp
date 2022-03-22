@@ -27,6 +27,33 @@ namespace esnort
   
   /////////////////////////////////////////////////////////////////
   
+  namespace internal
+  {
+    template <typename Tp>
+    struct _LastComp;
+    
+    template <typename...Tp>
+    struct _LastComp<OfComps<Tp...>>
+    {
+      static constexpr int nComps=sizeof...(Tp);
+      
+      static constexpr auto _lastCompTypeProvider()
+      {
+	if constexpr(nComps>0)
+	  return std::tuple_element_t<nComps-1,std::tuple<Tp...>>{};
+      }
+      
+      using type=
+	decltype(_lastCompTypeProvider());
+    };
+  }
+  
+  /// Provide last component of a tuple
+  template <typename Tp>
+  using LastComp=typename internal::_LastComp<Tp>::type;
+  
+  /////////////////////////////////////////////////////////////////
+  
   template <typename Index,
 	    int Size>
   struct NonSimdifiedComp :
@@ -58,14 +85,7 @@ namespace esnort
   {
     static constexpr int nComps=sizeof...(Tp);
     
-    static constexpr auto _lastCompTypeProvider()
-    {
-      if constexpr(nComps>0)
-	return std::tuple_element_t<nComps-1,std::tuple<Tp...>>{};
-    }
-    
-    using LastComp=
-      decltype(_lastCompTypeProvider());
+    using LastComp=esnort::LastComp<CompsList<Tp...>>;
     
     static constexpr int _lastCompSizeProvider()
     {
