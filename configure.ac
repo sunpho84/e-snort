@@ -35,9 +35,12 @@ SUMMARY_RESULT="---"
 
 AX_ASSEMBLY_REPORT
 
-# Check all x86 features supported
-AX_CHECK_X86_FEATURES
-#check if we enable SID
+#check if we enable SIMD autosearch
+AX_SIMD_TYPE(mmx,-mmmx,_mm_load_pd,_mm_store_pd,MMX)
+AX_SIMD_TYPE(avx,-mavx,_mm256_load_pd,_mm256_store_pd,AVX)
+AX_SIMD_TYPE(avx512,-mavx512f,_mm512_load_pd,_mm512_store_pd,AVX512)
+
+#check if we enable SIMD
 AC_ARG_ENABLE(SIMD,
 	AS_HELP_STRING([--enable-SIMD],[Enable SIMD]),
 	enable_SIMD="${enableval}",
