@@ -41,10 +41,16 @@ AX_SIMD_TYPE(avx,-mavx,_mm256_load_pd,_mm256_store_pd,AVX)
 AX_SIMD_TYPE(avx512,-mavx512f,_mm512_load_pd,_mm512_store_pd,AVX512)
 
 #check if we enable SIMD
+if test "$enable_mmx" == "yes" -o "$enable_avx" == "yes" -o "$enable_avx512" == "yes"
+then
+	default_enable_simd="yes"
+else
+	default_enable_simd="no"
+fi
 AC_ARG_ENABLE(SIMD,
 	AS_HELP_STRING([--enable-SIMD],[Enable SIMD]),
 	enable_SIMD="${enableval}",
-	enable_SIMD="yes")
+	enable_SIMD="$default_enable_simd")
 AC_MSG_RESULT([enabling SIMD... $enable_SIMD])
 
 if test "$enable_SIMD" == "yes"
