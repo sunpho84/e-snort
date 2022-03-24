@@ -67,15 +67,7 @@ AC_MSG_RESULT([enabling SIMD... $enable_SIMD])
 if test "$enable_SIMD" == "yes"
 then
      ENABLE_SIMD=1
-     case "$CXX" in
-     	nvcc)
-	for i in $X86_FEATURE_CFLAGS
-	do
-		CXXFLAGS="$CXXFLAGS -Xcompiler $i"
-	done;;
-     	clang|clang++|g++|gcc) CXXFLAGS="$CXXFLAGS $X86_FEATURE_CFLAGS";;
-     	*) AC_MSG_ERROR(["Unknown compiler"])
-     esac
+     CXXFLAGS="$CXXFLAGS $X86_FEATURE_CFLAGS";;
 else
 	ENABLE_SIMD=0	
 fi
