@@ -66,12 +66,12 @@ AC_MSG_RESULT([enabling SIMD... $enable_SIMD])
 
 if test "$enable_SIMD" == "yes"
 then
-     ENABLE_SIMD=1
+     USE_SIMD=1
      CXXFLAGS="$CXXFLAGS $X86_FEATURE_CFLAGS"
 else
-	ENABLE_SIMD=0	
+     USE_SIMD=0	
 fi
-AC_DEFINE_UNQUOTED([ENABLE_SIMD],${ENABLE_SIMD},[Enable SIMD])
+AC_DEFINE_UNQUOTED([USE_SIMD],${USE_SIMD},[Enable SIMD])
 SUMMARY_RESULT="$SUMMARY_RESULT
 SIMD             : $enable_SIMD"
 
