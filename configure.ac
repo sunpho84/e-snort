@@ -57,7 +57,7 @@ then
 else
 	default_enable_simd="no"
 fi
-AC_MSG_ENABLING
+
 AC_ARG_ENABLE(SIMD,
 	AS_HELP_STRING([--enable-SIMD],[Enable SIMD]),
 	enable_SIMD="${enableval}",
