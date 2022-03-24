@@ -28,7 +28,17 @@ AC_PROG_CXX
 AC_PROG_RANLIB
 AC_LANG([C++])
 
-AX_CXX_COMPILE_STDCXX(17,noext,mandatory)
+AC_ARG_ENABLE(enforce-c++17,
+	AS_HELP_STRING([--enable-enforce-c++17],[Enable enforcement of c++17]),
+	enable_enforce_cpp17="${enableval}",
+	enable_enforce_cpp17="yes")
+AC_MSG_RESULT([enabling enforcing c++17... $enable_enforce_cpp17])
+if test "$enable_enforce_cpp17" == "yes"
+then
+	AX_CXX_COMPILE_STDCXX(17,noext,mandatory)
+else
+	AX_CXX_COMPILE_STDCXX(17,noext,optional)
+fi
 
 LIBRARY_RESULT="---"
 SUMMARY_RESULT="---"
@@ -47,6 +57,7 @@ then
 else
 	default_enable_simd="no"
 fi
+AC_MSG_ENABLING
 AC_ARG_ENABLE(SIMD,
 	AS_HELP_STRING([--enable-SIMD],[Enable SIMD]),
 	enable_SIMD="${enableval}",

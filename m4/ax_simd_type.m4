@@ -6,7 +6,7 @@ AC_ARG_WITH($1,
 	AS_HELP_STRING([--with-$1], [Specify the flag to use to enable $1]),
 	with_$1="${withval}",
 	with_$1=$2)
-AC_MSG_RESULT(with $1 flag ... ${with_$1})
+AC_MSG_RESULT(with suggested $1 flag ... ${with_$1})
 
 AC_MSG_CHECKING([for $1])
 for simd_flags in "" $with_$1
@@ -24,12 +24,17 @@ do
 	       [$1_available=no])
 	CXXFLAGS=$SAVE_CXXFLAGS
 	
-	if test "$1_available" == "yes"
+	if test "${$1_available}" == "yes"
 	then
 		break
 	fi
 done
-AC_MSG_RESULT(${$1_available})
+if test "${$1_available}" == "yes"
+then
+	AC_MSG_RESULT([yes flag needed (if any): $simd_flags])
+else
+	AC_MSG_RESULT([no])
+fi
 
 #determine if enable the package
 AX_GET_ENABLE($1,${$1_available},[(automatically enabled if found)])

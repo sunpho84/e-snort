@@ -211,12 +211,16 @@ DONE
 - Remove aliver as it is not starting correctly the devices... why!?
 - Enable vectorization
 - Put order into the assignment mess: which assigner is acutally called?!
+- Bypass c+17 test
+- Bypass auto-determination of simd feature
 
 TODO
 ---
+- Easier comps
 - Compl, conj, transp
 - Products
 - Sums
+- Fma
 - Spawning expr assignment in the different case, how will we deal with \*=, -= etc? Do they have any usage, or should we divert to the =a*b case?
 - Binder
 
