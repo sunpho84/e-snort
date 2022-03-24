@@ -67,7 +67,7 @@ AC_MSG_RESULT([enabling SIMD... $enable_SIMD])
 if test "$enable_SIMD" == "yes"
 then
      ENABLE_SIMD=1
-     CXXFLAGS="$CXXFLAGS $X86_FEATURE_CFLAGS";;
+     CXXFLAGS="$CXXFLAGS $X86_FEATURE_CFLAGS"
 else
 	ENABLE_SIMD=0	
 fi
