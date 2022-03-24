@@ -23,54 +23,9 @@ using namespace esnort;
 
 /////////////////////////////////////////////////////////////////
 
-template <RwCl _RC=RwCl::ROW,
-	  int _Which=0>
-struct Spin :
-  Comp<compFeat::IsTransposable::TRUE,
-       int,
-       Spin<_RC,_Which>>
-{
-  using Base=  Comp<compFeat::IsTransposable::TRUE,
-       int,
-		    Spin<_RC,_Which>>;
-  
-  using Base::Base;
-  
-  /// Size at compile time
-  static constexpr int sizeAtCompileTime=4;
-};
-
-template <RwCl _RC=RwCl::ROW,
-	  int _Which=0>
-struct Span :
-  Comp<compFeat::IsTransposable::TRUE,
-       int,
-       Spin<_RC,_Which>>
-{
-  using Base=  Comp<compFeat::IsTransposable::TRUE,
-       int,
-		    Spin<_RC,_Which>>;
-  
-  using Base::Base;
-  
-  /// Size at compile time
-  static constexpr int sizeAtCompileTime=4;
-};
-
-struct SpaceTime :
-  Comp<compFeat::IsTransposable::FALSE,
-       int64_t,
-       SpaceTime>
-{
-  using Base=Comp<compFeat::IsTransposable::FALSE,
-		  int64_t,
-		  SpaceTime>;
-  
-  using Base::Base;
-  
-  /// Size at compile time
-  static constexpr int sizeAtCompileTime=0;
-};
+DEFINE_TRANSPOSABLE_COMP(Spin,int,4);
+DEFINE_TRANSPOSABLE_COMP(Span,int,4);
+DEFINE_UNTRANSPOSABLE_COMP(SpaceTime,int64_t,0);
 
 int j;
 

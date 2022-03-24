@@ -216,6 +216,8 @@ DONE
 
 TODO
 ---
+- Fix assignment across different execution spaces
+- Move constructor for dynamicTens
 - Easier comps
 - Compl, conj, transp
 - Products

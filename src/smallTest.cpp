@@ -6,27 +6,6 @@
 
 using namespace esnort;
 
-#define DEFINE_TRANSPOSABLE_COMP(NAME,SIZE)		\
-  template <RwCl _RC=RwCl::ROW,				\
-	    int _Which=0>				\
-  struct NAME :						\
-    Comp<compFeat::IsTransposable::TRUE,		\
-	 int,						\
-	 NAME<_RC,_Which>>				\
-  {							\
-    using Base=						\
-      Comp<compFeat::IsTransposable::TRUE,		\
-      int,						\
-      NAME<_RC,_Which>>;				\
-  							\
-    using Base::Base;					\
-    							\
-    static constexpr int sizeAtCompileTime=SIZE;	\
-  };							\
-							\
-  using NAME ## Row=NAME<RwCl::ROW,0>;			\
-							\
-  using NAME ## Cln=NAME<RwCl::CLN,0>
 
 DEFINE_TRANSPOSABLE_COMP(Spin,4);
 

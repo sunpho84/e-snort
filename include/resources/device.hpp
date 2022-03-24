@@ -9,6 +9,7 @@
 /// \file device.hpp
 
 #include <cstddef>
+#include <cstring>
 
 #include <debug/crash.hpp>
 #include <ios/scopeFormatter.hpp>
@@ -54,7 +55,7 @@ namespace esnort::device
   PROVIDE_MEMCPY(DeviceToDevice);
   PROVIDE_MEMCPY(DeviceToHost);
   PROVIDE_MEMCPY(HostToDevice);
-  //PROVIDE_MEMCPY(HostToHost);
+  PROVIDE_MEMCPY(HostToHost);
   
 #undef PROVIDE_MEMCPY
   
@@ -119,6 +120,30 @@ namespace esnort::device
   
 #define DEVICE_LOOP(INDEX,EXT_START,EXT_END,BODY...)			\
   device::launchKernel(__LINE__,__FILE__,EXT_START,EXT_END,[=] DEVICE_ATTRIB (const std::common_type_t<decltype((EXT_END)),decltype((EXT_START))>& INDEX) mutable {BODY})
+  
+  template <ExecutionSpace Dest,
+	    ExecutionSpace Src>
+  void memcpy(void* dst,const void* src,size_t count)
+  {
+#if USE_DEVICE
+    if constexpr(Dest==ExecutionSpace::DEVICE)
+      {
+	if constexpr(Src==ExecutionSpace::DEVICE)
+	  device::memcpyDeviceToDevice(dst,src,count);
+	else
+	  device::memcpyHostToDevice(dst,src,count);
+      }
+    else
+      {
+	if constexpr(Src==ExecutionSpace::DEVICE)
+	  device::memcpyDeviceToHost(dst,src,count);
+	else
+	  device::memcpyHostToHost(dst,src,count);
+      }
+#else
+    ::memcpy(dst,src,count);
+#endif
+  }
 }
 
 #endif
