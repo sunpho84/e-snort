@@ -213,12 +213,12 @@ DONE
 - Put order into the assignment mess: which assigner is acutally called?!
 - Bypass c+17 test
 - Bypass auto-determination of simd feature
-
-TODO
----
 - Fix assignment across different execution spaces
 - Move constructor for dynamicTens
 - Easier comps
+
+TODO
+---
 - Compl, conj, transp
 - Products
 - Sums

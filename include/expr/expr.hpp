@@ -11,10 +11,12 @@
 
 #include <type_traits>
 
+#include <expr/bindComps.hpp>
 #include <expr/compLoops.hpp>
 #include <expr/deviceAssign.hpp>
 #include <expr/directAssign.hpp>
 #include <expr/executionSpace.hpp>
+#include <expr/exprDeclaration.hpp>
 #include <expr/simdAssign.hpp>
 #include <expr/threadAssign.hpp>
 #include <ios/logger.hpp>
@@ -24,7 +26,6 @@
 
 namespace esnort
 {
-  /// Base type representing an expression
   template <typename T>
   struct Expr
   {
@@ -129,7 +130,7 @@ namespace esnort
       if constexpr(std::tuple_size_v<ResidualComps> ==0)		\
 	return t.eval(cs...);						\
       else								\
-	return compBind(t,std::make_tuple(cs...));			\
+	return bindComps(t,std::make_tuple(cs...));			\
     }
     
     PROVIDE_SUBSCRIBE(const);

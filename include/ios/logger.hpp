@@ -376,7 +376,6 @@ namespace esnort
 #else
   #define LOGGER_LV3_NOTIFY(ARGS...)
 #endif
-
 }
 
 #endif
