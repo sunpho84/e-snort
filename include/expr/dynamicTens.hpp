@@ -190,14 +190,21 @@ namespace esnort
 	allocated=true;
     }
     
-    /// Default constructor
-    template <typename TOth,
-	      ExecutionSpace OthES>
-    constexpr INLINE_FUNCTION
-    DynamicTens(const BaseTens<TOth,Comps,Fund,OthES>& oth) :
-      dynamicSizes(DE_CRTPFY(const TOth,&oth).getDynamicSizes())
+    // THIS FUNCTIONALITY HAS BEEN REPLACED WITH EXPLICT getCopyOnExecSpace
+    // template <typename TOth,
+    // 	      ExecutionSpace OthES>
+    // constexpr INLINE_FUNCTION
+    // DynamicTens(const BaseTens<TOth,Comps,Fund,OthES>& oth) :
+    //   dynamicSizes(DE_CRTPFY(const TOth,&oth).getDynamicSizes())
+    // {
+    //   (*this)=DE_CRTPFY(const TOth,&oth);
+    // }
+    
+    /// Copy constructor
+    DynamicTens(const DynamicTens& oth) :
+      DynamicTens(oth.getDynamicSizes())
     {
-      (*this)=DE_CRTPFY(const TOth,&oth);
+      (*this)=oth;
     }
     
     /// Destructor
@@ -292,6 +299,31 @@ namespace esnort
   PROVIDE_SIMDIFY(/* non const */);
   
 #undef PROVIDE_SIMDIFY
+  
+  template <typename T,
+	    typename...C,
+	    typename F,
+	    ExecutionSpace ES>
+  template <ExecutionSpace OES>
+  auto BaseTens<T,CompsList<C...>,F,ES>::getCopyOnExecSpace() const
+  {
+    if constexpr(ES==OES)
+      return *this;
+    else
+      {
+	/// Derived class of this
+	const T& t=DE_CRTPFY(const T,this);
+	
+	/// Result
+	DynamicTens<CompsList<C...>,F,OES> res(t.getDynamicSizes());
+	
+	/// \todo if no component is dynamic and we are on host, we could return a stackTens
+	
+	device::memcpy<OES,ES>(res.storage,t.storage,t.storageSize);
+	
+	return res;
+      }
+  }
 }
 
 #endif

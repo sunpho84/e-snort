@@ -11,6 +11,7 @@
 #include <expr/dynamicCompsProvider.hpp>
 #include <expr/executionSpace.hpp>
 #include <expr/expr.hpp>
+#include <metaprogramming/crtp.hpp>
 #include <resources/memory.hpp>
 #include <resources/SIMD.hpp>
 
@@ -66,6 +67,26 @@ namespace esnort
       return *this;
     }
     
+    /// Copy from other execution space
+    template <typename U>
+    INLINE_FUNCTION
+    T& operator=(const BaseTens<U,CompsList<C...>,F,otherExecSpace<ES>>& _oth)
+    {
+      /// Derived class of this
+      T& t=DE_CRTPFY(T,this);
+      
+      /// Derived class of _oth
+      const U& oth=DE_CRTPFY(const U,&_oth);
+      
+      if(t.getDynamicSizes()!=oth.getDynamicSizes())
+	CRASH<<"Not matching dynamic sizes";
+	
+	
+      device::memcpy<ES,otherExecSpace<ES>>(t.storage,oth.storage,t.storageSize);
+      
+      return t;
+    }
+    
     using _SimdifyTraits=
       CompsListSimdifiableTraits<CompsList<C...>,F>;
     
@@ -91,6 +112,10 @@ namespace esnort
     
     /// Returns a simdified view
     auto simdify();
+    
+    /// Gets a copy on a specific execution space
+    template <ExecutionSpace OES>
+    auto getCopyOnExecSpace() const;
     
     /// Default constructor
     constexpr BaseTens()

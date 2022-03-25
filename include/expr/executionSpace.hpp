@@ -61,6 +61,34 @@ namespace esnort
   template <ExecutionSpace ES>
   constexpr const char* execSpaceName=
     internal::execSpaceName<ES>();
+  
+  /////////////////////////////////////////////////////////////////
+  
+  namespace internal
+  {
+    /// Returns the other execution space
+    template <ExecutionSpace ES>
+    constexpr ExecutionSpace _otherExecSpace()
+    {
+      switch(ES)
+	{
+	case ExecutionSpace::HOST:
+	  return ExecutionSpace::DEVICE;
+	  break;
+	case ExecutionSpace::DEVICE:
+	  return ExecutionSpace::HOST;
+	  break;
+	case ExecutionSpace::UNDEFINED:
+	  return ExecutionSpace::UNDEFINED;
+	  break;
+	}
+    }
+  }
+  
+  /// Returns the other execution space
+  template <ExecutionSpace ES>
+  constexpr ExecutionSpace otherExecSpace=
+    internal::_otherExecSpace<ES>();
 }
 
 #endif

@@ -90,10 +90,11 @@ int in_main(int narg,char** arg)
   // }
   
   DynamicTens<OfComps<SpinRow>,double,ExecutionSpace::DEVICE> dtg;
-  dtg=dt.getRef();
+  auto odt=dt.getRef().getCopyOnExecSpace<ExecutionSpace::DEVICE>();
+  dtg=odt;
   
   DynamicTens<OfComps<SpinRow>,double,ExecutionSpace::HOST> dtd;
-  dtd=dtg;
+  dtd=dtg.getCopyOnExecSpace<ExecutionSpace::HOST>();
   
   for(SpinRow st=0;st<4;st++)
     LOGGER<<st()<<" "<<dtd(st);
