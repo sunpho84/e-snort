@@ -216,6 +216,7 @@ DONE
 - Fix assignment across different execution spaces
 - Move constructor for dynamicTens
 - Easier comps
+- Binder
 
 TODO
 ---
@@ -224,7 +225,6 @@ TODO
 - Sums
 - Fma
 - Spawning expr assignment in the different case, how will we deal with \*=, -= etc? Do they have any usage, or should we divert to the =a*b case?
-- Binder
 
 
 - Reducer from nissa

@@ -1,6 +1,7 @@
 #ifndef _BINDCOMPS_HPP
 #define _BINDCOMPS_HPP
 
+#include "tuples/tupleHasType.hpp"
 #ifdef HAVE_CONFIG_H
 # include <config.hpp>
 #endif
@@ -8,8 +9,11 @@
 /// \file bindComps.hpp
 
 #include <expr/comps.hpp>
+#include <expr/dynamicCompsProvider.hpp>
+#include <expr/executionSpace.hpp>
 #include <expr/exprDeclaration.hpp>
 #include <metaprogramming/universalReference.hpp>
+#include <tuples/tupleFilter.hpp>
 
 namespace esnort
 {
@@ -35,6 +39,7 @@ namespace esnort
 	    typename...C,
 	    typename _Fund>
   struct THIS :
+    DynamicCompsProvider<CompsList<C...>>,
     BASE
   {
     /// Import the base expression
@@ -46,7 +51,29 @@ namespace esnort
     
 #undef THIS
     
+    /// Components
+    using Comps=
+      CompsList<C...>;
+    
+    /// Fundamental tye
     using Fund=_Fund;
+    
+    /// Executes where allocated
+    static constexpr ExecSpace execSpace=
+      std::decay_t<_Be>::execSpace;
+    
+    /// Returns the dynamic sizes
+    const auto getDynamicSizes() const
+    {
+      return tupleGetSubset<typename CompsBinder::DynamicComps>(boundExpr.getDynamicSizes());
+    }
+    
+    /// Returns whether can assign
+    INLINE_FUNCTION
+    bool canAssign()
+    {
+      return boundExpr.canAssign();
+    }
     
     /// Import assignment operator
     using Base::operator=;
@@ -54,13 +81,39 @@ namespace esnort
     /// Type of the bound expression
     using BoundExpr=_Be;
     
-    /// Components
-    using Comps=
-      CompsList<C...>;
+    using BoundExprWithoutRef=
+      std::remove_reference_t<BoundExpr>;
     
     /// Bound components
     using BoundComps=
       CompsList<Bc...>;
+    
+    /// Return whether can be assigned at compile time
+    static constexpr bool canAssignAtCompileTime=
+      std::decay_t<BoundExpr>::canAssignAtCompileTime;
+    
+    /// States whether the tensor can be simdified
+    static constexpr bool canSimdify=
+      BoundExprWithoutRef::canSimdify and
+      not tupleHasType<BoundComps,typename BoundExprWithoutRef::SimdifyingComp>;
+    
+    /// Components on which simdifying
+    using SimdifyingComp=
+      std::conditional_t<canSimdify,typename BoundExprWithoutRef::SimdifyingComp,void>;
+    
+    /// Returns a const simdified view
+    INLINE_FUNCTION
+    auto simdify() const
+    {
+      return bindComps(boundExpr.simdify(),boundComps);
+    }
+    
+    /// Returns a simdified view
+    INLINE_FUNCTION
+    auto simdify()
+    {
+      return bindComps(boundExpr.simdify(),boundComps);
+    }
     
     /// Components that have been bound
     const BoundComps boundComps;
@@ -88,8 +141,8 @@ namespace esnort
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
     CompsBinder(T&& boundExpr,
 		const BoundComps& boundComps) :
-      boundExpr(std::forward<T>(boundExpr)),
-      boundComps(boundComps)
+      boundComps(boundComps),
+      boundExpr(std::forward<T>(boundExpr))
     {
     }
   };
@@ -107,8 +160,8 @@ namespace esnort
       std::decay_t<_E>;
     
     /// Type returned when evaluating the expression
-    using EvalTo=
-      typename E::EvalTo;
+    using Fund=
+      typename E::Fund;
     
     /// Components to bind
     using BoundComps=
@@ -123,7 +176,7 @@ namespace esnort
       CompsBinder<BoundComps,
 		 decltype(e),
 		 Comps,
-		 EvalTo>(std::forward<_E>(e),bc);
+		 Fund>(std::forward<_E>(e),bc);
   }
   
   // /// Rebind an already bound expression

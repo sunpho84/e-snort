@@ -13,9 +13,9 @@
 
 namespace esnort::memory
 {
-  DEFINE_OR_DECLARE_GLOBAL_VARIABLE(MemoryManager<ExecutionSpace::HOST>,hostManager,("host"));
+  DEFINE_OR_DECLARE_GLOBAL_VARIABLE(MemoryManager<ExecSpace::HOST>,hostManager,("host"));
 #if ENABLE_DEVICE_CODE
-  DEFINE_OR_DECLARE_GLOBAL_VARIABLE(MemoryManager<ExecutionSpace::DEVICE>,deviceManager,("device"));
+  DEFINE_OR_DECLARE_GLOBAL_VARIABLE(MemoryManager<ExecSpace::DEVICE>,deviceManager,("device"));
 #endif
 }
 

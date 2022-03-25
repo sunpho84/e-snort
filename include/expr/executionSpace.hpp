@@ -15,22 +15,22 @@
 namespace esnort
 {
   /// Execution space possibilities
-  enum class ExecutionSpace{HOST,DEVICE,UNDEFINED};
+  enum class ExecSpace{HOST,DEVICE,UNDEFINED};
   
   /// Check that we are accessing device vector only on device code
-  template <ExecutionSpace ES>
+  template <ExecSpace ES>
   HOST_DEVICE_ATTRIB INLINE_FUNCTION
   constexpr void assertCorrectEvaluationStorage()
     {
 #if ENABLE_DEVICE_CODE
       
 # ifdef __CUDA_ARCH__
-      //static_assert(ES==ExecutionSpace::DEVICE,"Cannot exec on host");
-      if constexpr(ES==ExecutionSpace::HOST)
+      //static_assert(ES==ExecSpace::DEVICE,"Cannot exec on host");
+      if constexpr(ES==ExecSpace::HOST)
        __trap();
 # else
-       //static_assert(ES==ExecutionSpace::HOST,"Cannot exec on device");
-      if constexpr(ES==ExecutionSpace::DEVICE)
+       //static_assert(ES==ExecSpace::HOST,"Cannot exec on device");
+      if constexpr(ES==ExecSpace::DEVICE)
 	MINIMAL_CRASH("Cannot access device memory from host");
 # endif
       
@@ -40,15 +40,15 @@ namespace esnort
   namespace internal
   {
     /// Convert the execution space name into a string
-    template <ExecutionSpace ES>
+    template <ExecSpace ES>
     constexpr const char* execSpaceName()
     {
       switch(ES)
 	{
-	case ExecutionSpace::HOST:
+	case ExecSpace::HOST:
 	  return "host";
 	  break;
-	case ExecutionSpace::DEVICE:
+	case ExecSpace::DEVICE:
 	  return "device";
 	  break;
 	default:
@@ -58,7 +58,7 @@ namespace esnort
   }
   
   /// Convert the execution space name into a string
-  template <ExecutionSpace ES>
+  template <ExecSpace ES>
   constexpr const char* execSpaceName=
     internal::execSpaceName<ES>();
   
@@ -67,27 +67,27 @@ namespace esnort
   namespace internal
   {
     /// Returns the other execution space
-    template <ExecutionSpace ES>
-    constexpr ExecutionSpace _otherExecSpace()
+    template <ExecSpace ES>
+    constexpr ExecSpace _otherExecSpace()
     {
       switch(ES)
 	{
-	case ExecutionSpace::HOST:
-	  return ExecutionSpace::DEVICE;
+	case ExecSpace::HOST:
+	  return ExecSpace::DEVICE;
 	  break;
-	case ExecutionSpace::DEVICE:
-	  return ExecutionSpace::HOST;
+	case ExecSpace::DEVICE:
+	  return ExecSpace::HOST;
 	  break;
-	case ExecutionSpace::UNDEFINED:
-	  return ExecutionSpace::UNDEFINED;
+	case ExecSpace::UNDEFINED:
+	  return ExecSpace::UNDEFINED;
 	  break;
 	}
     }
   }
   
   /// Returns the other execution space
-  template <ExecutionSpace ES>
-  constexpr ExecutionSpace otherExecSpace=
+  template <ExecSpace ES>
+  constexpr ExecSpace otherExecSpace=
     internal::_otherExecSpace<ES>();
 }
 

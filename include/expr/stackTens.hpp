@@ -27,7 +27,7 @@ namespace esnort
     StackTens<CompsList<C...>,_Fund>
   
 #define BASE					\
-  BaseTens<THIS,CompsList<C...>,_Fund,ExecutionSpace::HOST>
+  BaseTens<THIS,CompsList<C...>,_Fund,ExecSpace::HOST>
   
   /// Tensor
   template <typename...C,
@@ -73,7 +73,7 @@ namespace esnort
     
     /// Executes where allocated
     static constexpr auto execSpace=
-      ExecutionSpace::HOST;
+      ExecSpace::HOST;
     
     /// Returns empty dynamic sizes
     constexpr const CompsList<> getDynamicSizes() const
@@ -110,7 +110,7 @@ namespace esnort
     
     /// Construct from another tens-like
     template <typename TOth,
-	      ExecutionSpace OthES>
+	      ExecSpace OthES>
     constexpr INLINE_FUNCTION
     StackTens(const BaseTens<TOth,Comps,Fund,OthES>& oth)
     {

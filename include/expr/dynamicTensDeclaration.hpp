@@ -16,7 +16,7 @@ namespace esnort
   /// Forward declaration
   template <typename C,
 	    typename F,
-	    ExecutionSpace ES,
+	    ExecSpace ES,
 	    bool _IsRef=false>
   struct DynamicTens;
 }

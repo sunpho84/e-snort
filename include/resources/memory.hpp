@@ -16,11 +16,11 @@ namespace esnort::memory
   namespace internal
   {
     /// Gets the appropriate memory manager
-    template <ExecutionSpace ES>
+    template <ExecSpace ES>
     constexpr auto& _manager()
     {
 #if ENABLE_DEVICE_CODE
-      if constexpr(ES==ExecutionSpace::DEVICE)
+      if constexpr(ES==ExecSpace::DEVICE)
 	return deviceManager;
       else
 #endif
@@ -29,12 +29,12 @@ namespace esnort::memory
   }
   
   /// Gets the appropriate memory manager
-  template <ExecutionSpace ES>
+  template <ExecSpace ES>
   constexpr auto& manager=
     internal::_manager<ES>();
   
-  template <ExecutionSpace Dst,
-	    ExecutionSpace Src,
+  template <ExecSpace Dst,
+	    ExecSpace Src,
 	    typename F>
   INLINE_FUNCTION
   void memcpy(F* dst,const F* src,const size_t& n)
@@ -44,15 +44,15 @@ namespace esnort::memory
 #if ENABLE_DEVICE_CODE
     using namespace device;
     
-    if constexpr (Dst==ExecutionSpace::DEVICE)
+    if constexpr (Dst==ExecSpace::DEVICE)
       {
-	if constexpr (Src==ExecutionSpace::DEVICE)
+	if constexpr (Src==ExecSpace::DEVICE)
 	  memcpyDeviceToDevice(dst,src,size);
 	else
 	  memcpyHostToDevice(dst,src,size);
       }
     else
-      if constexpr (Src==ExecutionSpace::DEVICE)
+      if constexpr (Src==ExecSpace::DEVICE)
 	memcpyDeviceToHost(dst,src,size);
       else
 #endif

@@ -64,7 +64,7 @@ namespace esnort
 	  CRASH<<"Dynamic comps not agreeing";
       
       static_assert(T::execSpace==U::execSpace or
-		    U::execSpace==ExecutionSpace::UNDEFINED,"Cannot assign among different execution space, first change one of them");
+		    U::execSpace==ExecSpace::UNDEFINED,"Cannot assign among different execution space, first change one of them");
     }
     
     /// Assign from another expression

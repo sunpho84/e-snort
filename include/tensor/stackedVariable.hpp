@@ -18,14 +18,14 @@ namespace esnort
   template <typename T>
   struct StackedVariable :
     Expr<THIS>,
-    VariableExecSpaceChanger<THIS,T,ExecutionSpace::HOST>
+    VariableExecSpaceChanger<THIS,T,ExecSpace::HOST>
   {
     using Expr<THIS>::operator=;
     
 #undef THIS
     
-    static constexpr ExecutionSpace execSpace=
-      ExecutionSpace::HOST;
+    static constexpr ExecSpace execSpace=
+      ExecSpace::HOST;
     
     template <bool B>
     using ExecSpaceChangeDiscriminer=
@@ -53,12 +53,12 @@ namespace esnort
       return value;
     }
     
-    TensorRef<T,ExecutionSpace::HOST,true> getRef() const
+    TensorRef<T,ExecSpace::HOST,true> getRef() const
     {
       return &value;
     }
     
-    TensorRef<T,ExecutionSpace::HOST,false> getRef()
+    TensorRef<T,ExecSpace::HOST,false> getRef()
     {
       return &value;
     }

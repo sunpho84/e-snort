@@ -13,12 +13,12 @@
 namespace esnort
 {
   template <typename T,
-	    ExecutionSpace ExecSpace,
+	    ExecSpace ES,
 	    bool IsConst>
   struct TensorRef  :
-    Expr<TensorRef<T,ExecSpace,IsConst>>
+    Expr<TensorRef<T,ES,IsConst>>
   {
-    using Expr<TensorRef<T,ExecSpace,IsConst>>::operator=;
+    using Expr<TensorRef<T,ES,IsConst>>::operator=;
     std::conditional_t<IsConst,const T*,T*> ptr;
     
     const T* getPtr() const
@@ -31,8 +31,8 @@ namespace esnort
       return ptr;
     }
     
-    static constexpr ExecutionSpace execSpace=
-      ExecSpace;
+    static constexpr ExecSpace execSpace=
+      ES;
     
     const T& operator()() const HOST_DEVICE_ATTRIB
     {

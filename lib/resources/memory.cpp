@@ -11,17 +11,17 @@ namespace esnort::memory
 {
   void initialize()
   {
-    manager<ExecutionSpace::HOST>.initialize();
+    manager<ExecSpace::HOST>.initialize();
 #if ENABLE_DEVICE_CODE
-    manager<ExecutionSpace::DEVICE>.initialize();
+    manager<ExecSpace::DEVICE>.initialize();
 #endif
   }
   
   void finalize()
   {
-    manager<ExecutionSpace::HOST>.finalize();
+    manager<ExecSpace::HOST>.finalize();
 #if ENABLE_DEVICE_CODE
-    manager<ExecutionSpace::DEVICE>.finalize();
+    manager<ExecSpace::DEVICE>.finalize();
 #endif
   }
 }

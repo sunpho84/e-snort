@@ -30,7 +30,7 @@ namespace esnort
 #define DEFAULT_ALIGNMENT 16
   
   /// Memory manager
-  template <ExecutionSpace ES>
+  template <ExecSpace ES>
   class MemoryManager
   {
   protected:
@@ -346,7 +346,7 @@ namespace esnort
       MEMORY_LOGGER<<"Allocating size "<<size<<" on "<<name;
       
 #if ENABLE_DEVICE_CODE
-      if constexpr(ES==ExecutionSpace::DEVICE)
+      if constexpr(ES==ExecSpace::DEVICE)
 	device::malloc(ptr,size);
       else
 #endif
@@ -370,7 +370,7 @@ namespace esnort
       MEMORY_LOGGER<<"Freeing from "<<name<<" memory address: "<<ptr;
       
 #if ENABLE_DEVICE_CODE
-      if constexpr(ES==ExecutionSpace::DEVICE)
+      if constexpr(ES==ExecSpace::DEVICE)
 	device::free(ptr);
       else
 #else

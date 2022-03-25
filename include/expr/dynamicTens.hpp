@@ -31,7 +31,7 @@ namespace esnort
   /// Tensor
   template <typename...C,
 	    typename _Fund,
-	    ExecutionSpace ES,
+	    ExecSpace ES,
 	    bool IsRef>
   struct THIS :
     BASE
@@ -89,7 +89,7 @@ namespace esnort
     static constexpr bool isRef=IsRef;
     
     /// Executes where allocated
-    static constexpr ExecutionSpace execSpace=ES;
+    static constexpr ExecSpace execSpace=ES;
     
     /// Sizes of the dynamic components
     DynamicComps dynamicSizes;
@@ -161,7 +161,7 @@ namespace esnort
     {
       if constexpr(not isRef)
 	{
-	  if constexpr(DynamicCompsProvider<C...>::nDynamicComps==0)
+	  if constexpr(DynamicCompsProvider<Comps>::nDynamicComps==0)
 	    allocate();
 	  else
 	    allocated=false;
@@ -185,7 +185,7 @@ namespace esnort
     
     /// Create from copy
     template <typename TOth,
-	      ExecutionSpace OthES>
+	      ExecSpace OthES>
     constexpr INLINE_FUNCTION
     DynamicTens(const BaseTens<TOth,Comps,Fund,OthES>& oth) :
       DynamicTens(DE_CRTPFY(const TOth,&oth).getDynamicSizes())
@@ -259,7 +259,7 @@ namespace esnort
   template <typename T,							\
 	    typename...C,						\
 	    typename F,							\
-	    ExecutionSpace ES>						\
+	    ExecSpace ES>						\
   auto BaseTens<T,CompsList<C...>,F,ES>::getRef() ATTRIB		\
   {									\
     decltype(auto) t=DE_CRTPFY(ATTRIB T,this);				\
@@ -281,7 +281,7 @@ namespace esnort
   template <typename T,							\
 	    typename...C,						\
 	    typename F,							\
-	    ExecutionSpace ES>						\
+	    ExecSpace ES>						\
   INLINE_FUNCTION							\
   auto BaseTens<T,CompsList<C...>,F,ES>::simdify() ATTRIB		\
 									\
@@ -310,8 +310,8 @@ namespace esnort
   template <typename T,
 	    typename...C,
 	    typename F,
-	    ExecutionSpace ES>
-  template <ExecutionSpace OES>
+	    ExecSpace ES>
+  template <ExecSpace OES>
   DynamicTens<CompsList<C...>,F,OES> BaseTens<T,CompsList<C...>,F,ES>::getCopyOnExecSpace() const
   {
     if constexpr(ES==OES)

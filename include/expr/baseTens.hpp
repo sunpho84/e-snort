@@ -24,22 +24,22 @@ namespace esnort
   template <typename T,
 	    typename C,
 	    typename F,
-	    ExecutionSpace ES>
+	    ExecSpace ES>
   struct BaseTens;
   
   /// Base Tensor
   template <typename T,
 	    typename...C,
 	    typename F,
-	    ExecutionSpace ES>
+	    ExecSpace ES>
   struct BaseTens<T,CompsList<C...>,F,ES> :
-    DynamicCompsProvider<C...>,
+    DynamicCompsProvider<CompsList<C...>>,
     Expr<T>
   {
     // /// Assign from another dynamic tensor
     // template <typename OtherT,
     // 	      typename OtherF,
-    // 	      ExecutionSpace OtherES>
+    // 	      ExecSpace OtherES>
     // INLINE_FUNCTION
     // BaseTens& assign(const BaseTens<OtherT,CompsList<C...>,OtherF,OtherES>& _oth)
     // {
@@ -87,19 +87,24 @@ namespace esnort
       return t;
     }
     
-    using _SimdifyTraits=
-      CompsListSimdifiableTraits<CompsList<C...>,F>;
-    
-    /// States whether the tensor can be simdified
-    static constexpr int canSimdify=
-#if ENABLE_DEVICE_CODE
-      (ES==ExecutionSpace::HOST) and
-#endif
-      _SimdifyTraits::canSimdify;
-    
     /// Return whether can be assigned at compile time
     static constexpr bool canAssignAtCompileTime=
       not std::is_const_v<F>;
+    
+    /// Traits of simdifying
+    using _SimdifyTraits=
+      CompsListSimdifiableTraits<CompsList<C...>,F>;
+    
+    /// Components on which simdifying
+    using SimdifyingComp=
+      typename _SimdifyTraits::LastComp;
+    
+    /// States whether the tensor can be simdified
+    static constexpr bool canSimdify=
+#if ENABLE_DEVICE_CODE
+      (ES==ExecSpace::HOST) and
+#endif
+      _SimdifyTraits::canSimdify;
     
     /// Returns a const reference
     auto getRef() const;
@@ -114,7 +119,7 @@ namespace esnort
     auto simdify();
     
     /// Gets a copy on a specific execution space
-    template <ExecutionSpace OES>
+    template <ExecSpace OES>
     DynamicTens<CompsList<C...>,F,OES> getCopyOnExecSpace() const;
     
     /// Default constructor

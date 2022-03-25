@@ -14,11 +14,12 @@
 
 namespace esnort
 {
-  template <typename...C>
+  /// Provides the dynamic or static components
+  template <typename C>
   struct DynamicCompsProvider
   {
     using DynamicStaticComps=
-      TupleDiscriminate<SizeIsKnownAtCompileTime,CompsList<C...>>;
+      TupleDiscriminate<SizeIsKnownAtCompileTime,C>;
     
     /// List of all statically allocated components
     using StaticComps=
@@ -36,12 +37,21 @@ namespace esnort
     static constexpr bool hasDynamicComps=
       nDynamicComps!=0;
     
+    /// Returns dynamic comps from a tuple
+    template <typename...T>
+    INLINE_FUNCTION
+    static DynamicComps filterDynamicComps(const CompsList<T...>& tc)
+    {
+      return tupleGetSubset<DynamicComps>(tc);
+    }
+    
     /// Returns dynamic comps from a list
     template <typename...T,
 	      typename...I>
+    INLINE_FUNCTION
     static DynamicComps filterDynamicComps(const BaseComp<T,I>&...td)
     {
-      return tupleGetSubset<DynamicComps>(std::make_tuple(td.crtp()...));
+      return filterDynamicComps(std::make_tuple(DE_CRTPFY(const T,&td)...));
     }
   };
 }

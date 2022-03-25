@@ -36,7 +36,7 @@ namespace esnort
     
 #pragma omp parallel for
     for(DC dc=0;dc<dynamicSize;dc++)
-      loopOnAllComps<typename Lhs::StaticComps>(lhs.dynamicSizes,assign,dc);
+      loopOnAllComps<typename Lhs::StaticComps>(lhs.getDynamicSizes(),assign,dc);
   }
 }
 

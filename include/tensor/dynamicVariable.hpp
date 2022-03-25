@@ -16,13 +16,13 @@
 namespace esnort
 {
 #define THIS					\
-  DynamicVariable<T,ExecSpace>
+  DynamicVariable<T,ES>
   
   template <typename T,
-	    ExecutionSpace ExecSpace>
+	    ExecSpace ES>
   struct DynamicVariable :
     Expr<THIS>,
-    VariableExecSpaceChanger<THIS,T,ExecSpace>
+    VariableExecSpaceChanger<THIS,T,ES>
   {
     using Expr<THIS>::operator=;
     
@@ -36,8 +36,8 @@ namespace esnort
       return *this;
     }
     
-    static constexpr ExecutionSpace execSpace=
-      ExecSpace;
+    static constexpr ExecSpace execSpace=
+      ES;
     
     T* ptr{nullptr};
     
@@ -68,7 +68,7 @@ namespace esnort
     {
       static_assert(std::is_trivially_constructible_v<T>,"not implemented for non-trivially constructible quantities");
       
-      ptr=memory::manager<ExecSpace>.template provide<T>(1);
+      ptr=memory::manager<execSpace>.template provide<T>(1);
     }
     
     //DynamicVariable(const DynamicVariable&) =delete;
@@ -99,10 +99,10 @@ namespace esnort
     ~DynamicVariable() HOST_ATTRIB
     {
       if(ptr)
-	memory::manager<ExecSpace>.release(ptr);
+	memory::manager<execSpace>.release(ptr);
     }
     
-    TensorRef<T,ExecSpace,true> getRef() const
+    TensorRef<T,execSpace,true> getRef() const
     {
       SCOPE_INDENT();
       
@@ -111,7 +111,7 @@ namespace esnort
       return ptr;
     }
     
-    TensorRef<T,ExecSpace,false> getRef()
+    TensorRef<T,execSpace,false> getRef()
     {
       SCOPE_INDENT();
       
