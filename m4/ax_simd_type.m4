@@ -47,7 +47,7 @@ then
 		AC_MSG_ERROR(["Cannot enable $1, $3 not supported, please provide/improve hint using --with-$1 flag"])
 	fi
 
-	AC_DEFINE([USE_$5],1,[Enable $1])
+	AC_DEFINE([ENABLE_$5],1,[Enable $1])
 
 	CXXFLAGS="$CXXFLAGS $simd_flags"
 fi

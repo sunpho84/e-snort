@@ -9,7 +9,7 @@
 
 #include <metaprogramming/inline.hpp>
 
-#if USE_SIMD
+#if ENABLE_SIMD
 # include <immintrin.h>
 #endif
 
@@ -19,7 +19,7 @@
 #include <tuples/tupleCat.hpp>
 
 constexpr bool haveMmxInstructions=
-#if USE_SIMD and USE_MMX
+#if ENABLE_SIMD and ENABLE_MMX
 	    true
 #else
 	    false
@@ -27,7 +27,7 @@ constexpr bool haveMmxInstructions=
 	    ;
 
 constexpr bool haveAvxInstructions=
-#if USE_SIMD and USE_AVX
+#if ENABLE_SIMD and ENABLE_AVX
 	    true
 #else
 	    false
@@ -35,7 +35,7 @@ constexpr bool haveAvxInstructions=
 	    ;
 
 constexpr bool haveAvx512Instructions=
-#if USE_SIMD and USE_AVX512
+#if ENABLE_SIMD and ENABLE_AVX512
 	    true
 #else
 	    false
@@ -63,19 +63,19 @@ namespace esnort
 #define CASE_ELSE(SIZE_PER_REAL,REG_SIZE,SUFF,ELSE)	\
     ELSE
     
-#if USE_SIMD and USE_AVX512
+#if ENABLE_SIMD and ENABLE_AVX512
 # define CASE_AVX512 CASE
 #else
 # define CASE_AVX512 CASE_ELSE
 #endif
     
-#if USE_SIMD and USE_AVX
+#if ENABLE_SIMD and ENABLE_AVX
 # define CASE_AVX CASE
 #else
 # define CASE_AVX CASE_ELSE
 #endif
 
-#if USE_SIMD and USE_MMX
+#if ENABLE_SIMD and ENABLE_MMX
 # define CASE_MMX CASE
 #else
 # define CASE_MMX CASE_ELSE
