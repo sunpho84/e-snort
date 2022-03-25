@@ -82,11 +82,11 @@ namespace esnort
     }
     
     /// Size of stored data
-    static constexpr auto storageSize=
+    static constexpr auto nElements=
       indexMaxValue<C...>();
     
     /// Data
-    Fund storage[storageSize];
+    Fund storage[nElements];
     
 #define PROVIDE_EVAL(ATTRIB)					\
     template <typename...U>					\

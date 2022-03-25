@@ -103,8 +103,8 @@ namespace esnort
     /// Pointer to storage
     ConstIf<isRef,Fund*> storage;
     
-    /// Storage size
-    ConstIf<isRef,int64_t> storageSize;
+    /// Number of elements
+    ConstIf<isRef,int64_t> nElements;
     
     /// Determine if allocated
     ConstIf<isRef,bool> allocated{false};
@@ -126,9 +126,9 @@ namespace esnort
       
       dynamicSizes=_dynamicSizes;
       
-      storageSize=indexMaxValue<C...>(this->dynamicSizes);
+      nElements=indexMaxValue<C...>(this->dynamicSizes);
       
-      storage=memory::manager<ES>.template provide<Fund>(storageSize);
+      storage=memory::manager<ES>.template provide<Fund>(nElements);
       
       allocated=true;
     }
@@ -173,11 +173,11 @@ namespace esnort
     /// Initialize the tensor as a reference
     constexpr
     DynamicTens(Fund* storage,
-		const int64_t& storageSize,
+		const int64_t& nElements,
 		const DynamicComps& dynamicSizes) :
       dynamicSizes(dynamicSizes),
       storage(storage),
-      storageSize(storageSize)
+      nElements(nElements)
     {
       if constexpr(not isRef)
 	allocated=true;
@@ -213,7 +213,7 @@ namespace esnort
 	  if(allocated)
 	    memory::manager<ES>.release(storage);
 	  allocated=false;
-	  storageSize=0;
+	  nElements=0;
 	}
 #endif
     }
@@ -258,7 +258,7 @@ namespace esnort
 									\
     /*LOGGER<<"Building reference to "<<execSpaceName<ES><<" tensor-like, pointer: "<<t.storage;*/ \
 									\
-    return DynamicTens<CompsList<C...>,ATTRIB F,ES,true>(t.storage,t.storageSize,t.getDynamicSizes()); \
+    return DynamicTens<CompsList<C...>,ATTRIB F,ES,true>(t.storage,t.nElements,t.getDynamicSizes()); \
     }
   
   PROVIDE_GET_REF(const);
@@ -287,7 +287,10 @@ namespace esnort
 									\
     using SimdFund=typename Traits::SimdFund;				\
 									\
-    return DynamicTens<typename Traits::Comps,ATTRIB SimdFund,ES,true>((ATTRIB SimdFund*)t.storage,t.storageSize/sizeof(SimdFund),t.getDynamicSizes()); \
+    return DynamicTens<typename Traits::Comps,ATTRIB SimdFund,ES,true>	\
+      ((ATTRIB SimdFund*)t.storage,					\
+       t.nElements/Traits::nNonSimdifiedElements,			\
+       t.getDynamicSizes());						\
   }
   
   PROVIDE_SIMDIFY(const);
@@ -315,7 +318,7 @@ namespace esnort
 	
 	/// \todo if no component is dynamic and we are on host, we could return a stackTens
 	
-	device::memcpy<OES,ES>(res.storage,t.storage,t.storageSize);
+	device::memcpy<OES,ES>(res.storage,t.storage,t.nElements*sizeof(F));
 	
 	return res;
       }
