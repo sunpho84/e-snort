@@ -11,7 +11,7 @@
 #include <expr/comps.hpp>
 #include <expr/baseTens.hpp>
 #include <expr/dynamicCompsProvider.hpp>
-#include <expr/dynamicTensDefinition.hpp>
+#include <expr/dynamicTensDeclaration.hpp>
 #include <expr/executionSpace.hpp>
 #include <expr/expr.hpp>
 #include <expr/indexComputer.hpp>

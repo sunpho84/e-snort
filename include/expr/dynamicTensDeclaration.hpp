@@ -1,11 +1,11 @@
-#ifndef _DYNAMICTENSORDEFINITION_HPP
-#define _DYNAMICTENSORDEFINITION_HPP
+#ifndef _DYNAMICTENSORDECLARATION_HPP
+#define _DYNAMICTENSORDECLARATION_HPP
 
 #ifdef HAVE_CONFIG_H
 # include <config.hpp>
 #endif
 
-/// \file expr/dynamicTensordefinition.hpp
+/// \file expr/dynamicTensorDeclaration.hpp
 
 #include <expr/executionSpace.hpp>
 
