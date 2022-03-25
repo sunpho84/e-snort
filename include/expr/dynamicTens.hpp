@@ -11,6 +11,7 @@
 #include <expr/comps.hpp>
 #include <expr/baseTens.hpp>
 #include <expr/dynamicCompsProvider.hpp>
+#include <expr/dynamicTensDefinition.hpp>
 #include <expr/executionSpace.hpp>
 #include <expr/expr.hpp>
 #include <expr/indexComputer.hpp>
@@ -20,14 +21,6 @@
 
 namespace esnort
 {
-  /// Tensor
-  ///
-  /// Forward declaration
-  template <typename C,
-	    typename F,
-	    ExecutionSpace ES,
-	    bool _IsRef=false>
-  struct DynamicTens;
   
 #define THIS					\
   DynamicTens<CompsList<C...>,_Fund,ES,IsRef>

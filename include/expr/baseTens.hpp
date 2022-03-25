@@ -9,6 +9,7 @@
 
 #include <expr/comps.hpp>
 #include <expr/dynamicCompsProvider.hpp>
+#include <expr/dynamicTensDefinition.hpp>
 #include <expr/executionSpace.hpp>
 #include <expr/expr.hpp>
 #include <metaprogramming/crtp.hpp>
