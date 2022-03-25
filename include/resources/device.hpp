@@ -49,6 +49,8 @@ namespace esnort::device
   INLINE_FUNCTION							\
   void memcpy ## FROM_TO_TO(void* dst,const void* src,size_t count)	\
   {									\
+    VERBOSE_LOGGER(3)<<"copying "<<count<<" bytes " #FROM_TO_TO;	\
+									\
     memcpy(dst,src,count,cudaMemcpy ## FROM_TO_TO);			\
   }
   
