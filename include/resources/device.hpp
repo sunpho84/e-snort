@@ -130,7 +130,7 @@ namespace esnort::device
     static_assert(Dest!=ExecutionSpace::UNDEFINED,"Cannot copy to undefined execution space");
     static_assert(Src!=ExecutionSpace::UNDEFINED,"Cannot copy from undefined execution space");
     
-#if USE_DEVICE
+#if ENABLE_DEVICE_CODE
     if constexpr(Dest==ExecutionSpace::DEVICE)
       {
 	if constexpr(Src==ExecutionSpace::DEVICE)
