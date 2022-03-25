@@ -65,7 +65,19 @@ namespace esnort
     INLINE_FUNCTION
     DynamicTens& operator=(DynamicTens&& oth)
     {
-      Base::operator=(std::move(oth));
+      if constexpr(IsRef)
+	Base::operator=(std::move(oth));
+      else
+	{
+	  if(dynamicSizes!=oth.dynamicSizes)
+	    CRASH<<"trying to assign different dynamic sized tensor";
+	  
+	  if(not canAssign())
+	    CRASH<<"trying to assign to unsassignable tensor";
+	  
+	  std::swap(this->storage,oth.storage);
+	  std::swap(this->allocated,oth.allocated);
+	}
       
       return *this;
     }
@@ -175,7 +187,7 @@ namespace esnort
       storageSize(storageSize)
     {
       if constexpr(not isRef)
-	CRASH<<"Trying to create as a reference a non-reference";
+	allocated=true;
     }
     
     /// Default constructor
@@ -183,9 +195,9 @@ namespace esnort
 	      ExecutionSpace OthES>
     constexpr INLINE_FUNCTION
     DynamicTens(const BaseTens<TOth,Comps,Fund,OthES>& oth) :
-      DynamicCompsProvider<Comps>(oth.crtp().getDynamicSizes())
+      dynamicSizes(DE_CRTPFY(const TOth,&oth).getDynamicSizes())
     {
-      (*this)=oth.crtp();
+      (*this)=DE_CRTPFY(const TOth,&oth);
     }
     
     /// Destructor
