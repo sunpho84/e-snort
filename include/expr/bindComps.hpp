@@ -1,7 +1,6 @@
 #ifndef _BINDCOMPS_HPP
 #define _BINDCOMPS_HPP
 
-#include "tuples/tupleHasType.hpp"
 #ifdef HAVE_CONFIG_H
 # include <config.hpp>
 #endif
@@ -12,8 +11,10 @@
 #include <expr/dynamicCompsProvider.hpp>
 #include <expr/executionSpace.hpp>
 #include <expr/exprDeclaration.hpp>
+#include <expr/exprRefOrVal.hpp>
 #include <metaprogramming/universalReference.hpp>
 #include <tuples/tupleFilter.hpp>
+#include "tuples/tupleHasType.hpp"
 
 namespace esnort
 {
@@ -79,10 +80,8 @@ namespace esnort
     using Base::operator=;
     
     /// Type of the bound expression
-    using BoundExpr=_Be;
-    
-    using BoundExprWithoutRef=
-      std::remove_reference_t<BoundExpr>;
+    using BoundExpr=
+      std::remove_reference_t<_Be>;
     
     /// Bound components
     using BoundComps=
@@ -94,12 +93,12 @@ namespace esnort
     
     /// States whether the tensor can be simdified
     static constexpr bool canSimdify=
-      BoundExprWithoutRef::canSimdify and
-      not tupleHasType<BoundComps,typename BoundExprWithoutRef::SimdifyingComp>;
+      BoundExpr::canSimdify and
+      not tupleHasType<BoundComps,typename BoundExpr::SimdifyingComp>;
     
     /// Components on which simdifying
     using SimdifyingComp=
-      std::conditional_t<canSimdify,typename BoundExprWithoutRef::SimdifyingComp,void>;
+      std::conditional_t<canSimdify,typename BoundExpr::SimdifyingComp,void>;
     
     /// Returns a const simdified view
     INLINE_FUNCTION
@@ -119,7 +118,7 @@ namespace esnort
     const BoundComps boundComps;
     
     /// Expression that has been bound
-    BoundExpr boundExpr;
+    ExprRefOrVal<_Be> boundExpr;
     
 #define PROVIDE_EVAL(ATTRIB)						\
     template <typename...U>						\
