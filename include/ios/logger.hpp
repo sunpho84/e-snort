@@ -358,6 +358,25 @@ namespace esnort
   /// Verbose logger or not, capital worded for homogeneity
 #define VERBOSE_LOGGER(LV)			\
   logger(LV)
+
+#if MAX_VERBOSITY_LV>=1
+  #define LOGGER_LV1_NOTIFY(ARGS...) VERBOSE_LOGGER(1)<<ARGS
+#else
+  #define LOGGER_LV1_NOTIFY(ARGS...)
+#endif
+
+#if MAX_VERBOSITY_LV>=2
+  #define LOGGER_LV2_NOTIFY(ARGS...) VERBOSE_LOGGER(2)<<ARGS
+#else
+  #define LOGGER_LV2_NOTIFY(ARGS...)
+#endif
+
+#if MAX_VERBOSITY_LV>=3
+  #define LOGGER_LV3_NOTIFY(ARGS...) VERBOSE_LOGGER(3)<<ARGS
+#else
+  #define LOGGER_LV3_NOTIFY(ARGS...)
+#endif
+
 }
 
 #endif

@@ -190,23 +190,26 @@ namespace esnort
 	allocated=true;
     }
     
-    // THIS FUNCTIONALITY HAS BEEN REPLACED WITH EXPLICT getCopyOnExecSpace
-    // template <typename TOth,
-    // 	      ExecutionSpace OthES>
-    // constexpr INLINE_FUNCTION
-    // DynamicTens(const BaseTens<TOth,Comps,Fund,OthES>& oth) :
-    //   dynamicSizes(DE_CRTPFY(const TOth,&oth).getDynamicSizes())
-    // {
-    //   (*this)=DE_CRTPFY(const TOth,&oth);
-    // }
+    /// Create from copy
+    template <typename TOth,
+	      ExecutionSpace OthES>
+    constexpr INLINE_FUNCTION
+    DynamicTens(const BaseTens<TOth,Comps,Fund,OthES>& oth) :
+      dynamicSizes(DE_CRTPFY(const TOth,&oth).getDynamicSizes())
+    {
+      (*this)=DE_CRTPFY(const TOth,&oth);
+    }
     
     /// Copy constructor
     DynamicTens(const DynamicTens& oth) :
       DynamicTens(oth.getDynamicSizes())
     {
+      LOGGER_LV3_NOTIFY("Using copy constructor of DynamicTens");
       (*this)=oth;
     }
     
+      LOGGER_LV3_NOTIFY("Using move constructor of DynamicTens");
+      
     /// Destructor
     HOST_DEVICE_ATTRIB
     ~DynamicTens()

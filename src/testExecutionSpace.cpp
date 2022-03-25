@@ -59,8 +59,7 @@ int in_main(int narg,char** arg)
     LOGGER<<st()<<" "<<hostTens(st);
   
   /// Create
-  DynamicTens<OfComps<SpinRow>,double,ExecutionSpace::DEVICE> deviceTens;
-  deviceTens=hostTens;
+  DynamicTens<OfComps<SpinRow>,double,ExecutionSpace::DEVICE> deviceTens=hostTens;
   
   StackTens<OfComps<SpinRow>,double> backHostTens;
   backHostTens=deviceTens;

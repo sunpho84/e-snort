@@ -153,6 +153,18 @@ AH_VERBATIM([COMPILING_FOR_DEVICE],
 #endif
 )
 
+#max verbosity lv
+AC_ARG_ENABLE(max-verbosity-lv,
+        AS_HELP_STRING([--enable-max-verbosity-lv=lv],[Set max verbosity lv]),
+        max_verbosity_lv="${enableval}",
+        max_verbosity_lv=2)
+if ! printf "%f" "$max_verbosity_lv" >/dev/null 2>&1; then AC_MSG_ERROR([String $max_verbosity_lv is not a number]); fi
+AC_DEFINE_UNQUOTED([MAX_VERBOSITY_LV],$max_verbosity_lv,[Max_verbosity_lv])
+AC_MSG_RESULT([enabling max verbosity lv... $max_verbosity_lv])
+SUMMARY_RESULT="$SUMMARY_RESULT
+max-verbosity-lv : $max_verbosity_lv"
+
+#demangle
 AC_CHECK_HEADERS([cxxabi.h])
 if test "$ac_cv_header_cxxabi_h" == "yes"
 then
