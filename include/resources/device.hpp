@@ -125,6 +125,9 @@ namespace esnort::device
 	    ExecutionSpace Src>
   void memcpy(void* dst,const void* src,size_t count)
   {
+    static_assert(Dest!=ExecutionSpace::UNDEFINED,"Cannot copy to undefined execution space");
+    static_assert(Src!=ExecutionSpace::UNDEFINED,"Cannot copy from undefined execution space");
+    
 #if USE_DEVICE
     if constexpr(Dest==ExecutionSpace::DEVICE)
       {

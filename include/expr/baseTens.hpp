@@ -81,8 +81,7 @@ namespace esnort
       if(t.getDynamicSizes()!=oth.getDynamicSizes())
 	CRASH<<"Not matching dynamic sizes";
 	
-	
-      device::memcpy<ES,otherExecSpace<ES>>(t.storage,oth.storage,t.storageSize);
+      device::memcpy<ES,otherExecSpace<ES>>(t.storage,oth.storage,t.storageSize*sizeof(F));
       
       return t;
     }
