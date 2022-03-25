@@ -27,7 +27,7 @@ namespace esnort::envFlags
     
     const auto flagList=
       std::make_tuple(ADD_FLAG(waitToAttachDebugger,false,"WAIT_TO_ATTACH_DEBUGGER","to be used to wait for gdb to attach"),
-		      ADD_FLAG(Logger::verbosityLv,1,"VERBOSITY_LV","Level of verbosity of the program"),
+		      ADD_FLAG(Logger::verbosityLv,1,"VERBOSITY_LV","Level of verbosity of the program - compiled with max level " TO_STRING(MAX_VERBOSITY_LV)),
 		      ADD_FLAG(memory::useCache,true,"USE_CACHE","Use memory cache")
 		      );
     

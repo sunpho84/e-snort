@@ -188,7 +188,7 @@ namespace esnort
 	      ExecutionSpace OthES>
     constexpr INLINE_FUNCTION
     DynamicTens(const BaseTens<TOth,Comps,Fund,OthES>& oth) :
-      dynamicSizes(DE_CRTPFY(const TOth,&oth).getDynamicSizes())
+      DynamicTens(DE_CRTPFY(const TOth,&oth).getDynamicSizes())
     {
       (*this)=DE_CRTPFY(const TOth,&oth);
     }
@@ -201,8 +201,16 @@ namespace esnort
       (*this)=oth;
     }
     
+    // /Move constructor
+    DynamicTens(DynamicTens&& oth) :
+      DynamicTens(oth.storage,nElements,dynamicSizes)
+    {
       LOGGER_LV3_NOTIFY("Using move constructor of DynamicTens");
       
+      if constexpr(not isRef)
+	oth.allocated=false;
+    }
+    
     /// Destructor
     HOST_DEVICE_ATTRIB
     ~DynamicTens()
@@ -304,7 +312,7 @@ namespace esnort
 	    typename F,
 	    ExecutionSpace ES>
   template <ExecutionSpace OES>
-  auto BaseTens<T,CompsList<C...>,F,ES>::getCopyOnExecSpace() const
+  DynamicTens<CompsList<C...>,F,OES> BaseTens<T,CompsList<C...>,F,ES>::getCopyOnExecSpace() const
   {
     if constexpr(ES==OES)
       return *this;

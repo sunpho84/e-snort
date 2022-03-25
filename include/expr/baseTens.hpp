@@ -115,7 +115,7 @@ namespace esnort
     
     /// Gets a copy on a specific execution space
     template <ExecutionSpace OES>
-    auto getCopyOnExecSpace() const;
+    DynamicTens<CompsList<C...>,F,OES> getCopyOnExecSpace() const;
     
     /// Default constructor
     constexpr BaseTens()

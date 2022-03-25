@@ -107,11 +107,11 @@ namespace esnort
     using SimdFund=
       typename Traits::type;
     
-    static constexpr int nonSimdifiedSize=
-      Traits::nonSimdifiedSize();
+    static constexpr int nNonSimdifiedElements=
+      Traits::nNonSimdifiedElements();
     
     using Comps=
-      TupleReplaceType<CompsList<Tp...>,LastComp,NonSimdifiedComp<typename LastComp::Index,nonSimdifiedSize>>;
+      TupleReplaceType<CompsList<Tp...>,LastComp,NonSimdifiedComp<typename LastComp::Index,nNonSimdifiedElements>>;
   };
 }
 

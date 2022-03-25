@@ -123,8 +123,8 @@ namespace esnort
       return Size!=0 and not std::is_same_v<void,type>;
     }
     
-    /// Returns the non-simdified size
-    static constexpr int nonSimdifiedSize()
+    /// Returns the number of non-simdified elements
+    static constexpr int nNonSimdifiedElements()
     {
       if constexpr(canSimdify())
 	return Size*sizeof(F)/sizeof(type);

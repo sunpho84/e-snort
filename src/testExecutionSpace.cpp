@@ -59,10 +59,9 @@ int in_main(int narg,char** arg)
     LOGGER<<st()<<" "<<hostTens(st);
   
   /// Create
-  DynamicTens<OfComps<SpinRow>,double,ExecutionSpace::DEVICE> deviceTens=hostTens;
+  const auto deviceTens=hostTens.getCopyOnExecSpace<ExecutionSpace::DEVICE>();
   
-  StackTens<OfComps<SpinRow>,double> backHostTens;
-  backHostTens=deviceTens;
+  StackTens<OfComps<SpinRow>,double> backHostTens=deviceTens;
   //dtd=dtg.getCopyOnExecSpace<ExecutionSpace::HOST>();
   
   for(SpinRow st=0;st<4;st++)

@@ -108,13 +108,13 @@ namespace esnort
     {
     }
     
-    /// Default constructor
+    /// Construct from another tens-like
     template <typename TOth,
 	      ExecutionSpace OthES>
     constexpr INLINE_FUNCTION
     StackTens(const BaseTens<TOth,Comps,Fund,OthES>& oth)
     {
-      (*this)=oth.crtp();
+      (*this)=DE_CRTPFY(const TOth,&oth);
     }
   };
 }
