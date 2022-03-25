@@ -11,7 +11,7 @@
 namespace esnort
 {
   template <typename T,
-	    ExecSpace ExecSpace>
+	    ExecSpace ES>
   struct DynamicVariable;
   
   DEFINE_CRTP_INHERITANCE_DISCRIMINER_FOR_TYPE(VariableExecSpaceChanger)
@@ -28,7 +28,7 @@ namespace esnort
       template <ExecSpace OthExecSpace>				\
       decltype(auto) changeExecSpaceTo() CONST_ATTRIB			\
       {									\
-	if constexpr(OthExecSpace!=ExecSpace)				\
+	if constexpr(OthExecSpace!=ES)					\
 	  {								\
 	    logger()<<"Allocating on device to store: ",		\
 		   this->crtp().getPtr();				\
@@ -36,11 +36,11 @@ namespace esnort
 	    DynamicVariable<Fund,OthExecSpace> res;			\
 									\
 	    device::memcpy(res.getPtr(),				\
-			 this->crtp().getPtr(),				\
-			 sizeof(Fund),					\
-			 (OthExecSpace==ExecSpace::DEVICE)?	\
-			 cudaMemcpyHostToDevice:			\
-			 cudaMemcpyDeviceToHost);			\
+			   this->crtp().getPtr(),			\
+			   sizeof(Fund),				\
+			   (OthExecSpace==ExecSpace::DEVICE)?		\
+			   cudaMemcpyHostToDevice:			\
+			   cudaMemcpyDeviceToHost);			\
 									\
 	    return res;							\
 	  }								\
@@ -58,7 +58,7 @@ namespace esnort
       
 # define PROVIDE_CHANGE_EXEC_SPACE_TO(CONST_ATTRIB,IS_CONST)		\
       									\
-      template <ExecSpace OthExecSpace>				\
+      template <ExecSpace OthExecSpace>					\
       TensorRef<Fund,OthExecSpace,IS_CONST> changeExecSpaceTo() CONST_ATTRIB \
       {									\
 	return								\

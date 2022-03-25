@@ -83,7 +83,7 @@ namespace esnort
       else
 #endif
 #if ENABLE_DEVICE_CODE
-	if constexpr(Rhs::execSpace==ExecutionSpace::DEVICE)
+	if constexpr(Rhs::execSpace==ExecSpace::DEVICE)
 	  deviceAssign(lhs,rhs);
 	else
 #endif

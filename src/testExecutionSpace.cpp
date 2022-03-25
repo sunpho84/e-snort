@@ -62,7 +62,7 @@ int in_main(int narg,char** arg)
   const auto deviceTens=hostTens.getCopyOnExecSpace<ExecSpace::DEVICE>();
   
   StackTens<OfComps<SpinRow>,double> backHostTens=deviceTens;
-  //dtd=dtg.getCopyOnExecSpace<ExecutionSpace::HOST>();
+  //dtd=dtg.getCopyOnExecSpace<ExecSpace::HOST>();
   
   for(SpinRow st=0;st<4;st++)
     LOGGER<<st()<<" "<<backHostTens(st);
@@ -76,12 +76,12 @@ int in_main(int narg,char** arg)
 
   
 //   {
-//     DynamicTens<OfComps<SpinRow,SpaceTime>,double,ExecutionSpace::HOST> dt(SpaceTime{3});
+//     DynamicTens<OfComps<SpinRow,SpaceTime>,double,ExecSpace::HOST> dt(SpaceTime{3});
 //     for(SpinRow s=0;s<4;s++)
 //       for(SpaceTime st=0;st<3;st++)
 // 	dt(st,s)=st()+3*s;
     
-//     DynamicTens<OfComps<SpaceTime,SpinRow>,double,ExecutionSpace::HOST> td(SpaceTime{3});
+//     DynamicTens<OfComps<SpaceTime,SpinRow>,double,ExecSpace::HOST> td(SpaceTime{3});
     
 //     td=dt;
     
@@ -91,18 +91,18 @@ int in_main(int narg,char** arg)
 //   }
   
 //   {
-//     DynamicTens<OfComps<SpinRow,SpaceTime>,double,ExecutionSpace::HOST> t(SpaceTime{3});
+//     DynamicTens<OfComps<SpinRow,SpaceTime>,double,ExecSpace::HOST> t(SpaceTime{3});
 //     for(SpinRow s=0;s<4;s++)
 //       for(SpaceTime st=0;st<3;st++)
 // 	t(st,s)=st()+3*s;
-//     DynamicTens<OfComps<SpinRow,SpaceTime>,double,ExecutionSpace::DEVICE> dt(SpaceTime{3});
+//     DynamicTens<OfComps<SpinRow,SpaceTime>,double,ExecSpace::DEVICE> dt(SpaceTime{3});
 //     dt=t;
     
-//     DynamicTens<OfComps<SpaceTime,SpinRow>,double,ExecutionSpace::DEVICE> td(SpaceTime{3});
+//     DynamicTens<OfComps<SpaceTime,SpinRow>,double,ExecSpace::DEVICE> td(SpaceTime{3});
     
 //     td=dt;
     
-//     DynamicTens<OfComps<SpaceTime,SpinRow>,double,ExecutionSpace::HOST> d(SpaceTime{3});
+//     DynamicTens<OfComps<SpaceTime,SpinRow>,double,ExecSpace::HOST> d(SpaceTime{3});
     
 //     d=td;
 //     for(SpinRow s=0;s<4;s++)
@@ -113,7 +113,7 @@ int in_main(int narg,char** arg)
 //   return 0;
   
 //   StackTens<OfComps<SpinRow>,double> st;
-//   DynamicTens<OfComps<SpinRow>,double,ExecutionSpace::HOST> dst;
+//   DynamicTens<OfComps<SpinRow>,double,ExecSpace::HOST> dst;
 //   st=dst;
   
 //   dtg=dt;
@@ -141,7 +141,7 @@ int in_main(int narg,char** arg)
 //   s.sizeAtCompileTimeAssertingNotDynamic();
   
 // #if not COMPILING_FOR_DEVICE
-//   static_assert(StackedVariable<int>::execSpace==esnort::ExecutionSpace::HOST,"We are issuing A on the host");
+//   static_assert(StackedVariable<int>::execSpace==esnort::ExecSpace::HOST,"We are issuing A on the host");
 // #endif
   
   // ASM_BOOKMARK_BEGIN("TEST_ASSIGN");
@@ -149,10 +149,10 @@ int in_main(int narg,char** arg)
   // StackedVariable<int> a;
   // a()=1;
   
-  // DynamicVariable<int,ExecutionSpace::DEVICE> b;
+  // DynamicVariable<int,ExecSpace::DEVICE> b;
   // b=a;
   
-  // DynamicVariable<int,ExecutionSpace::DEVICE> c;
+  // DynamicVariable<int,ExecSpace::DEVICE> c;
   // c=b;
   
   // StackedVariable<int> d;

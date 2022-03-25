@@ -59,9 +59,13 @@ namespace esnort
     /// Fundamental tye
     using Fund=_Fund;
     
+    /// Type of the bound expression
+    using BoundExpr=
+      std::decay_t<_Be>;
+    
     /// Executes where allocated
     static constexpr ExecSpace execSpace=
-      std::decay_t<_Be>::execSpace;
+      BoundExpr::execSpace;
     
     /// Returns the dynamic sizes
     const auto getDynamicSizes() const
@@ -78,10 +82,6 @@ namespace esnort
     
     /// Import assignment operator
     using Base::operator=;
-    
-    /// Type of the bound expression
-    using BoundExpr=
-      std::remove_reference_t<_Be>;
     
     /// Bound components
     using BoundComps=
@@ -100,19 +100,33 @@ namespace esnort
     using SimdifyingComp=
       std::conditional_t<canSimdify,typename BoundExpr::SimdifyingComp,void>;
     
-    /// Returns a const simdified view
-    INLINE_FUNCTION
-    auto simdify() const
-    {
-      return bindComps(boundExpr.simdify(),boundComps);
+#define PROVIDE_SIMDIFY(ATTRIB)					\
+    /*! Returns a ATTRIB simdified view */			\
+    INLINE_FUNCTION						\
+    auto simdify() ATTRIB					\
+    {								\
+      return bindComps(boundExpr.simdify(),boundComps);		\
     }
     
-    /// Returns a simdified view
-    INLINE_FUNCTION
-    auto simdify()
-    {
-      return bindComps(boundExpr.simdify(),boundComps);
+    PROVIDE_SIMDIFY(const);
+    
+    PROVIDE_SIMDIFY(/* non const */);
+    
+#undef PROVIDE_SIMDIFY
+    
+#define PROVIDE_GET_REF(ATTRIB)					\
+    /*! Returns a reference */					\
+    INLINE_FUNCTION						\
+    auto getRef() ATTRIB					\
+    {								\
+      return boundExpr.getRef()(std::get<Bc>(boundComps)...);	\
     }
+    
+    PROVIDE_GET_REF(const);
+    
+    PROVIDE_GET_REF(/* non const */);
+    
+#undef PROVIDE_GET_REF
     
     /// Components that have been bound
     const BoundComps boundComps;
@@ -151,8 +165,7 @@ namespace esnort
 	    typename...BCs>
   HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
   auto bindComps(_E&& e,
-		const CompsList<BCs...>& bc,
-		UNPRIORITIZE_UNIVERSAL_REFERENCE_CONSTRUCTOR)
+		 const CompsList<BCs...>& bc)
   {
     /// Base passed type
     using E=
