@@ -41,6 +41,10 @@ int j;
   using SpinRow=Spin<RwCl::ROW,0>;
   using SpanRow=Span<RwCl::ROW,0>;
 
+void hook()
+{
+}
+
 int in_main(int narg,char** arg)
 {
   // ASM_BOOKMARK_BEGIN("TEST_INDEX");
@@ -71,6 +75,8 @@ int in_main(int narg,char** arg)
   
   DynamicTens<OfComps<SpinRow,SpaceTime,SpanRow>,double,ExecSpace::DEVICE> s(SpaceTime{4});
   DynamicTens<OfComps<SpanRow,SpaceTime,SpinRow>,double,ExecSpace::DEVICE> t(SpaceTime{4});
+
+  hook();
   
   auto rrr=s(SpanRow{0}).getRef();
   
