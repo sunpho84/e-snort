@@ -11,6 +11,7 @@
 
 #include <expr/comp.hpp>
 #include <expr/comps.hpp>
+#include <metaprogramming/crtp.hpp>
 #include <tuples/tupleDiscriminate.hpp>
 #include <tuples/tupleSubset.hpp>
 #include <tuples/uniqueTuple.hpp>
@@ -61,7 +62,7 @@ namespace esnort
 	return inner;
     };
     
-    return index(index,0,comps.crtp()...);
+    return index(index,0,DE_CRTPFY(const C,&comps)...);
   }
   
   /// Dispatch the internal index calculation
@@ -102,7 +103,7 @@ namespace esnort
 	return inner;
     };
     
-    return index(index,0,comps.crtp()...);
+    return index(index,0,DE_CRTPFY(const C,&comps)...);
   }
   
   /// Returns the index after reordering elements

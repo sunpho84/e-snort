@@ -8,22 +8,20 @@
 /// \file arithmeticOperatorsViaCast.hpp
 
 #include <metaprogramming/crtp.hpp>
+#include <metaprogramming/inline.hpp>
 
 namespace esnort
 {
-  DEFINE_CRTP_INHERITANCE_DISCRIMINER_FOR_TYPE(ArithmeticOprators);
-  
   /// Provides the arithmetic operators via cast
   template <typename CastToExec,
 	    typename ReturnedType>
-  struct ArithmeticOperators :
-    Crtp<ReturnedType,crtp::ArithmeticOpratorsDiscriminer>
+  struct ArithmeticOperators
   {
 #define PROVIDE_POSTFIX_OPERATOR(OP)			\
     INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB	\
     ReturnedType& operator OP (int)			\
     {							\
-      auto& This=this->crtp();				\
+      auto& This=DE_CRTPFY(ReturnedType,this);		\
       							\
       ((CastToExec&)This) OP;				\
       							\
@@ -47,7 +45,7 @@ namespace esnort
     INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB			\
     RETURNED_TYPE operator OP(const Oth& oth) const			\
     {									\
-      return ((CastToExec)(this->crtp())) OP oth;			\
+      return ((CastToExec)(DE_CRTPFY(ReturnedType,this))) OP oth;	\
     }
     
     PROVIDE_OPERATOR(+,ReturnedType);
@@ -70,7 +68,7 @@ namespace esnort
     {									\
       auto& This=this->crtp();						\
 									\
-      ((CastToExec&)this->crtp()) OP ## =(CastToExec)oth.crtp();	\
+      ((CastToExec&)DE_CRTPFY(ReturnedType,this)) OP ## =(CastToExec)oth.crtp(); \
 									\
       return This;							\
     }

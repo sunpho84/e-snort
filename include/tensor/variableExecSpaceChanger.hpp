@@ -14,29 +14,26 @@ namespace esnort
 	    ExecSpace ES>
   struct DynamicVariable;
   
-  DEFINE_CRTP_INHERITANCE_DISCRIMINER_FOR_TYPE(VariableExecSpaceChanger)
-  
   template <typename T,
 	    typename Fund,
 	    ExecSpace ES>
-  struct VariableExecSpaceChanger :
-  Crtp<T,crtp::VariableExecSpaceChangerDiscriminer>
+  struct VariableExecSpaceChanger
     {
 #if ENABLE_DEVICE_CODE
       
 # define PROVIDE_CHANGE_EXEC_SPACE_TO(CONST_ATTRIB,IS_CONST)		\
-      template <ExecSpace OthExecSpace>				\
+      template <ExecSpace OthExecSpace>					\
       decltype(auto) changeExecSpaceTo() CONST_ATTRIB			\
       {									\
 	if constexpr(OthExecSpace!=ES)					\
 	  {								\
 	    logger()<<"Allocating on device to store: ",		\
-		   this->crtp().getPtr();				\
+		   DE_CRTPFY(T,this).getPtr();				\
 									\
 	    DynamicVariable<Fund,OthExecSpace> res;			\
 									\
 	    device::memcpy(res.getPtr(),				\
-			   this->crtp().getPtr(),			\
+			   DE_CRTPFY(T,this).getPtr(),			\
 			   sizeof(Fund),				\
 			   (OthExecSpace==ExecSpace::DEVICE)?		\
 			   cudaMemcpyHostToDevice:			\
@@ -47,10 +44,10 @@ namespace esnort
 	else								\
 	  {								\
 	    logger()<<"No need to allocate, returning a reference to ", \
-		   this->crtp().getPtr();				\
+		   DE_CRTPFY(T,this).getPtr();				\
 	    								\
 	    return							\
-	      TensorRef<Fund,OthExecSpace,IS_CONST>(this->crtp().getPtr()); \
+	      TensorRef<Fund,OthExecSpace,IS_CONST>(DE_CRTPFY(T,this).getPtr()); \
 	  }								\
       }
       
@@ -62,7 +59,7 @@ namespace esnort
       TensorRef<Fund,OthExecSpace,IS_CONST> changeExecSpaceTo() CONST_ATTRIB \
       {									\
 	return								\
-	  this->crtp().getPtr();					\
+	  DE_CRTPFY(T,this).getPtr();					\
       }
       
 #endif

@@ -100,6 +100,12 @@ namespace esnort
     using SimdifyingComp=
       std::conditional_t<canSimdify,typename BoundExpr::SimdifyingComp,void>;
     
+    /// Components that have been bound
+    const BoundComps boundComps;
+    
+    /// Expression that has been bound
+    ExprRefOrVal<_Be> boundExpr;
+    
 #define PROVIDE_SIMDIFY(ATTRIB)					\
     /*! Returns a ATTRIB simdified view */			\
     INLINE_FUNCTION						\
@@ -127,12 +133,6 @@ namespace esnort
     PROVIDE_GET_REF(/* non const */);
     
 #undef PROVIDE_GET_REF
-    
-    /// Components that have been bound
-    const BoundComps boundComps;
-    
-    /// Expression that has been bound
-    ExprRefOrVal<_Be> boundExpr;
     
 #define PROVIDE_EVAL(ATTRIB)						\
     template <typename...U>						\

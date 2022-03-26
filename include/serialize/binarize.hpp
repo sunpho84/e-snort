@@ -212,12 +212,9 @@ namespace esnort
     }
   };
   
-  DEFINE_CRTP_INHERITANCE_DISCRIMINER_FOR_TYPE(Binarizable)
-  
   /// Add binarizable functionality via CRTP
   template <typename T>
-  class Binarizable :
-    Crtp<T,crtp::BinarizableDiscriminer>
+  class Binarizable
   {
   public:
     
@@ -227,7 +224,7 @@ namespace esnort
       const
     {
       return
-	out.binarize(CRTP_THIS());
+	out.binarize(DE_CRTPFY(T,this));
     }
     
     /// DeBinarize a Serializable
@@ -235,7 +232,7 @@ namespace esnort
     Binarizer& deBinarize(B&& rhs)               ///< Input
     {
       return
-	rhs.deBinarize(CRTP_THIS());
+	rhs.deBinarize(DE_CRTPFY(T,this));
     }
   };
 }

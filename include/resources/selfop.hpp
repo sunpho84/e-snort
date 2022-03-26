@@ -15,17 +15,14 @@
 
 namespace esnort
 {
-  DEFINE_CRTP_INHERITANCE_DISCRIMINER_FOR_TYPE(SelfOp);
-  
   template <typename T>
-  struct SelfOp :
-    Crtp<T,crtp::SelfOpDiscriminer>
+  struct SelfOp
   {
 #define PROVIDE_SELFOP(OP)			\
     template <typename U>			\
     T& operator OP(const U& rhs)		\
     {						\
-      auto& lhs=this->crtp();			\
+    auto& lhs=DE_CRTPFY(T,this);		\
     						\
       lhs() OP rhs;				\
 						\

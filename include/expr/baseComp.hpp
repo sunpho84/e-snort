@@ -9,20 +9,16 @@
 ///
 /// \brief Implements a tensor comp
 
-#include <metaprogramming/crtp.hpp>
 #include <metaprogramming/inline.hpp>
 #include <metaprogramming/nonConstMethod.hpp>
 #include <metaprogramming/typeConversion.hpp>
 
 namespace esnort
 {
-  DEFINE_CRTP_INHERITANCE_DISCRIMINER_FOR_TYPE(BaseComp);
-  
   /// A component
   template <typename _C,
 	    typename _Index>
-  struct BaseComp :
-    Crtp<_C,crtp::BaseCompDiscriminer>
+  struct BaseComp
   {
     /// Value type
     using Index=_Index;

@@ -71,7 +71,10 @@ int in_main(int narg,char** arg)
   
   DynamicTens<OfComps<SpinRow,SpaceTime,SpanRow>,double,ExecSpace::DEVICE> s(SpaceTime{4});
   DynamicTens<OfComps<SpanRow,SpaceTime,SpinRow>,double,ExecSpace::DEVICE> t(SpaceTime{4});
-
+  
+  auto rrr=s(SpanRow{0}).getRef();
+  
+  
   t(SpanRow{0})=s(SpanRow{0});
 
   
