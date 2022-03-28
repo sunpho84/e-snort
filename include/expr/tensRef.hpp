@@ -102,7 +102,7 @@ namespace esnort
     static constexpr bool storeByRef=false;
     
     /// Initialize the reference
-    constexpr
+    INLINE_FUNCTION HOST_DEVICE_ATTRIB constexpr
     TensRef(Fund* storage,
 	    const int64_t& nElements,
 	    const DynamicComps& dynamicSizes) :
@@ -113,12 +113,14 @@ namespace esnort
     }
     
     /// Copy constructor
+    INLINE_FUNCTION HOST_DEVICE_ATTRIB
     TensRef(const TensRef& oth) :
       TensRef(oth.storage,oth.nElements,oth.dynamicSizes)
     {
     }
     
     // /Move constructor
+    INLINE_FUNCTION HOST_DEVICE_ATTRIB
     TensRef(TensRef&& oth) :
       TensRef(oth.storage,nElements,dynamicSizes)
     {
