@@ -217,10 +217,10 @@ DONE
 - Move constructor for dynamicTens
 - Easier comps
 - Binder
+- A reference copied to a gpu points inside a binder must get copied by value
 
 TODO
 ---
-- A reference copied to a gpu points inside a binder must get copied by value
 - Compl, conj, transp
 - Products
 - Sums

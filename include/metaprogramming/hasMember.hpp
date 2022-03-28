@@ -72,7 +72,7 @@ namespace esnort
       /*! unambiguosly understood.*/					\
       template <typename U,						\
 		U>							\
-    struct Check;							\
+      struct Check;							\
       									\
       /*! Forward definition of test function, taking a pointer to the */ \
       /*! type of TAG as argument, returning No. The instantiation     */ \
