@@ -26,6 +26,12 @@
 
 namespace esnort
 {
+  PROVIDE_HAS_MEMBER(getDynamicSizes);
+  PROVIDE_HAS_MEMBER(Comps);
+  PROVIDE_HAS_MEMBER(canAssign);
+  PROVIDE_HAS_MEMBER(execSpace);
+  PROVIDE_HAS_MEMBER(storeByRef);
+  
   template <typename T>
   struct Expr
   {
@@ -43,6 +49,17 @@ namespace esnort
     }
     
     static constexpr bool canAssignAtCompileTime=false;
+    
+    /// Used to check that the derived type satisfy the Expr criterion
+    constexpr Expr()
+    {
+      static_assert(hasMember_getDynamicSizes<T> and
+		    hasMember_canAssign<T> and
+		    hasMember_Comps<T> and
+		    hasMember_execSpace<T> and
+		    hasMember_storeByRef<T>,
+		    "Incomplete expression");
+   }
     
     /// Assert assignability
     template <typename U>

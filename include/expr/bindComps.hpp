@@ -80,6 +80,9 @@ namespace esnort
       return boundExpr.canAssign();
     }
     
+    /// This is a lightweight object
+    static constexpr bool storeByRef=false;
+    
     /// Import assignment operator
     using Base::operator=;
     
@@ -119,7 +122,7 @@ namespace esnort
     PROVIDE_SIMDIFY(/* non const */);
     
 #undef PROVIDE_SIMDIFY
-    
+
 #define PROVIDE_GET_REF(ATTRIB)					\
     /*! Returns a reference */					\
     INLINE_FUNCTION						\
@@ -186,9 +189,9 @@ namespace esnort
     
     return
       CompsBinder<BoundComps,
-		 decltype(e),
-		 Comps,
-		 Fund>(std::forward<_E>(e),bc);
+		  decltype(e),
+		  Comps,
+		  Fund>(std::forward<_E>(e),bc);
   }
   
   // /// Rebind an already bound expression

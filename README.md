@@ -220,6 +220,7 @@ DONE
 
 TODO
 ---
+- A reference copied to a gpu points inside a binder must get copied by value
 - Compl, conj, transp
 - Products
 - Sums

@@ -88,6 +88,9 @@ namespace esnort
     /// Data
     Fund storage[nElements];
     
+    /// We store the reference to the tensor
+    static constexpr bool storeByRef=true;
+    
 #define PROVIDE_EVAL(ATTRIB)					\
     template <typename...U>					\
     constexpr INLINE_FUNCTION					\

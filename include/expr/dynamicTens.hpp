@@ -15,15 +15,15 @@
 #include <expr/executionSpace.hpp>
 #include <expr/expr.hpp>
 #include <expr/indexComputer.hpp>
+#include <expr/tensRef.hpp>
 #include <metaprogramming/constnessChanger.hpp>
 #include <resources/memory.hpp>
 #include <tuples/tupleDiscriminate.hpp>
 
 namespace esnort
 {
-  
 #define THIS					\
-  DynamicTens<CompsList<C...>,_Fund,ES,IsRef>
+  DynamicTens<CompsList<C...>,_Fund,ES>
 
 #define BASE					\
   BaseTens<THIS,CompsList<C...>,_Fund,ES>
@@ -31,8 +31,7 @@ namespace esnort
   /// Tensor
   template <typename...C,
 	    typename _Fund,
-	    ExecSpace ES,
-	    bool IsRef>
+	    ExecSpace ES>
   struct THIS :
     BASE
   {
@@ -58,19 +57,14 @@ namespace esnort
     INLINE_FUNCTION
     DynamicTens& operator=(DynamicTens&& oth)
     {
-      if constexpr(IsRef)
-	Base::operator=(std::move(oth));
-      else
-	{
-	  if(dynamicSizes!=oth.dynamicSizes)
-	    CRASH<<"trying to assign different dynamic sized tensor";
-	  
-	  if(not canAssign())
-	    CRASH<<"trying to assign to unsassignable tensor";
-	  
-	  std::swap(this->storage,oth.storage);
-	  std::swap(this->allocated,oth.allocated);
-	}
+      if(dynamicSizes!=oth.dynamicSizes)
+	CRASH<<"trying to assign different dynamic sized tensor";
+      
+      if(not canAssign())
+	CRASH<<"trying to assign to unsassignable tensor";
+      
+      std::swap(this->storage,oth.storage);
+      std::swap(this->allocated,oth.allocated);
       
       return *this;
     }
@@ -85,9 +79,6 @@ namespace esnort
     /// Fundamental type
     using Fund=_Fund;
     
-    /// Determine if it is reference
-    static constexpr bool isRef=IsRef;
-    
     /// Executes where allocated
     static constexpr ExecSpace execSpace=ES;
     
@@ -101,26 +92,26 @@ namespace esnort
     }
     
     /// Pointer to storage
-    ConstIf<isRef,Fund*> storage;
+    Fund* storage;
     
     /// Number of elements
-    ConstIf<isRef,int64_t> nElements;
+    int64_t nElements;
     
     /// Determine if allocated
-    ConstIf<isRef,bool> allocated{false};
+    bool allocated{false};
     
     /// Returns whether can assign
     bool canAssign()
     {
-      return (not isRef) or allocated;
+      return allocated;
     }
+    
+    /// We keep referring to the original object
+    static constexpr bool storeByRef=true;
     
     /// Allocate the storage
     void allocate(const DynamicComps& _dynamicSizes)
     {
-      if constexpr(isRef)
-	CRASH<<"Trying to allocate a reference";
-      
       if(allocated)
 	CRASH<<"Already allocated";
       
@@ -159,28 +150,10 @@ namespace esnort
     constexpr
     DynamicTens()
     {
-      if constexpr(not isRef)
-	{
-	  if constexpr(DynamicCompsProvider<Comps>::nDynamicComps==0)
-	    allocate();
-	  else
-	    allocated=false;
-	  }
+      if constexpr(DynamicCompsProvider<Comps>::nDynamicComps==0)
+	allocate();
       else
-	CRASH<<"Trying to create a reference to nothing";
-    }
-    
-    /// Initialize the tensor as a reference
-    constexpr
-    DynamicTens(Fund* storage,
-		const int64_t& nElements,
-		const DynamicComps& dynamicSizes) :
-      dynamicSizes(dynamicSizes),
-      storage(storage),
-      nElements(nElements)
-    {
-      if constexpr(not isRef)
-	allocated=true;
+	allocated=false;
     }
     
     /// Create from copy
@@ -198,17 +171,17 @@ namespace esnort
       DynamicTens(oth.getDynamicSizes())
     {
       LOGGER_LV3_NOTIFY("Using copy constructor of DynamicTens");
+      allocate(oth.getDynamicSizes());
       (*this)=oth;
     }
     
     // /Move constructor
     DynamicTens(DynamicTens&& oth) :
-      DynamicTens(oth.storage,nElements,dynamicSizes)
+      dynamicSizes(oth.dynamicSizes),storage(oth.storage),nElements(oth.nElements)
     {
       LOGGER_LV3_NOTIFY("Using move constructor of DynamicTens");
       
-      if constexpr(not isRef)
-	oth.allocated=false;
+      oth.allocated=false;
     }
     
     /// Destructor
@@ -216,13 +189,10 @@ namespace esnort
     ~DynamicTens()
     {
 #ifndef __CUDA_ARCH__
-      if constexpr(not isRef)
-	{
-	  if(allocated)
-	    memory::manager<ES>.release(storage);
-	  allocated=false;
-	  nElements=0;
-	}
+      if(allocated)
+	memory::manager<ES>.release(storage);
+      allocated=false;
+      nElements=0;
 #endif
     }
     
@@ -265,8 +235,10 @@ namespace esnort
     decltype(auto) t=DE_CRTPFY(ATTRIB T,this);				\
 									\
     /*LOGGER<<"Building reference to "<<execSpaceName<ES><<" tensor-like, pointer: "<<t.storage;*/ \
+    if(not t.allocated)							\
+      CRASH<<"Cannot take the reference of a non allocated tensor";	\
 									\
-    return DynamicTens<CompsList<C...>,ATTRIB F,ES,true>(t.storage,t.nElements,t.getDynamicSizes()); \
+    return TensRef<CompsList<C...>,ATTRIB F,ES>(t.storage,t.nElements,t.getDynamicSizes()); \
     }
   
   PROVIDE_GET_REF(const);
@@ -295,7 +267,7 @@ namespace esnort
 									\
     using SimdFund=typename Traits::SimdFund;				\
 									\
-    return DynamicTens<typename Traits::Comps,ATTRIB SimdFund,ES,true>	\
+    return TensRef<typename Traits::Comps,ATTRIB SimdFund,ES>		\
       ((ATTRIB SimdFund*)t.storage,					\
        t.nElements/Traits::nNonSimdifiedElements,			\
        t.getDynamicSizes());						\

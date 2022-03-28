@@ -22,7 +22,7 @@ namespace esnort
 	std::remove_const_t<std::decay_t<ACTUAL_TYPE>>;
       
       static constexpr bool storeByRef=
-	std::is_lvalue_reference_v<ACTUAL_TYPE>;
+	std::is_lvalue_reference_v<ACTUAL_TYPE> and E::storeByRef;
       
       static constexpr bool needsToBeMoveConstructed=
 	std::is_rvalue_reference_v<ACTUAL_TYPE>;
