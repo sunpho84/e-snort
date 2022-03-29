@@ -33,6 +33,7 @@ namespace esnort
 	    typename...C,
 	    typename _Fund>
   struct THIS :
+    DynamicCompsProvider<CompsList<C...>>,
     BASE
   {
     /// Import the base expression
@@ -88,7 +89,7 @@ namespace esnort
     
     /// Components on which simdifying
     using SimdifyingComp=
-      typename TranspExpr::SimdifyingComp;
+      Transp<typename TranspExpr::SimdifyingComp>;
     
     /// Expression that has been transposed
     ExprRefOrVal<_Te> transpExpr;
@@ -106,7 +107,7 @@ namespace esnort
     PROVIDE_SIMDIFY(/* non const */);
     
 #undef PROVIDE_SIMDIFY
-
+    
 #define PROVIDE_GET_REF(ATTRIB)					\
     /*! Returns a reference */					\
     INLINE_FUNCTION						\

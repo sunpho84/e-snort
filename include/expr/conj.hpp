@@ -13,7 +13,7 @@
 
 namespace esnort
 {
-  DEFINE_UNTRANSPOSABLE_COMP(ComplId,int,2);
+  DEFINE_UNTRANSPOSABLE_COMP(ComplId,int,2,reIm);
   
   /// Conjugator
   ///
@@ -35,6 +35,7 @@ namespace esnort
 	    typename...C,
 	    typename _Fund>
   struct THIS :
+    DynamicCompsProvider<CompsList<C...>>,
     BASE
   {
     /// Import the base expression
@@ -130,7 +131,7 @@ namespace esnort
     Fund eval(const TD&...td) const
     {
       /// Compute the real or imaginary component
-      const ComplId reIm=
+      const ComplId reIm= //don't take as ref, it messes up
 	std::get<ComplId>(std::make_tuple(td...));
       
       /// Nested result

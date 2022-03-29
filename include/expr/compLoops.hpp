@@ -9,9 +9,37 @@
 
 #include <expr/comps.hpp>
 #include <metaprogramming/inline.hpp>
+#include <metaprogramming/unrolledFor.hpp>
 
 namespace esnort
 {
+  /// Loop over a component
+  template <typename T,
+	    typename F,
+	    ENABLE_THIS_TEMPLATE_IF(T::sizeAtCompileTime)>
+  INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
+  void compLoop(F f)
+  {
+    constexpr int n=T::sizeAtCompileTime;
+    
+    if constexpr(n<10)
+      unrolledFor<0,n>(f);
+    else
+      for(typename T::Index i=0;i<n;i++)
+	f(i);
+  }
+  
+  /// Loop over a component
+  template <typename T,
+	    typename F,
+	    ENABLE_THIS_TEMPLATE_IF(not T::sizeAtCompileTime)>
+  INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
+  void compLoop(F f,typename T::Index n)
+  {
+    for(typename T::Index i=0;i<n;i++)
+      f(i);
+  }
+  
   namespace internal
   {
     template <typename Comps>
@@ -84,8 +112,7 @@ namespace esnort
 		    FirstComp::sizeAtCompileTime;
 	
 	if constexpr(sizeAtCompileTime)
-	  for(FirstComp comp=0;comp<sizeAtCompileTime;comp++)
-	    task(comp);
+	  compLoop<Comp>(task);
 	else
 	  for(FirstComp comp=0;comp<std::get<FirstComp>(dynamicSizes);comp++)
 	    task(comp);

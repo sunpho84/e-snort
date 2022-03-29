@@ -36,6 +36,7 @@ namespace esnort
     PROVIDE_HAS_MEMBER(eval);
     PROVIDE_HAS_MEMBER(storeByRef);
     PROVIDE_HAS_MEMBER(canSimdify);
+    PROVIDE_HAS_MEMBER(hasDynamicComps);
     PROVIDE_HAS_MEMBER(canAssignAtCompileTime);
   }
   
@@ -71,6 +72,7 @@ namespace esnort
 		    hasMember_getRef<T> and
 		    hasMember_canSimdify<T> and
 		    hasMember_canAssignAtCompileTime<T> and
+		    hasMember_hasDynamicComps<T> and
 		    hasMember_storeByRef<T>,
 		    "Incomplete expression");
    }
@@ -109,7 +111,7 @@ namespace esnort
       const auto& rhs=DE_CRTPFY(const Rhs,&u);
       
 #if ENABLE_SIMD
-      if constexpr(T::canSimdify and Rhs::canSimdify and std::is_same_v<LastComp<typename T::Comps>,LastComp<typename Rhs::Comps>>)
+      if constexpr(T::canSimdify and Rhs::canSimdify and std::is_same_v<typename T::SimdifyingComp,typename Rhs::SimdifyingComp>)
 	simdAssign(lhs,rhs);
       else
 #endif

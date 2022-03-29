@@ -23,9 +23,9 @@ using namespace esnort;
 
 /////////////////////////////////////////////////////////////////
 
-DEFINE_TRANSPOSABLE_COMP(Spin,int,4);
-DEFINE_TRANSPOSABLE_COMP(Span,int,4);
-DEFINE_UNTRANSPOSABLE_COMP(SpaceTime,int64_t,0);
+DEFINE_TRANSPOSABLE_COMP(Spin,int,4,spin);
+DEFINE_TRANSPOSABLE_COMP(Span,int,4,span);
+DEFINE_UNTRANSPOSABLE_COMP(SpaceTime,int64_t,0,spaceTime);
 
 int j;
 
@@ -52,6 +52,38 @@ void hook()
 
 // InvalidExpr e;
 
+using Comps=CompsList<ComplId,SpinRow,SpinCln>;
+StackTens<Comps,double> a;
+StackTens<CompsList<ComplId,SpinRow,SpinCln>,double> b;
+
+void testDag()
+{
+  
+  loopOnAllComps<Comps>({},[](const ComplId& reIm,const SpinRow& spinRow,const SpinCln& spinCln)
+  {
+    a(reIm,spinRow,spinCln)=spinCln+4*(spinRow+4*reIm);
+    b(reIm,spinRow,spinCln)=0.0;
+  });
+  
+  // static constexpr auto aa=std::bool_constant<isTransposableComp<SpinCln>>{};
+  // auto ccc=Transp<SpinCln>{};
+  // auto tb=transp(b);
+  // auto tbc=decltype(tb)::SimdifyingComp{};
+  // auto r=tb.simdify();
+  REORDER_BARRIER();
+  ASM_BOOKMARK_BEGIN("bEqDagA");
+  b=dag(a);
+  ASM_BOOKMARK_END("bEqDagA");
+  REORDER_BARRIER();
+  
+  loopOnAllComps<Comps>({},[](const ComplId& reIm,const SpinRow& spinRow,const SpinCln& spinCln)
+  {
+    //LOGGER<<b(reIm,spinRow,spinCln)<<" "<<(reIm?-1:+1)*(reIm+2*(spinCln+4*spinRow));
+    LOGGER<<b(reIm,spinRow,spinCln)<<" "<<(reIm?-1:+1)*(spinRow+4*(spinCln+4*reIm));
+  });
+  
+}
+
 int in_main(int narg,char** arg)
 {
   // ASM_BOOKMARK_BEGIN("TEST_INDEX");
@@ -61,6 +93,10 @@ int in_main(int narg,char** arg)
   // LOGGER<<j;
   
   // LOGGER<<"Begin assign";
+  testDag();
+  
+  return 0;
+  
   
   StackTens<OfComps<SpinRow>,double> hostTens;
   for(SpinRow st=0;st<4;st++)
@@ -88,7 +124,6 @@ int in_main(int narg,char** arg)
   auto rrr=s(SpanRow{0}).getRef();
   
   using T=internal::_ExprRefOrVal<decltype(s.getRef())>;
-
   
   static_assert(not std::is_lvalue_reference_v<decltype(rrr)::BoundExpr>,"");
   //auto ee=(decltype(rrr)::BoundExpr)(SpaceTime{0});
@@ -121,6 +156,7 @@ int in_main(int narg,char** arg)
   {
     DynamicTens<CompsList<SpaceTime,ComplId,SpinRow>,double,ExecSpace::HOST> a;
     auto b=dag(a);
+    (void)b;
   }
   
   //   {
