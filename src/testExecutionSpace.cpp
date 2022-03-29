@@ -75,16 +75,39 @@ int in_main(int narg,char** arg)
   
   DynamicTens<OfComps<SpinRow,SpaceTime,SpanRow>,double,ExecSpace::DEVICE> s(SpaceTime{4});
   DynamicTens<OfComps<SpanRow,SpaceTime,SpinRow>,double,ExecSpace::DEVICE> t(SpaceTime{4});
-
+  
   hook();
   
   auto rrr=s(SpanRow{0}).getRef();
   
-  
-  t(SpanRow{0})=s(SpanRow{0});
+  using T=internal::_ExprRefOrVal<decltype(s.getRef())>;
 
   
-//   {
+  static_assert(not std::is_lvalue_reference_v<decltype(rrr)::BoundExpr>,"");
+  //auto ee=(decltype(rrr)::BoundExpr)(SpaceTime{0});
+  // ExprRefOrVal<typename _E>
+  
+  t(SpanRow{0})=s(SpanRow{0});
+  
+  /////////////////////////////////////////////////////////////////
+  
+  {
+    DynamicTens<CompsList<SpaceTime,ComplId,SpinRow>,double,ExecSpace::HOST> a;
+    auto b=conj(a);
+    auto c=conj(b);
+  }
+  
+  {
+    DynamicTens<CompsList<SpaceTime,SpinRow>,double,ExecSpace::HOST> a;
+    auto b=conj(a);
+  }
+  
+  {
+    DynamicTens<CompsList<SpaceTime,SpinRow>,double,ExecSpace::HOST> a;
+    auto b=a.simdify();
+  }
+  
+  //   {
 //     DynamicTens<OfComps<SpinRow,SpaceTime>,double,ExecSpace::HOST> dt(SpaceTime{3});
 //     for(SpinRow s=0;s<4;s++)
 //       for(SpaceTime st=0;st<3;st++)
