@@ -16,6 +16,7 @@
 #include <expr/comp.hpp>
 #include <expr/compRwCl.hpp>
 #include <expr/conj.hpp>
+#include <expr/dagger.hpp>
 #include <expr/deviceAssign.hpp>
 #include <expr/directAssign.hpp>
 #include <expr/dynamicTens.hpp>

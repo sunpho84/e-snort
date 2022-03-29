@@ -120,7 +120,7 @@ int in_main(int narg,char** arg)
   
   {
     DynamicTens<CompsList<SpaceTime,ComplId,SpinRow>,double,ExecSpace::HOST> a;
-    auto b=transp(a);
+    auto b=dag(a);
   }
   
   //   {

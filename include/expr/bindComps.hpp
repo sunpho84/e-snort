@@ -12,9 +12,10 @@
 #include <expr/executionSpace.hpp>
 #include <expr/exprDeclaration.hpp>
 #include <expr/exprRefOrVal.hpp>
+#include <metaprogramming/templateEnabler.hpp>
 #include <metaprogramming/universalReference.hpp>
 #include <tuples/tupleFilter.hpp>
-#include "tuples/tupleHasType.hpp"
+#include <tuples/tupleHasType.hpp>
 
 namespace esnort
 {
@@ -165,7 +166,8 @@ namespace esnort
   
   /// Binds a subset of components
   template <typename _E,
-	    typename...BCs>
+	    typename...BCs,
+	    ENABLE_THIS_TEMPLATE_IF(isExpr<_E>)>
   HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
   auto bindComps(_E&& e,
 		 const CompsList<BCs...>& bc)

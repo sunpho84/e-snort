@@ -180,7 +180,8 @@ namespace esnort
   constexpr bool isConjugator<Conjugator<_Ce,CompsList<C...>,_Fund>> =true;
   
   /// Conjugate an expression
-  template <typename _E>
+  template <typename _E,
+	    ENABLE_THIS_TEMPLATE_IF(isExpr<_E>)>
   HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
   decltype(auto) conj(_E&& e)
   {

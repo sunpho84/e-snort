@@ -40,7 +40,8 @@ namespace esnort
   }
   
   template <typename T>
-  struct Expr
+  struct Expr :
+    DetectableAsExpr
   {
     // /// Define the move-assignment operator
     // INLINE_FUNCTION

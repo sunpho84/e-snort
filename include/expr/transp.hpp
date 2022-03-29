@@ -153,8 +153,9 @@ namespace esnort
   inline
   constexpr bool isTransposer<Transposer<_Te,CompsList<C...>,_Fund>> =true;
   
-  /// Transpate an expression
-  template <typename _E>
+  /// Transpose an expression
+  template <typename _E,
+	    ENABLE_THIS_TEMPLATE_IF(isExpr<_E>)>
   HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
   decltype(auto) transp(_E&& e)
   {
