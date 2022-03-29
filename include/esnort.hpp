@@ -22,6 +22,7 @@
 #include <expr/indexComputer.hpp>
 #include <expr/stackTens.hpp>
 #include <expr/threadAssign.hpp>
+#include <expr/transp.hpp>
 
 #include <ios/file.hpp>
 #include <ios/logger.hpp>

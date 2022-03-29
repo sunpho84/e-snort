@@ -11,6 +11,7 @@
 
 #include <expr/comp.hpp>
 #include <resources/SIMD.hpp>
+#include <tuples/tupleHasType.hpp>
 #include <tuples/tupleReplaceType.hpp>
 
 namespace esnort
@@ -113,6 +114,64 @@ namespace esnort
     using Comps=
       TupleReplaceType<CompsList<Tp...>,LastComp,NonSimdifiedComp<typename LastComp::Index,nNonSimdifiedElements>>;
   };
+  
+  /////////////////////////////////////////////////////////////////
+  
+  /// Determine whether the component list is transposible
+  ///
+  /// Default case
+  template <typename Tp>
+  constexpr bool compsAreTransposable=false;
+  
+  /// Determine whether the component list is transposible
+  template <typename...C>
+  inline
+  constexpr bool compsAreTransposable<CompsList<C...>> =
+    (C::isTransposable||...);
+  
+  /////////////////////////////////////////////////////////////////
+  
+  /////////////////////////////////////////////////////////////////
+  
+  namespace impl
+  {
+    /// Transposes a list of components, considering the components as matrix
+    ///
+    /// Actual implementation, forward declaration
+    template <typename TC>
+    struct _TranspMatrixTensorComps;
+    
+    /// Transposes a list of components, considering the components as matrix
+    ///
+    /// Actual implementation
+    template <typename...TC>
+    struct _TranspMatrixTensorComps<CompsList<TC...>>
+    {
+      /// Returns a given components, or its transposed if it is missing
+      template <typename C,
+		typename TranspC=typename C::Transp>
+      using ConditionallyTranspComp=
+	std::conditional_t<tupleHasType<CompsList<TC...>,TranspC,1>,C,TranspC>;
+      
+      /// Resulting type
+      using type=
+	CompsList<ConditionallyTranspComp<TC>...>;
+    };
+  }
+  
+  /// Transposes a list of components, considering the components as matrix
+  ///
+  /// - If a component is not of ROW/CLN case, it is left unchanged
+  /// - If a ROW/CLN component is matched with a CLN/ROW one, it is left unchanged
+  /// - If a ROW/CLN component is not matched, it is transposed
+  ///
+  /// \example
+  ///
+  /// using T=TensorComps<Complex,ColorRow,ColorCln,SpinRow>
+  /// using U=TransposeTensorcomps<T>; //TensorComps<Complex,ColorRow,ColorCln,SpinCln>
+  template <typename TC>
+  using TranspMatrixTensorComps=
+    typename impl::_TranspMatrixTensorComps<TC>::type;
 }
 
 #endif

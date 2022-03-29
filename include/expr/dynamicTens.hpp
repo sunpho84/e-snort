@@ -255,29 +255,24 @@ namespace esnort
 	    typename F,							\
 	    ExecSpace ES>						\
   INLINE_FUNCTION							\
-  decltype(auto) BaseTens<T,CompsList<C...>,F,ES>::simdify() ATTRIB	\
+  auto BaseTens<T,CompsList<C...>,F,ES>::simdify() ATTRIB		\
 									\
   {									\
     decltype(auto) t=DE_CRTPFY(ATTRIB T,this);				\
 									\
-    if constexpr(canSimdify)						\
-      {									\
-	/*LOGGER<<"Building simdified view "<<execSpaceName<ES><<" tensor-like, pointer: "<<t.storage;*/ \
-									\
+    /*LOGGER<<"Building simdified view "<<execSpaceName<ES><<" tensor-like, pointer: "<<t.storage;*/ \
     									\
-	using Traits=CompsListSimdifiableTraits<CompsList<C...>,F>;	\
+    									\
+    using Traits=CompsListSimdifiableTraits<CompsList<C...>,F>;		\
 									\
-	using SimdFund=typename Traits::SimdFund;			\
+    using SimdFund=typename Traits::SimdFund;				\
 									\
-	return TensRef<typename Traits::Comps,ATTRIB SimdFund,ES>	\
-	  ((ATTRIB SimdFund*)t.storage,					\
-	   t.nElements/Traits::nNonSimdifiedElements,			\
-	   t.getDynamicSizes());					\
-      }									\
-    else								\
-      return t;								\
-    }
-
+    return TensRef<typename Traits::Comps,ATTRIB SimdFund,ES>		\
+      ((ATTRIB SimdFund*)t.storage,					\
+       t.nElements/Traits::nNonSimdifiedElements,			\
+       t.getDynamicSizes());						\
+  }
+  
   PROVIDE_SIMDIFY(const);
   
   PROVIDE_SIMDIFY(/* non const */);

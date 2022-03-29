@@ -33,7 +33,6 @@ namespace esnort
     PROVIDE_HAS_MEMBER(canAssign);
     PROVIDE_HAS_MEMBER(execSpace);
     PROVIDE_HAS_MEMBER(getRef);
-    PROVIDE_HAS_MEMBER(simdify);
     PROVIDE_HAS_MEMBER(eval);
     PROVIDE_HAS_MEMBER(storeByRef);
     PROVIDE_HAS_MEMBER(canSimdify);
@@ -70,7 +69,6 @@ namespace esnort
 		    hasMember_eval<T> and
 		    hasMember_getRef<T> and
 		    hasMember_canSimdify<T> and
-		    hasMember_simdify<T> and
 		    hasMember_canAssignAtCompileTime<T> and
 		    hasMember_storeByRef<T>,
 		    "Incomplete expression");

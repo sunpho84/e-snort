@@ -113,10 +113,10 @@ namespace esnort
     auto getRef();
     
     /// Returns a const simdified view
-    decltype(auto) simdify() const;
+    auto simdify() const;
     
     /// Returns a simdified view
-    decltype(auto) simdify();
+    auto simdify();
     
     /// Gets a copy on a specific execution space
     template <ExecSpace OES>

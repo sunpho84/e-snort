@@ -52,7 +52,17 @@ namespace esnort
 							\
   using NAME ## Row=NAME<RwCl::ROW,0>;			\
 							\
-  using NAME ## Cln=NAME<RwCl::CLN,0>
+  using NAME ## Cln=NAME<RwCl::CLN,0>;			\
+							\
+  /*! Transposed of a transposable component */		\
+  template <RwCl RC,					\
+	    int Which>					\
+  INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB		\
+  NAME<transpRwCl<RC>,Which>				\
+  transp(const NAME<RC,Which>& c)			\
+  {							\
+    return c();						\
+  }
   
 #define DEFINE_UNTRANSPOSABLE_COMP(NAME,TYPE,SIZE)	\
   struct NAME :						\
@@ -68,6 +78,13 @@ namespace esnort
     using Base::Base;					\
     							\
     static constexpr int sizeAtCompileTime=SIZE;	\
+  };							\
+							\
+  /*! Transposed of a non-transposable component */	\
+  INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB		\
+  const NAME& transp(const NAME& c)			\
+  {							\
+    return c;						\
   }
 }
 

@@ -54,24 +54,24 @@ namespace esnort
     using Fund=_Fund;
     
     /// Type of the conjugated expression
-    using ConjugExpr=
+    using ConjExpr=
       std::decay_t<_Ce>;
     
     /// Executes where allocated
     static constexpr ExecSpace execSpace=
-      ConjugExpr::execSpace;
+      ConjExpr::execSpace;
     
     /// Returns the dynamic sizes
     decltype(auto) getDynamicSizes() const
     {
-      return conjugExpr.getDynamicSizes();
+      return conjExpr.getDynamicSizes();
     }
     
     /// Returns whether can assign
     INLINE_FUNCTION
     bool canAssign()
     {
-      return conjugExpr.canAssign();
+      return conjExpr.canAssign();
     }
     
     /// This is a lightweight object
@@ -82,26 +82,26 @@ namespace esnort
     
     /// Return whether can be assigned at compile time
     static constexpr bool canAssignAtCompileTime=
-      ConjugExpr::canAssignAtCompileTime;
+      ConjExpr::canAssignAtCompileTime;
     
     /// States whether the tensor can be simdified
     static constexpr bool canSimdify=
-      ConjugExpr::canSimdify and
-      not std::is_same_v<ComplId,typename ConjugExpr::SimdifyingComp>;
+      ConjExpr::canSimdify and
+      not std::is_same_v<ComplId,typename ConjExpr::SimdifyingComp>;
     
     /// Components on which simdifying
     using SimdifyingComp=
-      std::conditional_t<canSimdify,typename ConjugExpr::SimdifyingComp,void>;
+      std::conditional_t<canSimdify,typename ConjExpr::SimdifyingComp,void>;
     
     /// Expression that has been conjugated
-    ExprRefOrVal<_Ce> conjugExpr;
+    ExprRefOrVal<_Ce> conjExpr;
     
 #define PROVIDE_SIMDIFY(ATTRIB)					\
     /*! Returns a ATTRIB simdified view */			\
     INLINE_FUNCTION						\
     auto simdify() ATTRIB					\
     {								\
-      return conj(conjugExpr.simdify());			\
+      return conj(conjExpr.simdify());			\
     }
     
     PROVIDE_SIMDIFY(const);
@@ -115,7 +115,7 @@ namespace esnort
     INLINE_FUNCTION						\
     auto getRef() ATTRIB					\
     {								\
-      return conj(conjugExpr.getRef());				\
+      return conj(conjExpr.getRef());				\
     }
     
     PROVIDE_GET_REF(const);
@@ -135,7 +135,7 @@ namespace esnort
       
       /// Nested result
       decltype(auto) nestedRes=
-	this->conjugExpr(td...);
+	this->conjExpr(td...);
       
       if(reIm==0)
 	return nestedRes;
@@ -146,10 +146,23 @@ namespace esnort
     /// Construct
     template <typename T>
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-    Conjugator(T&& conjugExpr) :
-      conjugExpr(std::forward<T>(conjugExpr))
+    Conjugator(T&& conjExpr,
+	       UNIVERSAL_CONSTRUCTOR_IDENTIFIER) :
+      conjExpr(std::forward<T>(conjExpr))
     {
     }
+    
+    // /// Move constructor
+    // HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
+    // Conjugator(Conjugator&& conjExpr) =default;
+    
+    // /// Const copy constructor
+    // HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
+    // Conjugator(const Conjugator& conjExpr) =default;
+    
+    // /// Copy constructor
+    // HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
+    // Conjugator(Conjugator& conjExpr) =default;
   };
   
   /// Recognizes a conjugator
@@ -176,7 +189,7 @@ namespace esnort
       std::decay_t<_E>;
     
     if constexpr(isConjugator<E>)
-      return e.conjugExpr;
+      return e.conjExpr;
     else
       {
 	/// Components
@@ -192,7 +205,7 @@ namespace esnort
 	      typename E::Fund;
 	    
 	    return
-	      Conjugator<_E,Comps,Fund>(std::forward<_E>(e));
+	      Conjugator<_E,Comps,Fund>(std::forward<_E>(e),UNIVERSAL_CONSTRUCTOR_CALL);
 	  }
       }
   }

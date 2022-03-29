@@ -58,6 +58,12 @@
 
 namespace esnort
 {
+  /// Helper struct used to identify explicitly the universal constructor, so to avoid overloading copy and move constructors
+  struct UniversalConstructorDeprioritize;
+  
+#define UNIVERSAL_CONSTRUCTOR_IDENTIFIER UniversalConstructorDeprioritize*
+  
+#define UNIVERSAL_CONSTRUCTOR_CALL (UniversalConstructorDeprioritize*)nullptr
 }
 
 #endif

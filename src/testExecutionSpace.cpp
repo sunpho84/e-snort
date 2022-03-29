@@ -99,19 +99,28 @@ int in_main(int narg,char** arg)
   /////////////////////////////////////////////////////////////////
   
   {
-    DynamicTens<CompsList<SpaceTime,ComplId,SpinRow>,double,ExecSpace::HOST> a;
+    DynamicTens<CompsList<SpaceTime,ComplId,SpinRow>,double,ExecSpace::HOST> a(SpaceTime{10});
     auto b=conj(a);
     auto c=conj(b);
   }
   
   {
-    DynamicTens<CompsList<SpaceTime,SpinRow>,double,ExecSpace::HOST> a;
-    auto b=conj(a);
+    DynamicTens<CompsList<ComplId,SpaceTime,SpinRow>,double,ExecSpace::HOST> a(SpaceTime{10});
+    StackTens<CompsList<SpinRow>,double> b;
+    using t=esnort::ExprRefOrVal<esnort::DynamicTens<std::tuple<esnort::ComplId, SpaceTime, Spin<esnort::RwCl::ROW, 0> >, double, esnort::ExecSpace::HOST>&>;
+    
+
+    auto ca=conj(a);
+    real(ca);
+    //real(conj(a));
+    bindComps(conj(a),std::make_tuple(ComplId{0}));
+    //auto e=real(conj(a));
+    //b=real(conj(a))(SpaceTime{2});
   }
   
   {
-    DynamicTens<CompsList<SpaceTime,SpinRow>,double,ExecSpace::HOST> a;
-    auto b=a.simdify();
+    DynamicTens<CompsList<SpaceTime,ComplId,SpinRow>,double,ExecSpace::HOST> a;
+    auto b=transp(a);
   }
   
   //   {
