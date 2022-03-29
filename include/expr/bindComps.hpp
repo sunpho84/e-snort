@@ -20,7 +20,7 @@ namespace esnort
 {
   /// Component binder
   ///
-  /// Forward declaration to capture the index sequence
+  /// Forward declaration to capture the components
   template <typename _BC,
 	    typename _Be,
 	    typename _Comps,

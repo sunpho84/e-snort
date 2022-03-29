@@ -7,11 +7,11 @@
 
 /// \file expr/tensRef.hpp
 
-#include "expr/baseTens.hpp"
-#include "expr/comps.hpp"
-#include "expr/executionSpace.hpp"
-#include "expr/expr.hpp"
-#include "expr/indexComputer.hpp"
+#include <expr/baseTens.hpp>
+#include <expr/comps.hpp>
+#include <expr/executionSpace.hpp>
+#include <expr/expr.hpp>
+#include <expr/indexComputer.hpp>
 
 namespace esnort
 {

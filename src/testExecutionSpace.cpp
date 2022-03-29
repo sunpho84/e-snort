@@ -45,6 +45,13 @@ void hook()
 {
 }
 
+// struct InvalidExpr :
+//   public Expr<InvalidExpr>
+// {
+// };
+
+// InvalidExpr e;
+
 int in_main(int narg,char** arg)
 {
   // ASM_BOOKMARK_BEGIN("TEST_INDEX");

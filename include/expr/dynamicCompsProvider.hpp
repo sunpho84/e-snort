@@ -9,6 +9,7 @@
 
 #include <expr/comp.hpp>
 #include <expr/comps.hpp>
+#include <metaprogramming/crtp.hpp>
 #include <tuples/tupleDiscriminate.hpp>
 #include <tuples/tupleSubset.hpp>
 
