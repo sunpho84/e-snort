@@ -112,7 +112,7 @@ namespace esnort
   {
     template <typename T,
 	      ENABLE_THIS_TEMPLATE_IF(isTransposableComp<T>)>
-    typename T::Transp* _transp();
+    typename T::Transp _transp();
     
     template <typename T,
 	      ENABLE_THIS_TEMPLATE_IF(not isTransposableComp<T>)>

@@ -36,6 +36,10 @@
 #include <resources/SIMD.hpp>
 
 #include <tuples/tupleDiscriminate.hpp>
+#include <tuples/tupleSubset.hpp>
+#include <tuples/tupleCat.hpp>
+#include <tuples/uniqueTuple.hpp>
+#include <tuples/uniqueTupleFromTuple.hpp>
 
 /// Global namespace
 namespace esnort
