@@ -130,7 +130,7 @@ namespace esnort
     Fund eval(const TD&...td) const
     {
       /// Compute the real or imaginary component
-      const ComplId& reIm=
+      const ComplId reIm=
 	std::get<ComplId>(std::make_tuple(td...));
       
       /// Nested result
@@ -140,7 +140,7 @@ namespace esnort
       if(reIm==0)
 	return nestedRes;
       else
-	return -nestedRes;
+       	return -nestedRes;
     }
     
     /// Construct
