@@ -82,6 +82,7 @@ void testDag()
     LOGGER<<b(reIm,spinRow,spinCln)<<" "<<(reIm?-1:+1)*(spinRow+4*(spinCln+4*reIm));
   });
   
+  auto c=(a*b).fillDynamicTens();
 }
 
 int in_main(int narg,char** arg)

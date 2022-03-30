@@ -18,6 +18,8 @@
 
 namespace esnort
 {
+  PROVIDE_DETECTABLE_AS(BaseTens);
+  
   /// Base Tensor
   ///
   /// Forward declaration
@@ -34,6 +36,7 @@ namespace esnort
 	    ExecSpace ES>
   struct BaseTens<T,CompsList<C...>,F,ES> :
     DynamicCompsProvider<CompsList<C...>>,
+    DetectableAsBaseTens,
     Expr<T>
   {
     // /// Assign from another dynamic tensor

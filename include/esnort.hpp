@@ -21,6 +21,7 @@
 #include <expr/directAssign.hpp>
 #include <expr/dynamicTens.hpp>
 #include <expr/indexComputer.hpp>
+#include <expr/prod.hpp>
 #include <expr/stackTens.hpp>
 #include <expr/threadAssign.hpp>
 #include <expr/transp.hpp>
