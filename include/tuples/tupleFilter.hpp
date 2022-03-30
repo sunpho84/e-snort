@@ -154,12 +154,12 @@ namespace esnort
 			    std::tuple<T1,Ts...>,
 			    F>
     {
-      static_assert(sizeof...(Ts),"Components to be filtered not available among the tuple types");
-    
-    /// Add the current type in the scanned list and moves on
-    using type=
-      typename _TupleFilterType<std::tuple<Ss...,T1>,std::tuple<Ts...>,F>::type;
-  };
+      static_assert(sizeof...(Ts)>0,"Components to be filtered not available among the tuple types");
+      
+      /// Add the current type in the scanned list and moves on
+      using type=
+	typename _TupleFilterType<std::tuple<Ss...,T1>,std::tuple<Ts...>,F>::type;
+    };
     
     /////////////////////////////////////////////////////////////////
     

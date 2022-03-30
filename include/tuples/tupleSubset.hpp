@@ -9,11 +9,14 @@
 
 #include <tuple>
 
+#include <metaprogramming/inline.hpp>
+
 namespace esnort
 {
   /// Get the list elements from a tuple
   template <typename...Tout,
 	    typename...Tin>
+  INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
   auto tupleGetMany(const std::tuple<Tin...>& in)
   {
     return std::make_tuple(std::get<Tout>(in)...);
@@ -22,6 +25,7 @@ namespace esnort
   /// Get the list elements from a tuple
   template <typename...Tout,
 	    typename...Tin>
+  INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
   void tupleFillWithSubset(std::tuple<Tout...>& out,
 			   const std::tuple<Tin...>& in)
   {
@@ -34,6 +38,7 @@ namespace esnort
   /// auto tupleGetSubset<std::tuple<int>>(std::make_tuple(1,10.0));
   template <typename TpOut,
 	    typename...Tin>
+  INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
   auto tupleGetSubset(const std::tuple<Tin...>& in)
   {
     TpOut out;
