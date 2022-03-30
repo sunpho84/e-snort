@@ -20,14 +20,13 @@ namespace esnort
   ///
   /// Forward declaration to capture the components
   template <typename _Ccs,
-	    typename _E1,
-	    typename _E2,
+	    typename _E,
 	    typename _Comps,
 	    typename _Fund>
   struct Producer;
   
 #define THIS					\
-  Producer<CompsList<Cc...>,_E1,_E2,CompsList<C...>,_Fund>
+  Producer<CompsList<Cc...>,std::tuple<_E...>,CompsList<C...>,_Fund>
   
 #define BASE					\
     Expr<THIS>
@@ -35,8 +34,7 @@ namespace esnort
   /// Producer
   ///
   template <typename...Cc,
-	    typename _E1,
-	    typename _E2,
+	    typename..._E,
 	    typename...C,
 	    typename _Fund>
   struct THIS :
@@ -53,6 +51,8 @@ namespace esnort
     
 #undef THIS
     
+    static_assert(sizeof...(_E)==2,"Expecting 2 factors");
+    
     /// Components
     using Comps=
       CompsList<C...>;
@@ -64,21 +64,11 @@ namespace esnort
     /// Fundamental tye
     using Fund=_Fund;
     
-    /// Type of the first factor
-    using Fact1Expr=
-      std::decay_t<_E1>;
-    
-    /// Type of the first factor
-    using Fact2Expr=
-      std::decay_t<_E2>;
-    
     /// Executes where allocated
     static constexpr ExecSpace execSpace=
-      (Fact1Expr::execSpace==ExecSpace::UNDEFINED)?
-      Fact2Expr::execSpace:
-      Fact1Expr::execSpace;
-    
-    static_assert(not (execSpace==ExecSpace::UNDEFINED),"Cannot define product in case the two execution spaces are both undefined");
+      ExecSpace::UNDEFINED;
+      
+#warning    static_assert(not (execSpace==ExecSpace::UNDEFINED),"Cannot define product in case the two execution spaces are both undefined");
 
     /// List of dynamic comps
     using DynamicComps=
@@ -118,10 +108,17 @@ namespace esnort
     using SimdifyingComp=void;
     
     /// First factor
-    ExprRefOrVal<_E1> fact1Expr;
+    std::tuple<ExprRefOrVal<_E>...> factExprs;
     
-    /// Second factor
-    ExprRefOrVal<_E2> fact2Expr;
+    template <int I>
+    INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
+    decltype(auto) factExpr() const
+    {
+      return std::get<I>(factExprs);
+    }
+    
+    template <int I>
+    using E=std::decay_t<std::tuple_element_t<I,std::tuple<_E...>>>;
     
 #define PROVIDE_SIMDIFY(ATTRIB)					\
     /*! Returns a ATTRIB simdified view */			\
@@ -142,7 +139,8 @@ namespace esnort
     INLINE_FUNCTION						\
     auto getRef() ATTRIB					\
     {								\
-      return fact1Expr.getRef()*fact2Expr.getRef();			\
+      return factExpr<0>().getRef()*				\
+	factExpr<1>().getRef();					\
     }
     
     PROVIDE_GET_REF(const);
@@ -151,21 +149,64 @@ namespace esnort
     
 #undef PROVIDE_GET_REF
     
+    template <int I,
+	      typename FC,
+	      typename...NCcs>
+    HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
+    static auto getCompsForFact(const CompsList<NCcs...>& nccs)
+    {
+      using FreeC=TupleFilterAllTypes<typename E<I>::Comps,FC>;
+      
+      return tupleGetSubset<FreeC>(nccs);
+    }
+    
     /// Evaluate
     template <typename...NCcs> // Non contracted components
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-    Fund eval(const NCcs&...nccs) const
+    Fund eval(const NCcs&..._nccs) const
     {
       /// Detect complex product
       constexpr bool isComplProd=
 	tupleHasType<Comps,ComplId>;
       
-      Fund res=0;
+      const auto nccs=std::make_tuple(_nccs...);
       
-      loopOnAllComps<ContractedComps>(dynamicSizes,[&res](const auto&...c) INLINE_ATTRIBUTE
+      const auto fc0=getCompsForFact<0,CompsList<ComplId,Transp<Cc>...>>(nccs);
+      const auto fc1=getCompsForFact<1,CompsList<ComplId,Cc...>>(nccs);
+      
+      Fund res=0.0;
+      
+      loopOnAllComps<ContractedComps>(dynamicSizes,[this,&nccs,&res,fc0,fc1,_nccs...](const auto&...c) INLINE_ATTRIBUTE
       {
-	res+=0.0;
-      },nccs...);
+
+	auto e0=[this,&fc0,&c...](const auto&...extra) INLINE_ATTRIBUTE
+	{
+	  return std::apply(factExpr<0>(),std::tuple_cat(fc0,std::make_tuple(c.transp()...,extra...)));
+	};
+	
+	auto e1=[this,&fc1,&c...](const auto&...extra) INLINE_ATTRIBUTE
+	{
+	  return std::apply(factExpr<1>(),std::tuple_cat(fc1,std::make_tuple(c...,extra...)));
+	};
+	
+	if constexpr(isComplProd)
+	  {
+	    const auto& reIm=std::get<ComplId>(nccs);
+	    
+	    if(reIm==Re)
+	      {
+		res+=e0(Re)*e1(Re);
+		res-=e0(Im)*e1(Im);
+	      }
+	    else
+	      {
+		res+=e0(Re)*e1(Im);
+		res+=e0(Im)*e1(Re);
+	      }
+	  }
+	else
+	  res+=e0()*e1();
+      });
       
       return res;
     }
@@ -179,8 +220,7 @@ namespace esnort
 	     const DynamicComps& dynamicSizes,
 	     UNIVERSAL_CONSTRUCTOR_IDENTIFIER) :
       dynamicSizes(dynamicSizes),
-      fact1Expr(std::forward<T1>(fact1Expr)),
-      fact2Expr(std::forward<T2>(fact2Expr))
+      factExprs(std::forward_as_tuple(fact1Expr,fact2Expr))
     {
     }
   };
@@ -214,8 +254,7 @@ namespace esnort
     /// Resulting type
     using Res=
       Producer<ContractedComps,
-	       decltype(e1),
-	       decltype(e2),
+	       std::tuple<decltype(e1),decltype(e2)>,
 	       VisibleComps,
 	       Fund>;
     
