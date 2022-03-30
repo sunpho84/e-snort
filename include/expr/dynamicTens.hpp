@@ -217,9 +217,12 @@ namespace esnort
   };
   
   template <typename T>
+  INLINE_FUNCTION
   auto Expr<T>::fillDynamicTens() const
   {
     DynamicTens<typename T::Comps,typename T::Fund,T::execSpace> res(DE_CRTPFY(const T,this).getDynamicSizes());
+    
+    res=*this;
     
     return res;
   }
