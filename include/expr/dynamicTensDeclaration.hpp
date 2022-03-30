@@ -8,9 +8,12 @@
 /// \file expr/dynamicTensorDeclaration.hpp
 
 #include <expr/executionSpace.hpp>
+#include <metaprogramming/detectableAs.hpp>
 
 namespace esnort
 {
+  PROVIDE_DETECTABLE_AS(DynamicTens);
+  
   /// Tensor
   ///
   /// Forward declaration

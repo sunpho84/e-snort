@@ -15,6 +15,8 @@
 
 namespace esnort
 {
+  PROVIDE_DETECTABLE_AS(TensRef);
+  
   /// Tensor reference
   ///
   /// Forward declaration
@@ -34,7 +36,8 @@ namespace esnort
 	    typename _Fund,
 	    ExecSpace ES>
   struct THIS :
-    BASE
+    BASE,
+    DetectableAsTensRef
   {
     using This=THIS;
     using Base=BASE;

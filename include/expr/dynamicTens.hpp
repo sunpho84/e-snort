@@ -24,16 +24,17 @@ namespace esnort
 {
 #define THIS					\
   DynamicTens<CompsList<C...>,_Fund,ES>
-
+  
 #define BASE					\
   BaseTens<THIS,CompsList<C...>,_Fund,ES>
   
-  /// Tensor
+  /// Dynamic Tensor
   template <typename...C,
 	    typename _Fund,
 	    ExecSpace ES>
   struct THIS :
-    BASE
+    BASE,
+    DetectableAsDynamicTens
   {
     using This=THIS;
     using Base=BASE;
@@ -218,7 +219,7 @@ namespace esnort
   template <typename T>
   auto Expr<T>::fillDynamicTens() const
   {
-    DynamicTens<typename T::Comps,typename T::Fund,T::execSpace> res(this->crtp().getDynamicSizes());
+    DynamicTens<typename T::Comps,typename T::Fund,T::execSpace> res(DE_CRTPFY(const T,this).getDynamicSizes());
     
     return res;
   }

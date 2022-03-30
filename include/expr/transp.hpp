@@ -13,6 +13,8 @@
 
 namespace esnort
 {
+  PROVIDE_DETECTABLE_AS(Transposer);
+  
   /// Transposer
   ///
   /// Forward declaration to capture the components
@@ -23,17 +25,18 @@ namespace esnort
   
 #define THIS					\
   Transposer<_Te,CompsList<C...>,_Fund>
-
+  
 #define BASE					\
     Expr<THIS>
   
-  /// Component binder
+  /// Transposer
   ///
   template <typename _Te,
 	    typename...C,
 	    typename _Fund>
   struct THIS :
     DynamicCompsProvider<CompsList<C...>>,
+    DetectableAsTransposer,
     BASE
   {
     /// Import the base expression
@@ -139,20 +142,6 @@ namespace esnort
     {
     }
   };
-  
-  /// Recognizes a transposer
-  ///
-  /// Default case
-  template <typename T>
-  inline
-  constexpr bool isTransposer=false;
-  
-  /// Recognizes an actual transposer
-  template <typename _Te,
-	    typename...C,
-	    typename _Fund>
-  inline
-  constexpr bool isTransposer<Transposer<_Te,CompsList<C...>,_Fund>> =true;
   
   /// Transpose an expression
   template <typename _E,

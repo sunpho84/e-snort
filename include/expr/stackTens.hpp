@@ -16,6 +16,8 @@
 
 namespace esnort
 {
+  PROVIDE_DETECTABLE_AS(StackTens);
+  
   /// Tensor
   ///
   /// Forward declaration
@@ -33,7 +35,8 @@ namespace esnort
   template <typename...C,
 	    typename _Fund>
   struct THIS :
-    BASE
+    BASE,
+    DetectableAsStackTens
   {
     using This=THIS;
     

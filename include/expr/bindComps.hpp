@@ -19,6 +19,8 @@
 
 namespace esnort
 {
+  PROVIDE_DETECTABLE_AS(CompsBinder);
+  
   /// Component binder
   ///
   /// Forward declaration to capture the components
@@ -42,6 +44,7 @@ namespace esnort
 	    typename _Fund>
   struct THIS :
     DynamicCompsProvider<CompsList<C...>>,
+    DetectableAsCompsBinder,
     BASE
   {
     /// Import the base expression

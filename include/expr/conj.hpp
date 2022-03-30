@@ -15,6 +15,8 @@ namespace esnort
 {
   DEFINE_UNTRANSPOSABLE_COMP(ComplId,int,2,reIm);
   
+  PROVIDE_DETECTABLE_AS(Conjugator);
+  
   /// Conjugator
   ///
   /// Forward declaration to capture the components
@@ -36,6 +38,7 @@ namespace esnort
 	    typename _Fund>
   struct THIS :
     DynamicCompsProvider<CompsList<C...>>,
+    DetectableAsConjugator,
     BASE
   {
     /// Import the base expression
@@ -165,20 +168,6 @@ namespace esnort
     // HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
     // Conjugator(Conjugator& conjExpr) =default;
   };
-  
-  /// Recognizes a conjugator
-  ///
-  /// Default case
-  template <typename T>
-  inline
-  constexpr bool isConjugator=false;
-  
-  /// Recognizes an actual conjugator
-  template <typename _Ce,
-	    typename...C,
-	    typename _Fund>
-  inline
-  constexpr bool isConjugator<Conjugator<_Ce,CompsList<C...>,_Fund>> =true;
   
   /// Conjugate an expression
   template <typename _E,
