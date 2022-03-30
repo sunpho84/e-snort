@@ -83,6 +83,22 @@ void testDag()
   });
   
   auto c=(a*b).fillDynamicTens();
+  
+  loopOnAllComps<Comps>({},[&c](const ComplId& reIm,const SpinRow& spinRow,const SpinCln& spinCln)
+  {
+    //LOGGER<<b(reIm,spinRow,spinCln)<<" "<<(reIm?-1:+1)*(reIm+2*(spinCln+4*spinRow));
+    LOGGER<<c(reIm,spinRow,spinCln);
+  });
+  
+  {
+    StackTens<CompsList<ComplId>,double> a;
+    real(a)=0.0;
+    imag(a)=1.0;
+    
+    auto b=(a*a).fillDynamicTens();
+    
+    LOGGER<<real(b)<<" "<<imag(b);
+  }
 }
 
 int in_main(int narg,char** arg)
