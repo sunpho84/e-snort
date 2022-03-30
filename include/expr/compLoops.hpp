@@ -42,13 +42,41 @@ namespace esnort
   
   namespace internal
   {
+    /// Loops on all components
+    ///
+    /// Forward declaration
     template <typename Comps>
     struct _CompsLooper;
     
+    /// Loops on all components
+    ///
+    /// Empty list of components
+    template <>
+    struct _CompsLooper<CompsList<>>
+    {
+      /// Loop to be executed
+      template <typename DynamicComps,
+		typename Function,
+		typename...ProcessedComps>
+      constexpr INLINE_FUNCTION
+      static void loop(const DynamicComps& dynamicSizes,
+                       Function function,
+		       const ProcessedComps&...processedComps)
+      {
+	// Avoid warning on unused dynamicSizes
+	(void)dynamicSizes;
+	
+	function(processedComps...);
+      };
+    };
+    
+    /// Loops on all components
+    ///
+    /// Default case
     template <typename FirstComp,
 	      typename...RemainingComps>
     struct _CompsLooper<CompsList<FirstComp,
-			       RemainingComps...>>
+				  RemainingComps...>>
     {
       /// Loop to be executed
       template <typename DynamicComps,
