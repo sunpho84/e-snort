@@ -22,7 +22,7 @@ namespace esnort
     template <int Begin,
 	      int...Is,
 	      typename F>
-    INLINE_FUNCTION HOST_DEVICE_ATTRIB
+    INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
     void unrolledForInternal(std::integer_sequence<int,Is...>,F&& f)
     {
       /// Dummy initialized list, discarded at compile time
@@ -38,7 +38,7 @@ namespace esnort
   template <int Begin,
 	    int End,
             typename F>
-  INLINE_FUNCTION
+  INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
   void unrolledFor(F&& f)
   {
     internal::unrolledForInternal<Begin>(std::make_integer_sequence<int,End-Begin>{},std::forward<F>(f));

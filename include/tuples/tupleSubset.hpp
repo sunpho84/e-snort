@@ -29,7 +29,8 @@ namespace esnort
   void tupleFillWithSubset(std::tuple<Tout...>& out,
 			   const std::tuple<Tin...>& in)
   {
-    out=tupleGetMany<Tout...>(in);
+    [[maybe_unused]]
+    auto e={internal::call([&out,&in]() INLINE_ATTRIBUTE {std::get<Tout>(out)=std::get<Tout>(in);})...,0};
   }
   
   /// Get the list elements of the passed tuple
