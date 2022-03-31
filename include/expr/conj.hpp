@@ -154,19 +154,32 @@ namespace esnort
 	       UNIVERSAL_CONSTRUCTOR_IDENTIFIER) :
       conjExpr(std::forward<T>(conjExpr))
     {
+#if 0
+      LOGGER<<" Conj CONSTR "<<this<<" conjExpr: "<<&conjExpr<<" storage: "<<&conjExpr.storage;
+#endif
     }
     
-    // /// Move constructor
-    // HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-    // Conjugator(Conjugator&& conjExpr) =default;
+#if 0
+    /// Move constructor
+    HOST_DEVICE_ATTRIB constexpr
+    Conjugator(Conjugator&& oth) : conjExpr(oth.conjExpr)
+    {
+      LOGGER<<" Conj MOVE to "<<this<<" from "<<&oth<<" oth storage: "<<oth.conjExpr.storage<<" this storage: "<<conjExpr.storage;
+    }
     
-    // /// Const copy constructor
-    // HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-    // Conjugator(const Conjugator& conjExpr) =default;
+    /// Const copy constructor
+    HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
+    Conjugator(const Conjugator& oth) : conjExpr(oth.conjExpr)
+    {
+      LOGGER<<" Conj COPY to "<<this<<" from "<<&oth<<" oth storage: "<<oth.conjExpr.storage<<" this storage: "<<conjExpr.storage;
+    }
     
-    // /// Copy constructor
-    // HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-    // Conjugator(Conjugator& conjExpr) =default;
+    ~Conjugator()
+    {
+      LOGGER<<" Conj DESTR "<<this<<" storage: "<<conjExpr.storage;
+      LOGGER<<" is lvalue ref: "<<std::is_lvalue_reference_v<ExprRefOrVal<_Ce>><<" "<<typeid(ExprRefOrVal<_Ce>).name();
+    }
+#endif
   };
   
   /// Conjugate an expression
@@ -175,6 +188,9 @@ namespace esnort
   HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
   decltype(auto) conj(_E&& e)
   {
+#if 0
+    LOGGER<<"Creating in conj";
+#endif
     /// Base passed type
     using E=
       std::decay_t<_E>;

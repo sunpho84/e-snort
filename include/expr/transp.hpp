@@ -141,6 +141,14 @@ namespace esnort
       transpExpr(std::forward<T>(transpExpr))
     {
     }
+
+#if 0
+    /// Const copy constructor
+    HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
+    Transposer(const Transposer& oth) : transpExpr(oth.transpExpr)
+    {
+    }
+#endif
   };
   
   /// Transpose an expression
@@ -149,6 +157,10 @@ namespace esnort
   HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
   decltype(auto) transp(_E&& e)
   {
+#if 0
+    LOGGER<<"Now inside transp";
+#endif
+    
     /// Base passed type
     using E=
       std::decay_t<_E>;
@@ -162,7 +174,13 @@ namespace esnort
 	  TranspMatrixTensorComps<typename E::Comps>;
 	
 	if constexpr(not compsAreTransposable<Comps>)
-	  return e;
+	  {
+#if 0
+	    LOGGER<<"no need to transpose, returning the argument, which is "<<&e<<" "<<demangle(typeid(_E).name())<<(std::is_lvalue_reference_v<decltype(e)>?"&":(std::is_rvalue_reference_v<decltype(e)>?"&&":""));
+#endif
+	    
+	    return RemoveRValueReference<_E>(e);
+	  }
 	else
 	  {
 	    /// Type returned when evaluating the expression
