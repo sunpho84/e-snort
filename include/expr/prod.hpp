@@ -198,10 +198,11 @@ namespace esnort
     {
       const auto nccs=std::make_tuple(_nccs...);
       
-      const auto fc0=getCompsForFact<0,CompsList<ComplId,Transp<Cc>...>>(nccs);
-      const auto fc1=getCompsForFact<1,CompsList<ComplId,Cc...>>(nccs);
+      using MaybeComplId=std::conditional_t<isComplProd,CompsList<ComplId>,CompsList<>>;
+      const auto fc0=getCompsForFact<0,TupleCat<CompsList<Transp<Cc>...>,MaybeComplId>>(nccs);
+      const auto fc1=getCompsForFact<1,TupleCat<CompsList<       Cc...>,MaybeComplId>>(nccs);
       
-      Fund res=0.0;
+      auto res=zero<Fund>();
       
       loopOnAllComps<ContractedComps>(dynamicSizes,[this,&nccs,&res,fc0,fc1,_nccs...](const auto&...c) INLINE_ATTRIBUTE
       {

@@ -41,10 +41,6 @@ int j;
   using SpinRow=Spin<RwCl::ROW,0>;
   using SpanRow=Span<RwCl::ROW,0>;
 
-void hook()
-{
-}
-
 // struct InvalidExpr :
 //   public Expr<InvalidExpr>
 // {
@@ -70,39 +66,86 @@ void testDag()
   // auto tb=transp(b);
   // auto tbc=decltype(tb)::SimdifyingComp{};
   // auto r=tb.simdify();
-  REORDER_BARRIER();
-  ASM_BOOKMARK_BEGIN("bEqDagA");
-  b=dag(a);
-  ASM_BOOKMARK_END("bEqDagA");
-  REORDER_BARRIER();
+  // REORDER_BARRIER();
+  // ASM_BOOKMARK_BEGIN("bEqDagA");
+  // b=dag(a);
+  // ASM_BOOKMARK_END("bEqDagA");
+  // REORDER_BARRIER();
   
-  loopOnAllComps<Comps>({},[](const ComplId& reIm,const SpinRow& spinRow,const SpinCln& spinCln)
-  {
-    //LOGGER<<b(reIm,spinRow,spinCln)<<" "<<(reIm?-1:+1)*(reIm+2*(spinCln+4*spinRow));
-    LOGGER<<b(reIm,spinRow,spinCln)<<" "<<(reIm?-1:+1)*(spinRow+4*(spinCln+4*reIm));
-  });
+  // loopOnAllComps<Comps>({},[](const ComplId& reIm,const SpinRow& spinRow,const SpinCln& spinCln)
+  // {
+  //   //LOGGER<<b(reIm,spinRow,spinCln)<<" "<<(reIm?-1:+1)*(reIm+2*(spinCln+4*spinRow));
+  //   LOGGER<<b(reIm,spinRow,spinCln)<<" "<<(reIm?-1:+1)*(spinRow+4*(spinCln+4*reIm));
+  // });
   
-  auto c=(a*b).fillDynamicTens();
+  // auto c=(a*b).fillDynamicTens();
   
-  loopOnAllComps<Comps>({},[&c](const ComplId& reIm,const SpinRow& spinRow,const SpinCln& spinCln)
-  {
-    //LOGGER<<b(reIm,spinRow,spinCln)<<" "<<(reIm?-1:+1)*(reIm+2*(spinCln+4*spinRow));
-    LOGGER<<c(reIm,spinRow,spinCln);
-  });
+  // loopOnAllComps<Comps>({},[&c](const ComplId& reIm,const SpinRow& spinRow,const SpinCln& spinCln)
+  // {
+  //   //LOGGER<<b(reIm,spinRow,spinCln)<<" "<<(reIm?-1:+1)*(reIm+2*(spinCln+4*spinRow));
+  //   LOGGER<<c(reIm,spinRow,spinCln);
+  // });
   
   {
     StackTens<CompsList<ComplId>,double> a;
     real(a)=0.0;
     imag(a)=1.0;
+
+    // LOGGER<<"/////////////////////////////////////////////////////////////////";
     
-    auto b=(a*a).fillDynamicTens();
+    // using A=decltype(conj(a));
+    // LOGGER<<"conj(a) will return: "<<demangle(typeid(A).name())<<(std::is_lvalue_reference_v<A>?"&":(std::is_rvalue_reference_v<A>?"&&":""));
+    
+    // LOGGER<<"/////////////////////////////////////////////////////////////////";
+    
+    // auto aa=dag(a);
+    // using B=decltype(aa);
+    // LOGGER<<"aa is: "<<demangle(typeid(B).name())<<(std::is_lvalue_reference_v<B>?"&":(std::is_rvalue_reference_v<B>?"&&":""));
+    // auto b=aa.fillDynamicTens();
+    
+    // auto t=dag(a);
+    // LOGGER<<a.storage<<" "<<t.conjExpr.storage;
+    
+    auto b=(a*dag(a));
+    
+    //LOGGER<<b.factExpr<0>().storage<<" "<<b.factExpr<1>().conjExpr.storage<<" "<<a.storage;
+    
+    // .fillDynamicTens();
     
     LOGGER<<real(b)<<" "<<imag(b);
   }
 }
 
+void testProd()
+{
+  using Comps=CompsList<SpanRow,SpinRow>;
+  using Comps2=CompsList<SpinRow,SpanRow>;
+  
+  StackTens<Comps,double> a,c;
+  StackTens<Comps2,double> b;
+  
+  loopOnAllComps<Comps>({},[&a,&b](const SpanRow& spanRow,const SpinRow& spinRow)
+  {
+    a(spanRow,spinRow)=spinRow+4*spanRow;
+    b(spanRow,spinRow)=-spinRow+4*spanRow;
+  });
+
+  ASM_BOOKMARK_BEGIN("prod");
+  c=a*b;
+  ASM_BOOKMARK_END("prod");
+  
+  loopOnAllComps<Comps>({},[&c](const SpanRow& spanRow,const SpinRow& spinRow)
+  {
+    LOGGER<<" "<<c(spanRow,spinRow)<<" "<<(spinRow+4*spanRow)*(-spinRow+4*spanRow);
+  });
+}
+
 int in_main(int narg,char** arg)
 {
+  testProd();
+  
+  return 0;
+  
   // ASM_BOOKMARK_BEGIN("TEST_INDEX");
   // j=index(CompsList<SpaceTime>{5},SpinRow{3},SpaceTime{1});
   // LOGGER<<j;
@@ -136,8 +179,6 @@ int in_main(int narg,char** arg)
   DynamicTens<OfComps<SpinRow,SpaceTime,SpanRow>,double,ExecSpace::DEVICE> s(SpaceTime{4});
   DynamicTens<OfComps<SpanRow,SpaceTime,SpinRow>,double,ExecSpace::DEVICE> t(SpaceTime{4});
   
-  hook();
-  
   auto rrr=s(SpanRow{0}).getRef();
   
   using T=internal::_ExprRefOrVal<decltype(s.getRef())>;
@@ -150,31 +191,31 @@ int in_main(int narg,char** arg)
   
   /////////////////////////////////////////////////////////////////
   
-  {
-    DynamicTens<CompsList<SpaceTime,ComplId,SpinRow>,double,ExecSpace::HOST> a(SpaceTime{10});
-    auto b=conj(a);
-    auto c=conj(b);
-  }
+  // {
+  //   DynamicTens<CompsList<SpaceTime,ComplId,SpinRow>,double,ExecSpace::HOST> a(SpaceTime{10});
+  //   auto b=conj(a);
+  //   auto c=conj(b);
+  // }
   
-  {
-    DynamicTens<CompsList<ComplId,SpaceTime,SpinRow>,double,ExecSpace::HOST> a(SpaceTime{10});
-    StackTens<CompsList<SpinRow>,double> b;
-    using t=esnort::ExprRefOrVal<esnort::DynamicTens<std::tuple<esnort::ComplId, SpaceTime, Spin<esnort::RwCl::ROW, 0> >, double, esnort::ExecSpace::HOST>&>;
+  // {
+  //   DynamicTens<CompsList<ComplId,SpaceTime,SpinRow>,double,ExecSpace::HOST> a(SpaceTime{10});
+  //   StackTens<CompsList<SpinRow>,double> b;
+  //   using t=esnort::ExprRefOrVal<esnort::DynamicTens<std::tuple<esnort::ComplId, SpaceTime, Spin<esnort::RwCl::ROW, 0> >, double, esnort::ExecSpace::HOST>&>;
     
 
-    auto ca=conj(a);
-    real(ca);
-    //real(conj(a));
-    bindComps(conj(a),std::make_tuple(ComplId{0}));
-    //auto e=real(conj(a));
-    //b=real(conj(a))(SpaceTime{2});
-  }
+  //   auto ca=conj(a);
+  //   real(ca);
+  //   //real(conj(a));
+  //   bindComps(conj(a),std::make_tuple(ComplId{0}));
+  //   //auto e=real(conj(a));
+  //   //b=real(conj(a))(SpaceTime{2});
+  // }
   
-  {
-    DynamicTens<CompsList<SpaceTime,ComplId,SpinRow>,double,ExecSpace::HOST> a;
-    auto b=dag(a);
-    (void)b;
-  }
+  // {
+  //   DynamicTens<CompsList<SpaceTime,ComplId,SpinRow>,double,ExecSpace::HOST> a;
+  //   auto b=dag(a);
+  //   (void)b;
+  // }
   
   //   {
 //     DynamicTens<OfComps<SpinRow,SpaceTime>,double,ExecSpace::HOST> dt(SpaceTime{3});
