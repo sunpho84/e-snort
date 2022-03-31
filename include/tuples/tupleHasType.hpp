@@ -28,7 +28,7 @@ namespace esnort
     struct t
     {
       /// Predicate result
-      static constexpr bool value=((std::is_same<T,Tp>::value+...)==N);
+      static constexpr bool value=((std::is_same<T,Tp>::value+...+0)==N);
     };
   };
   
