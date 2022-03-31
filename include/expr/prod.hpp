@@ -69,7 +69,15 @@ namespace esnort
       ExecSpace::UNDEFINED;
       
 #warning    static_assert(not (execSpace==ExecSpace::UNDEFINED),"Cannot define product in case the two execution spaces are both undefined");
-
+    
+    template <int I>
+    using FactExpr=
+      std::decay_t<std::tuple_element_t<I,std::tuple<_E...>>>;
+    
+    /// Detect complex product
+    static constexpr bool isComplProd=
+      (tupleHasType<typename std::decay_t<_E>::Comps,ComplId> and...);
+    
     /// List of dynamic comps
     using DynamicComps=
       typename DynamicCompsProvider<Comps>::DynamicComps;
@@ -99,13 +107,27 @@ namespace esnort
     /// Return whether can be assigned at compile time
     static constexpr bool canAssignAtCompileTime=false;
     
+    // enum class _SimdifyCase{NONE,FIRST,SECOND,BOTH};
+    
+    static constexpr bool simdifyCase()
+    {
+      using S0=typename FactExpr<0>::SimdifyingComp;
+      using S1=typename FactExpr<1>::SimdifyingComp;
+      
+      constexpr bool c0=FactExpr<0>::canSimdify and not tupleHasType<ContractedComps,Transp<S0>> and not (isComplProd and std::is_same_v<ComplId,S0>);
+      constexpr bool c1=FactExpr<1>::canSimdify and not tupleHasType<ContractedComps,S1> and not (isComplProd and std::is_same_v<ComplId,S1>);
+      
+      return c0 and c1;
+    }
+    
     /// States whether the tensor can be simdified
     static constexpr bool canSimdify=
-      false;
+      simdifyCase();
+    
     /// \todo improve
     
     /// Components on which simdifying
-    using SimdifyingComp=void;
+    using SimdifyingComp=typename FactExpr<0>::SimdifyingComp;
     
     /// First factor
     std::tuple<ExprRefOrVal<_E>...> factExprs;
@@ -117,15 +139,14 @@ namespace esnort
       return std::get<I>(factExprs);
     }
     
-    template <int I>
-    using E=std::decay_t<std::tuple_element_t<I,std::tuple<_E...>>>;
-    
 #define PROVIDE_SIMDIFY(ATTRIB)					\
     /*! Returns a ATTRIB simdified view */			\
     INLINE_FUNCTION						\
     auto simdify() ATTRIB					\
     {								\
-      CRASH<<"";						\
+      return							\
+	factExpr<0>().simdify()*				\
+	factExpr<1>().simdify();				\
     }
     
     PROVIDE_SIMDIFY(const);
@@ -155,7 +176,7 @@ namespace esnort
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
     static auto getCompsForFact(const CompsList<NCcs...>& nccs)
     {
-      using FreeC=TupleFilterAllTypes<typename E<I>::Comps,FC>;
+      using FreeC=TupleFilterAllTypes<typename FactExpr<I>::Comps,FC>;
       
       return tupleGetSubset<FreeC>(nccs);
     }
@@ -165,10 +186,6 @@ namespace esnort
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
     Fund eval(const NCcs&..._nccs) const
     {
-      /// Detect complex product
-      constexpr bool isComplProd=
-	tupleHasType<Comps,ComplId>;
-      
       const auto nccs=std::make_tuple(_nccs...);
       
       const auto fc0=getCompsForFact<0,CompsList<ComplId,Transp<Cc>...>>(nccs);
@@ -220,7 +237,7 @@ namespace esnort
 	     const DynamicComps& dynamicSizes,
 	     UNIVERSAL_CONSTRUCTOR_IDENTIFIER) :
       dynamicSizes(dynamicSizes),
-      factExprs(std::forward_as_tuple(fact1Expr,fact2Expr))
+      factExprs({fact1Expr,fact2Expr})
     {
     }
   };
