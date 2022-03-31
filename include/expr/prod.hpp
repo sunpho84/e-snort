@@ -107,8 +107,6 @@ namespace esnort
     /// Return whether can be assigned at compile time
     static constexpr bool canAssignAtCompileTime=false;
     
-    // enum class _SimdifyCase{NONE,FIRST,SECOND,BOTH};
-    
     static constexpr bool simdifyCase()
     {
       using S0=typename FactExpr<0>::SimdifyingComp;
@@ -117,7 +115,7 @@ namespace esnort
       constexpr bool c0=FactExpr<0>::canSimdify and not tupleHasType<ContractedComps,Transp<S0>> and not (isComplProd and std::is_same_v<ComplId,S0>);
       constexpr bool c1=FactExpr<1>::canSimdify and not tupleHasType<ContractedComps,S1> and not (isComplProd and std::is_same_v<ComplId,S1>);
       
-      return c0 and c1;
+      return c0 and c1 and std::is_same_v<S0,S1>;
     }
     
     /// States whether the tensor can be simdified
