@@ -188,7 +188,7 @@ namespace esnort
 	  typename E::Comps;
 	
 	if constexpr(not tupleHasType<Comps,ComplId>)
-	  return e;
+	  return RemoveRValueReference<_E>(e);
 	else
 	  {
 	    /// Type returned when evaluating the expression
@@ -216,7 +216,6 @@ namespace esnort
   decltype(auto) real(_E&& e)
   {
     return
-      //e(ComplId(0));
       e(Re);
   }
   

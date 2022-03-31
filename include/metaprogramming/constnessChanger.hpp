@@ -46,6 +46,11 @@ namespace esnort
 	    typename T>
   using RefIf=
     std::conditional_t<B,T&,T>;
+  
+  /// Removes RValue reference
+  template <typename E>
+  using RemoveRValueReference=
+    RefIf<std::is_lvalue_reference<E>::value,std::remove_reference_t<E>>;
 }
 
 #endif
