@@ -11,6 +11,7 @@
 #include <expr/conj.hpp>
 #include <expr/expr.hpp>
 #include <expr/prodCompsDeducer.hpp>
+#include <metaprogramming/arithmeticTraits.hpp>
 
 namespace esnort
 {
@@ -64,15 +65,26 @@ namespace esnort
     /// Fundamental tye
     using Fund=_Fund;
     
-    /// Executes where allocated
-    static constexpr ExecSpace execSpace=
-      ExecSpace::UNDEFINED;
-      
-#warning    static_assert(not (execSpace==ExecSpace::UNDEFINED),"Cannot define product in case the two execution spaces are both undefined");
-    
     template <int I>
     using FactExpr=
       std::decay_t<std::tuple_element_t<I,std::tuple<_E...>>>;
+    
+    /// Computes the execution space
+    static constexpr ExecSpace _execSpace()
+    {
+      constexpr auto u=ExecSpace::UNDEFINED;
+      constexpr auto e0=FactExpr<0>::execSpace;
+      constexpr auto e1=FactExpr<1>::execSpace;
+      
+      static_assert(e0==e1 or ((e0==u) xor (e1==u)),"Cannot define product in case the two execution spaces are both defined and different");
+    
+      static_assert(e0!=u or e1!=u,"Cannot define product in case the two execution spaces are both undefined");
+    
+      return (e0==u)?e1:e0;
+    }
+    
+    /// Execution space
+    static constexpr ExecSpace execSpace=_execSpace();
     
     /// Detect complex product
     static constexpr bool isComplProd=
