@@ -10,6 +10,7 @@
 #include <expr/comp.hpp>
 #include <expr/comps.hpp>
 #include <expr/expr.hpp>
+#include <expr/subExprs.hpp>
 
 namespace esnort
 {
@@ -20,25 +21,26 @@ namespace esnort
   /// Conjugator
   ///
   /// Forward declaration to capture the components
-  template <typename _Ce,
+  template <typename _E,
 	    typename _Comps,
 	    typename _Fund>
   struct Conjugator;
   
 #define THIS					\
-  Conjugator<_Ce,CompsList<C...>,_Fund>
+  Conjugator<std::tuple<_E...>,CompsList<C...>,_Fund>
 
 #define BASE					\
     Expr<THIS>
   
   /// Component binder
   ///
-  template <typename _Ce,
+  template <typename..._E,
 	    typename...C,
 	    typename _Fund>
   struct THIS :
     DynamicCompsProvider<CompsList<C...>>,
     DetectableAsConjugator,
+    SubExprs<_E...>,
     BASE
   {
     /// Import the base expression
@@ -50,6 +52,10 @@ namespace esnort
     
 #undef THIS
     
+    static_assert(sizeof...(_E)==1,"Expecting 1 argument");
+    
+    IMPORT_SUBEXPR_TYPES;
+    
     /// Components
     using Comps=
       CompsList<C...>;
@@ -57,26 +63,25 @@ namespace esnort
     /// Fundamental tye
     using Fund=_Fund;
     
-    /// Type of the conjugated expression
-    using ConjExpr=
-      std::decay_t<_Ce>;
-    
     /// Executes where allocated
     static constexpr ExecSpace execSpace=
-      ConjExpr::execSpace;
+      SubExpr<0>::execSpace;
     
     /// Returns the dynamic sizes
     decltype(auto) getDynamicSizes() const
     {
-      return conjExpr.getDynamicSizes();
+      return SUBEXPR(0).getDynamicSizes();
     }
     
     /// Returns whether can assign
     INLINE_FUNCTION
     bool canAssign()
     {
-      return conjExpr.canAssign();
+      return false;
     }
+    
+    /// Return whether can be assigned at compile time
+    static constexpr bool canAssignAtCompileTime=false;
     
     /// This is a lightweight object
     static constexpr bool storeByRef=false;
@@ -84,28 +89,21 @@ namespace esnort
     /// Import assignment operator
     using Base::operator=;
     
-    /// Return whether can be assigned at compile time
-    static constexpr bool canAssignAtCompileTime=
-      ConjExpr::canAssignAtCompileTime;
-    
     /// States whether the tensor can be simdified
     static constexpr bool canSimdify=
-      ConjExpr::canSimdify and
-      not std::is_same_v<ComplId,typename ConjExpr::SimdifyingComp>;
+      SubExpr<0>::canSimdify and
+      not std::is_same_v<ComplId,typename SubExpr<0>::SimdifyingComp>;
     
     /// Components on which simdifying
     using SimdifyingComp=
-      std::conditional_t<canSimdify,typename ConjExpr::SimdifyingComp,void>;
-    
-    /// Expression that has been conjugated
-    ExprRefOrVal<_Ce> conjExpr;
+      std::conditional_t<canSimdify,typename SubExpr<0>::SimdifyingComp,void>;
     
 #define PROVIDE_SIMDIFY(ATTRIB)					\
     /*! Returns a ATTRIB simdified view */			\
     INLINE_FUNCTION						\
     auto simdify() ATTRIB					\
     {								\
-      return conj(conjExpr.simdify());			\
+      return conj(SUBEXPR(0).simdify());			\
     }
     
     PROVIDE_SIMDIFY(const);
@@ -119,7 +117,7 @@ namespace esnort
     INLINE_FUNCTION						\
     auto getRef() ATTRIB					\
     {								\
-      return conj(conjExpr.getRef());				\
+      return conj(SUBEXPR(0).getRef());				\
     }
     
     PROVIDE_GET_REF(const);
@@ -139,7 +137,7 @@ namespace esnort
       
       /// Nested result
       decltype(auto) nestedRes=
-	this->conjExpr(td...);
+	SUBEXPR(0)(td...);
       
       if(reIm==0)
 	return nestedRes;
@@ -150,36 +148,11 @@ namespace esnort
     /// Construct
     template <typename T>
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-    Conjugator(T&& conjExpr,
+    Conjugator(T&& arg,
 	       UNIVERSAL_CONSTRUCTOR_IDENTIFIER) :
-      conjExpr(std::forward<T>(conjExpr))
+      SubExprs<_E...>(std::forward<T>(arg))
     {
-#if 0
-      LOGGER<<" Conj CONSTR "<<this<<" conjExpr: "<<&conjExpr<<" storage: "<<&conjExpr.storage;
-#endif
     }
-    
-#if 0
-    /// Move constructor
-    HOST_DEVICE_ATTRIB constexpr
-    Conjugator(Conjugator&& oth) : conjExpr(oth.conjExpr)
-    {
-      LOGGER<<" Conj MOVE to "<<this<<" from "<<&oth<<" oth storage: "<<oth.conjExpr.storage<<" this storage: "<<conjExpr.storage;
-    }
-    
-    /// Const copy constructor
-    HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-    Conjugator(const Conjugator& oth) : conjExpr(oth.conjExpr)
-    {
-      LOGGER<<" Conj COPY to "<<this<<" from "<<&oth<<" oth storage: "<<oth.conjExpr.storage<<" this storage: "<<conjExpr.storage;
-    }
-    
-    ~Conjugator()
-    {
-      LOGGER<<" Conj DESTR "<<this<<" storage: "<<conjExpr.storage;
-      LOGGER<<" is lvalue ref: "<<std::is_lvalue_reference_v<ExprRefOrVal<_Ce>><<" "<<typeid(ExprRefOrVal<_Ce>).name();
-    }
-#endif
   };
   
   /// Conjugate an expression
@@ -188,15 +161,12 @@ namespace esnort
   HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
   decltype(auto) conj(_E&& e)
   {
-#if 0
-    LOGGER<<"Creating in conj";
-#endif
     /// Base passed type
     using E=
       std::decay_t<_E>;
     
     if constexpr(isConjugator<E>)
-      return e.conjExpr;
+      return e.template subExpr<0>;
     else
       {
 	/// Components
@@ -212,7 +182,7 @@ namespace esnort
 	      typename E::Fund;
 	    
 	    return
-	      Conjugator<_E,Comps,Fund>(std::forward<_E>(e),UNIVERSAL_CONSTRUCTOR_CALL);
+	      Conjugator<std::tuple<_E>,Comps,Fund>(std::forward<_E>(e),UNIVERSAL_CONSTRUCTOR_CALL);
 	  }
       }
   }

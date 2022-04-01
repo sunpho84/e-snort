@@ -11,6 +11,7 @@
 #include <expr/conj.hpp>
 #include <expr/expr.hpp>
 #include <expr/prodCompsDeducer.hpp>
+#include <expr/subExprs.hpp>
 #include <metaprogramming/arithmeticTraits.hpp>
 
 namespace esnort
@@ -41,6 +42,7 @@ namespace esnort
   struct THIS :
     DynamicCompsProvider<CompsList<C...>>,
     DetectableAsProducer,
+    SubExprs<_E...>,
     BASE
   {
     /// Import the base expression
@@ -54,6 +56,8 @@ namespace esnort
     
     static_assert(sizeof...(_E)==2,"Expecting 2 factors");
     
+    IMPORT_SUBEXPR_TYPES;
+    
     /// Components
     using Comps=
       CompsList<C...>;
@@ -65,25 +69,9 @@ namespace esnort
     /// Fundamental tye
     using Fund=_Fund;
     
-    template <int I>
-    using FactExpr=
-      std::decay_t<std::tuple_element_t<I,std::tuple<_E...>>>;
-    
-    /// Computes the execution space
-    static constexpr ExecSpace _execSpace()
-    {
-      constexpr auto u=ExecSpace::UNDEFINED;
-      constexpr auto e0=FactExpr<0>::execSpace;
-      constexpr auto e1=FactExpr<1>::execSpace;
-      
-      
-      static_assert(e0!=u or e1!=u,"Cannot define product in case the two execution spaces are both undefined");
-      
-      return (e0==u)?e1:e0;
-    }
-    
     /// Execution space
-    static constexpr ExecSpace execSpace=commonExecSpace<std::remove_reference_t<_E>::execSpace...>();
+    static constexpr ExecSpace execSpace=
+      commonExecSpace<std::remove_reference_t<_E>::execSpace...>();
     
     static_assert(execSpace!=ExecSpace::UNDEFINED,"Cannot define product in undefined exec space");
     
@@ -123,11 +111,11 @@ namespace esnort
     /// Determine if product can be simdified - to be extended
     static constexpr bool simdifyCase()
     {
-      using S0=typename FactExpr<0>::SimdifyingComp;
-      using S1=typename FactExpr<1>::SimdifyingComp;
+      using S0=typename SubExpr<0>::SimdifyingComp;
+      using S1=typename SubExpr<1>::SimdifyingComp;
       
-      constexpr bool c0=FactExpr<0>::canSimdify and not tupleHasType<ContractedComps,Transp<S0>> and not (isComplProd and std::is_same_v<ComplId,S0>);
-      constexpr bool c1=FactExpr<1>::canSimdify and not tupleHasType<ContractedComps,S1> and not (isComplProd and std::is_same_v<ComplId,S1>);
+      constexpr bool c0=SubExpr<0>::canSimdify and not tupleHasType<ContractedComps,Transp<S0>> and not (isComplProd and std::is_same_v<ComplId,S0>);
+      constexpr bool c1=SubExpr<1>::canSimdify and not tupleHasType<ContractedComps,S1> and not (isComplProd and std::is_same_v<ComplId,S1>);
       
       return c0 and c1 and std::is_same_v<S0,S1>;
     }
@@ -139,18 +127,7 @@ namespace esnort
     /// \todo improve
     
     /// Components on which simdifying
-    using SimdifyingComp=typename FactExpr<0>::SimdifyingComp;
-    
-    /// First factor
-    std::tuple<ExprRefOrVal<_E>...> factExprs;
-    
-    /// Proxy for the I-subexpression
-    template <int I>
-    INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
-    decltype(auto) factExpr() const
-    {
-      return std::get<I>(factExprs);
-    }
+    using SimdifyingComp=typename SubExpr<0>::SimdifyingComp;
     
 #define PROVIDE_SIMDIFY(ATTRIB)					\
     /*! Returns a ATTRIB simdified view */			\
@@ -158,8 +135,8 @@ namespace esnort
     auto simdify() ATTRIB					\
     {								\
       return							\
-	factExpr<0>().simdify()*				\
-	factExpr<1>().simdify();				\
+	SUBEXPR(0).simdify()*					\
+	SUBEXPR(1).simdify();					\
     }
     
     PROVIDE_SIMDIFY(const);
@@ -173,8 +150,9 @@ namespace esnort
     INLINE_FUNCTION						\
     auto getRef() ATTRIB					\
     {								\
-      return factExpr<0>().getRef()*				\
-	factExpr<1>().getRef();					\
+      return							\
+	SUBEXPR(0).getRef()*					\
+	SUBEXPR(1).getRef();					\
     }
     
     PROVIDE_GET_REF(const);
@@ -190,7 +168,7 @@ namespace esnort
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
     static auto getCompsForFact(const CompsList<NCcs...>& nccs)
     {
-      using FreeC=TupleFilterAllTypes<typename FactExpr<I>::Comps,FC>;
+      using FreeC=TupleFilterAllTypes<typename SubExpr<I>::Comps,FC>;
       
       return tupleGetSubset<FreeC>(nccs);
     }
@@ -215,12 +193,12 @@ namespace esnort
 	
 	auto e0=[this,&fc0,&c...](const auto&...extra) INLINE_ATTRIBUTE
 	{
-	  return std::apply(factExpr<0>(),std::tuple_cat(fc0,std::make_tuple(c.transp()...,extra...)));
+	  return std::apply(SUBEXPR(0),std::tuple_cat(fc0,std::make_tuple(c.transp()...,extra...)));
 	};
 	
 	auto e1=[this,&fc1,&c...](const auto&...extra) INLINE_ATTRIBUTE
 	{
-	  return std::apply(factExpr<1>(),std::tuple_cat(fc1,std::make_tuple(c...,extra...)));
+	  return std::apply(SUBEXPR(1),std::tuple_cat(fc1,std::make_tuple(c...,extra...)));
 	};
 	
 	if constexpr(isComplProd)
@@ -249,12 +227,12 @@ namespace esnort
     template <typename T1,
 	      typename T2>
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-    Producer(T1&& fact1Expr,
-	     T2&& fact2Expr,
+    Producer(T1&& fact1,
+	     T2&& fact2,
 	     const DynamicComps& dynamicSizes,
 	     UNIVERSAL_CONSTRUCTOR_IDENTIFIER) :
-      dynamicSizes(dynamicSizes),
-      factExprs({fact1Expr,fact2Expr})
+      SubExprs<_E...>(fact1,fact2),
+      dynamicSizes(dynamicSizes)
     {
     }
   };
