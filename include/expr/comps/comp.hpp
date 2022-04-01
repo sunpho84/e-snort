@@ -5,10 +5,10 @@
 # include <config.hpp>
 #endif
 
-/// \file comp.hpp
+/// \file expr/comps/comp.hpp
 
-#include <expr/baseComp.hpp>
-#include <expr/transposableComp.hpp>
+#include <expr/comps/baseComp.hpp>
+#include <expr/comps/transposableComp.hpp>
 #include <metaprogramming/detectableAs.hpp>
 
 namespace esnort

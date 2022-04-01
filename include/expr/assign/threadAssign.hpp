@@ -5,12 +5,12 @@
 # include <config.hpp>
 #endif
 
-/// \file expr/threadAssign.hpp
+/// \file expr/assign/threadAssign.hpp
 ///
 /// \brief Assign two expressions using threads
 
-#include <expr/assignerFactory.hpp>
-#include <expr/compLoops.hpp>
+#include <expr/assign/assignerFactory.hpp>
+#include <expr/comps/compLoops.hpp>
 #include <ios/logger.hpp>
 #include <metaprogramming/inline.hpp>
 

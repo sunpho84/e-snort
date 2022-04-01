@@ -5,13 +5,13 @@
 # include <config.hpp>
 #endif
 
-/// \file expr/baseTens.hpp
+/// \file expr/nodes/baseTens.hpp
 
-#include <expr/comps.hpp>
-#include <expr/dynamicCompsProvider.hpp>
-#include <expr/dynamicTensDeclaration.hpp>
-#include <expr/executionSpace.hpp>
-#include <expr/expr.hpp>
+#include <expr/comps/comps.hpp>
+#include <expr/comps/dynamicCompsProvider.hpp>
+#include <expr/nodes/dynamicTensDeclaration.hpp>
+#include <expr/assign/executionSpace.hpp>
+#include <expr/nodes/expr.hpp>
 #include <metaprogramming/crtp.hpp>
 #include <resources/memory.hpp>
 #include <resources/SIMD.hpp>

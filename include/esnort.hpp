@@ -13,18 +13,18 @@
 #include <debug/demangle.hpp>
 #include <debug/minimalCrash.hpp>
 
-#include <expr/comp.hpp>
-#include <expr/compRwCl.hpp>
-#include <expr/conj.hpp>
-#include <expr/dagger.hpp>
-#include <expr/deviceAssign.hpp>
-#include <expr/directAssign.hpp>
-#include <expr/dynamicTens.hpp>
-#include <expr/indexComputer.hpp>
-#include <expr/prod.hpp>
-#include <expr/stackTens.hpp>
-#include <expr/threadAssign.hpp>
-#include <expr/transp.hpp>
+#include <expr/comps/comp.hpp>
+#include <expr/comps/compRwCl.hpp>
+#include <expr/nodes/conj.hpp>
+#include <expr/operations/dagger.hpp>
+#include <expr/assign/deviceAssign.hpp>
+#include <expr/assign/directAssign.hpp>
+#include <expr/nodes/dynamicTens.hpp>
+#include <expr/comps/indexComputer.hpp>
+#include <expr/nodes/prod.hpp>
+#include <expr/nodes/stackTens.hpp>
+#include <expr/assign/threadAssign.hpp>
+#include <expr/nodes/transp.hpp>
 
 #include <ios/file.hpp>
 #include <ios/logger.hpp>

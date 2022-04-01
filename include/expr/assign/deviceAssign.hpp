@@ -5,11 +5,11 @@
 # include <config.hpp>
 #endif
 
-/// \file expr/deviceAssign.hpp
+/// \file expr/assign/deviceAssign.hpp
 ///
 /// \brief Assign two expressions on the device
 
-#include <expr/compLoops.hpp>
+#include <expr/comps/compLoops.hpp>
 #include <ios/logger.hpp>
 #include <resources/device.hpp>
 

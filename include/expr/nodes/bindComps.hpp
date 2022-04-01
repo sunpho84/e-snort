@@ -5,12 +5,12 @@
 # include <config.hpp>
 #endif
 
-/// \file bindComps.hpp
+/// \file expr/nodes/bindComps.hpp
 
-#include <expr/comps.hpp>
-#include <expr/dynamicCompsProvider.hpp>
-#include <expr/executionSpace.hpp>
-#include <expr/exprDeclaration.hpp>
+#include <expr/comps/comps.hpp>
+#include <expr/comps/dynamicCompsProvider.hpp>
+#include <expr/assign/executionSpace.hpp>
+#include <expr/nodes/exprDeclaration.hpp>
 #include <expr/exprRefOrVal.hpp>
 #include <metaprogramming/templateEnabler.hpp>
 #include <metaprogramming/universalReference.hpp>

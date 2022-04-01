@@ -5,9 +5,9 @@
 # include <config.hpp>
 #endif
 
-/// \file transposableComp.hpp
+/// \file expr/comps/transposableComp.hpp
 
-#include <expr/compRwCl.hpp>
+#include <expr/comps/compRwCl.hpp>
 
 namespace esnort::compFeat
 {

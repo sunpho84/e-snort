@@ -5,11 +5,11 @@
 # include <config.hpp>
 #endif
 
-#include <metaprogramming/detectableAs.hpp>
-
-/// \file expr/exprDeclaration.hpp
+/// \file expr/nodes/exprDeclaration.hpp
 ///
 /// \brief Declares an expression
+
+#include <metaprogramming/detectableAs.hpp>
 
 namespace esnort
 {

@@ -5,9 +5,9 @@
 # include <config.hpp>
 #endif
 
-/// \file prodCompsDeducer.hpp
+/// \file expr/comps/prodCompsDeducer.hpp
 
-#include <expr/comps.hpp>
+#include <expr/comps/comps.hpp>
 #include <tuples/uniqueTupleFromTuple.hpp>
 
 namespace esnort

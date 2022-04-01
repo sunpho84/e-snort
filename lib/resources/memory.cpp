@@ -1,11 +1,11 @@
-#include <resources/memory.hpp>
-#include <expr/executionSpace.hpp>
-
 #ifdef HAVE_CONFIG_H
 # include <config.hpp>
 #endif
 
 /// \file memory.cpp
+
+#include <expr/assign/executionSpace.hpp>
+#include <resources/memory.hpp>
 
 namespace esnort::memory
 {

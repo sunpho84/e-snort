@@ -5,7 +5,7 @@
 # include <config.hpp>
 #endif
 
-/// \file compRwCl.hpp
+/// \file expr/comps/compRwCl.hpp
 ///
 /// \brief Implements a tensor comp row or column type
 

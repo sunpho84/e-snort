@@ -1,7 +1,6 @@
 #ifndef _DEVICE_HPP
 #define _DEVICE_HPP
 
-#include "expr/executionSpace.hpp"
 #ifdef HAVE_CONFIG_H
 # include <config.hpp>
 #endif
@@ -12,6 +11,7 @@
 #include <cstring>
 
 #include <debug/crash.hpp>
+#include <expr/assign/executionSpace.hpp>
 #include <ios/scopeFormatter.hpp>
 #include <ios/logger.hpp>
 #include <metaprogramming/singleInstance.hpp>

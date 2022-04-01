@@ -5,17 +5,17 @@
 # include <config.hpp>
 #endif
 
-/// \file expr/dynamicTens.hpp
+/// \file expr/nodes/dynamicTens.hpp
 
-#include <expr/comp.hpp>
-#include <expr/comps.hpp>
-#include <expr/baseTens.hpp>
-#include <expr/dynamicCompsProvider.hpp>
-#include <expr/dynamicTensDeclaration.hpp>
-#include <expr/executionSpace.hpp>
-#include <expr/expr.hpp>
-#include <expr/indexComputer.hpp>
-#include <expr/tensRef.hpp>
+#include <expr/comps/comp.hpp>
+#include <expr/comps/comps.hpp>
+#include <expr/nodes/baseTens.hpp>
+#include <expr/comps/dynamicCompsProvider.hpp>
+#include <expr/nodes/dynamicTensDeclaration.hpp>
+#include <expr/assign/executionSpace.hpp>
+#include <expr/nodes/expr.hpp>
+#include <expr/comps/indexComputer.hpp>
+#include <expr/nodes/tensRef.hpp>
 #include <metaprogramming/constnessChanger.hpp>
 #include <resources/memory.hpp>
 #include <tuples/tupleDiscriminate.hpp>

@@ -5,12 +5,12 @@
 # include <config.hpp>
 #endif
 
-/// \file expr/simdAssign.hpp
+/// \file expr/assign/simdAssign.hpp
 ///
 /// \brief Assign two expressions usng SIMD
 
-#include <expr/assignerFactory.hpp>
-#include <expr/compLoops.hpp>
+#include <expr/assign/assignerFactory.hpp>
+#include <expr/comps/compLoops.hpp>
 #include <ios/logger.hpp>
 
 namespace esnort

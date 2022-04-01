@@ -5,14 +5,14 @@
 # include <config.hpp>
 #endif
 
-/// \file expr/stackTens.hpp
+/// \file expr/nodes/stackTens.hpp
 
-#include <expr/baseTens.hpp>
-#include <expr/comps.hpp>
-#include <expr/dynamicCompsProvider.hpp>
-#include <expr/executionSpace.hpp>
-#include <expr/expr.hpp>
-#include <expr/indexComputer.hpp>
+#include <expr/nodes/baseTens.hpp>
+#include <expr/comps/comps.hpp>
+#include <expr/comps/dynamicCompsProvider.hpp>
+#include <expr/assign/executionSpace.hpp>
+#include <expr/nodes/expr.hpp>
+#include <expr/comps/indexComputer.hpp>
 
 namespace esnort
 {

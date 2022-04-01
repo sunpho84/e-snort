@@ -5,10 +5,10 @@
 # include <config.hpp>
 #endif
 
-/// \file expr/dynamicCompsProvider.hpp
+/// \file expr/comps/dynamicCompsProvider.hpp
 
-#include <expr/comp.hpp>
-#include <expr/comps.hpp>
+#include <expr/comps/comp.hpp>
+#include <expr/comps/comps.hpp>
 #include <metaprogramming/crtp.hpp>
 #include <tuples/tupleDiscriminate.hpp>
 #include <tuples/tupleSubset.hpp>

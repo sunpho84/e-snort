@@ -5,9 +5,9 @@
 # include <config.hpp>
 #endif
 
-/// \file expr/dynamicTensorDeclaration.hpp
+/// \file expr/nodes/dynamicTensorDeclaration.hpp
 
-#include <expr/executionSpace.hpp>
+#include <expr/assign/executionSpace.hpp>
 #include <metaprogramming/detectableAs.hpp>
 
 namespace esnort

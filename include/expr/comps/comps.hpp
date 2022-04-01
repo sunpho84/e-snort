@@ -5,11 +5,11 @@
 # include <config.hpp>
 #endif
 
-/// \file comps.hpp
+/// \file expr/comps/comps.hpp
 
 #include <tuple>
 
-#include <expr/comp.hpp>
+#include <expr/comps/comp.hpp>
 #include <metaprogramming/unrolledFor.hpp>
 #include <resources/SIMD.hpp>
 #include <tuples/tupleCommonTypes.hpp>

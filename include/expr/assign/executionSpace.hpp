@@ -5,12 +5,12 @@
 # include <config.hpp>
 #endif
 
-#include <debug/minimalCrash.hpp>
-#include <metaprogramming/inline.hpp>
-
-/// \file expr/executionSpace.hpp
+/// \file expr/assign/executionSpace.hpp
 ///
 /// \brief Declares the execution spaces and the connected properties
+
+#include <debug/minimalCrash.hpp>
+#include <metaprogramming/inline.hpp>
 
 namespace esnort
 {

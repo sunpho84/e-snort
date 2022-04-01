@@ -5,12 +5,12 @@
 # include <config.hpp>
 #endif
 
-/// \file expr/directAssign.hpp
+/// \file expr/assign/directAssign.hpp
 ///
 /// \brief Assign two expressions directly
 
-#include <expr/assignerFactory.hpp>
-#include <expr/compLoops.hpp>
+#include <expr/assign/assignerFactory.hpp>
+#include <expr/comps/compLoops.hpp>
 #include <ios/logger.hpp>
 
 namespace esnort

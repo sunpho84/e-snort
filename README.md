@@ -223,6 +223,7 @@ DONE
 TODO
 ---
 - Products
+BindComps to uniform to subexprs
 - Sums
 - Fma
 - Spawning expr assignment in the different case, how will we deal with \*=, -= etc? Do they have any usage, or should we divert to the =a*b case?

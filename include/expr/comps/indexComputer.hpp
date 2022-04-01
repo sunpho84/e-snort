@@ -5,12 +5,12 @@
 # include <config.hpp>
 #endif
 
-/// \file indexComputer.hpp
+/// \file expr/comps/indexComputer.hpp
 ///
 /// \brief Compute index given components
 
-#include <expr/comp.hpp>
-#include <expr/comps.hpp>
+#include <expr/comps/comp.hpp>
+#include <expr/comps/comps.hpp>
 #include <metaprogramming/crtp.hpp>
 #include <tuples/tupleDiscriminate.hpp>
 #include <tuples/tupleSubset.hpp>

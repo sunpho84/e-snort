@@ -1,45 +1,43 @@
-#ifndef _CONJ_HPP
-#define _CONJ_HPP
+#ifndef _TRANSP_HPP
+#define _TRANSP_HPP
 
 #ifdef HAVE_CONFIG_H
 # include <config.hpp>
 #endif
 
-/// \file expr/conj.hpp
+/// \file expr/nodes/transp.hpp
 
-#include <expr/comp.hpp>
-#include <expr/comps.hpp>
-#include <expr/expr.hpp>
+#include <expr/comps/comp.hpp>
+#include <expr/comps/comps.hpp>
+#include <expr/nodes/expr.hpp>
 #include <expr/subExprs.hpp>
 
 namespace esnort
 {
-  DEFINE_UNTRANSPOSABLE_COMP(ComplId,int,2,reIm);
+  PROVIDE_DETECTABLE_AS(Transposer);
   
-  PROVIDE_DETECTABLE_AS(Conjugator);
-  
-  /// Conjugator
+  /// Transposer
   ///
   /// Forward declaration to capture the components
   template <typename _E,
 	    typename _Comps,
 	    typename _Fund>
-  struct Conjugator;
+  struct Transposer;
   
 #define THIS					\
-  Conjugator<std::tuple<_E...>,CompsList<C...>,_Fund>
-
+  Transposer<std::tuple<_E...>,CompsList<C...>,_Fund>
+  
 #define BASE					\
     Expr<THIS>
   
-  /// Component binder
+  /// Transposer
   ///
   template <typename..._E,
 	    typename...C,
 	    typename _Fund>
   struct THIS :
     DynamicCompsProvider<CompsList<C...>>,
-    DetectableAsConjugator,
+    DetectableAsTransposer,
     SubExprs<_E...>,
     BASE
   {
@@ -54,14 +52,14 @@ namespace esnort
     
     static_assert(sizeof...(_E)==1,"Expecting 1 argument");
     
-    IMPORT_SUBEXPR_TYPES;
-    
     /// Components
     using Comps=
       CompsList<C...>;
     
     /// Fundamental tye
     using Fund=_Fund;
+    
+    IMPORT_SUBEXPR_TYPES;
     
     /// Executes where allocated
     static constexpr ExecSpace execSpace=
@@ -77,11 +75,8 @@ namespace esnort
     INLINE_FUNCTION
     bool canAssign()
     {
-      return false;
+      return SUBEXPR(0).canAssign();
     }
-    
-    /// Return whether can be assigned at compile time
-    static constexpr bool canAssignAtCompileTime=false;
     
     /// This is a lightweight object
     static constexpr bool storeByRef=false;
@@ -89,21 +84,24 @@ namespace esnort
     /// Import assignment operator
     using Base::operator=;
     
+    /// Return whether can be assigned at compile time
+    static constexpr bool canAssignAtCompileTime=
+      SubExpr<0>::canAssignAtCompileTime;
+    
     /// States whether the tensor can be simdified
     static constexpr bool canSimdify=
-      SubExpr<0>::canSimdify and
-      not std::is_same_v<ComplId,typename SubExpr<0>::SimdifyingComp>;
+      SubExpr<0>::canSimdify;
     
     /// Components on which simdifying
     using SimdifyingComp=
-      std::conditional_t<canSimdify,typename SubExpr<0>::SimdifyingComp,void>;
+      Transp<typename SubExpr<0>::SimdifyingComp>;
     
 #define PROVIDE_SIMDIFY(ATTRIB)					\
     /*! Returns a ATTRIB simdified view */			\
     INLINE_FUNCTION						\
     auto simdify() ATTRIB					\
     {								\
-      return conj(SUBEXPR(0).simdify());			\
+      return transp(SUBEXPR(0).simdify());			\
     }
     
     PROVIDE_SIMDIFY(const);
@@ -111,13 +109,13 @@ namespace esnort
     PROVIDE_SIMDIFY(/* non const */);
     
 #undef PROVIDE_SIMDIFY
-
+    
 #define PROVIDE_GET_REF(ATTRIB)					\
     /*! Returns a reference */					\
     INLINE_FUNCTION						\
     auto getRef() ATTRIB					\
     {								\
-      return conj(SUBEXPR(0).getRef());				\
+      return transp(SUBEXPR(0).getRef());			\
     }
     
     PROVIDE_GET_REF(const);
@@ -131,50 +129,49 @@ namespace esnort
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
     Fund eval(const TD&...td) const
     {
-      /// Compute the real or imaginary component
-      const ComplId reIm= //don't take as ref, it messes up
-	std::get<ComplId>(std::make_tuple(td...));
-      
-      /// Nested result
-      decltype(auto) nestedRes=
-	SUBEXPR(0)(td...);
-      
-      if(reIm==0)
-	return nestedRes;
-      else
-       	return -nestedRes;
+      return SUBEXPR(0)(transp(td)...);
     }
     
     /// Construct
     template <typename T>
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-    Conjugator(T&& arg,
+    Transposer(T&& arg,
 	       UNIVERSAL_CONSTRUCTOR_IDENTIFIER) :
       SubExprs<_E...>(std::forward<T>(arg))
     {
     }
   };
   
-  /// Conjugate an expression
+  /// Transpose an expression
   template <typename _E,
 	    ENABLE_THIS_TEMPLATE_IF(isExpr<_E>)>
   HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-  decltype(auto) conj(_E&& e)
+  decltype(auto) transp(_E&& e)
   {
+#if 0
+    LOGGER<<"Now inside transp";
+#endif
+    
     /// Base passed type
     using E=
       std::decay_t<_E>;
     
-    if constexpr(isConjugator<E>)
+    if constexpr(isTransposer<E>)
       return e.template subExpr<0>;
     else
       {
 	/// Components
 	using Comps=
-	  typename E::Comps;
+	  TranspMatrixTensorComps<typename E::Comps>;
 	
-	if constexpr(not tupleHasType<Comps,ComplId>)
-	  return RemoveRValueReference<_E>(e);
+	if constexpr(not compsAreTransposable<Comps>)
+	  {
+#if 0
+	    LOGGER<<"no need to transpose, returning the argument, which is "<<&e<<" "<<demangle(typeid(_E).name())<<(std::is_lvalue_reference_v<decltype(e)>?"&":(std::is_rvalue_reference_v<decltype(e)>?"&&":""));
+#endif
+	    
+	    return RemoveRValueReference<_E>(e);
+	  }
 	else
 	  {
 	    /// Type returned when evaluating the expression
@@ -182,36 +179,10 @@ namespace esnort
 	      typename E::Fund;
 	    
 	    return
-	      Conjugator<std::tuple<_E>,Comps,Fund>(std::forward<_E>(e),UNIVERSAL_CONSTRUCTOR_CALL);
+	      Transposer<_E,Comps,Fund>(std::forward<_E>(e),
+					UNIVERSAL_CONSTRUCTOR_CALL);
 	  }
       }
-  }
-  
-#define FOR_REIM_PARTS(NAME)		\
-  FOR_ALL_COMPONENT_VALUES(ComplId,NAME)
-  
-  /// Real component index - we cannot rely on a constexpr inline as the compiler does not propagate it correctly
-#define Re ComplId(0)
-  
-  /// Imaginary component index
-#define Im ComplId(1)
-  
-  /// Returns the real part, subscribing the complex component to Re value
-  template <typename _E>
-  HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-  decltype(auto) real(_E&& e)
-  {
-    return
-      e(Re);
-  }
-  
-  /// Returns the imaginary part, subscribing the complex component to Im value
-  template <typename _E>
-  HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-  decltype(auto) imag(_E&& e)
-  {
-    return
-      e(Im);
   }
 }
 

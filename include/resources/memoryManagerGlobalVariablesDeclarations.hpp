@@ -7,7 +7,7 @@
 # include "config.hpp"
 #endif
 
-#include <expr/executionSpace.hpp>
+#include <expr/assign/executionSpace.hpp>
 #include <metaprogramming/globalVariableProvider.hpp>
 #include <resources/memoryManager.hpp>
 

@@ -5,9 +5,9 @@
 # include <config.hpp>
 #endif
 
-/// \file compLoops.hpp
+/// \file expr/comps/compLoops.hpp
 
-#include <expr/comps.hpp>
+#include <expr/comps/comps.hpp>
 #include <metaprogramming/inline.hpp>
 #include <metaprogramming/unrolledFor.hpp>
 

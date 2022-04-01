@@ -5,13 +5,13 @@
 # include <config.hpp>
 #endif
 
-/// \file expr/tensRef.hpp
+/// \file expr/nodes/tensRef.hpp
 
-#include <expr/baseTens.hpp>
-#include <expr/comps.hpp>
-#include <expr/executionSpace.hpp>
-#include <expr/expr.hpp>
-#include <expr/indexComputer.hpp>
+#include <expr/assign/executionSpace.hpp>
+#include <expr/comps/comps.hpp>
+#include <expr/comps/indexComputer.hpp>
+#include <expr/nodes/baseTens.hpp>
+#include <expr/nodes/expr.hpp>
 
 namespace esnort
 {

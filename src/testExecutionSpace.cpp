@@ -9,14 +9,6 @@
 #include <unistd.h>
 #include <iostream>
 
-#include <resources/device.hpp>
-
-#include <expr/executionSpace.hpp>
-#include <expr/expr.hpp>
-#include <resources/valueWithExtreme.hpp>
-#include <resources/environmentFlags.hpp>
-#include <tensor/stackedVariable.hpp>
-
 #include <esnort.hpp>
 
 using namespace esnort;

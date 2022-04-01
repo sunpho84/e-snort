@@ -5,20 +5,20 @@
 # include <config.hpp>
 #endif
 
-/// \file expr/expr.hpp
+/// \file expr/nodes/expr.hpp
 ///
 /// \brief Declare base expression, to issue the assignments
 
 #include <type_traits>
 
-#include <expr/bindComps.hpp>
-#include <expr/compLoops.hpp>
-#include <expr/deviceAssign.hpp>
-#include <expr/directAssign.hpp>
-#include <expr/executionSpace.hpp>
-#include <expr/exprDeclaration.hpp>
-#include <expr/simdAssign.hpp>
-#include <expr/threadAssign.hpp>
+#include <expr/nodes/bindComps.hpp>
+#include <expr/comps/compLoops.hpp>
+#include <expr/assign/deviceAssign.hpp>
+#include <expr/assign/directAssign.hpp>
+#include <expr/assign/executionSpace.hpp>
+#include <expr/nodes/exprDeclaration.hpp>
+#include <expr/assign/simdAssign.hpp>
+#include <expr/assign/threadAssign.hpp>
 #include <ios/logger.hpp>
 #include <metaprogramming/crtp.hpp>
 #include <tuples/tupleHasType.hpp>

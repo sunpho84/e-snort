@@ -5,11 +5,11 @@
 # include <config.hpp>
 #endif
 
-/// \file expr/dagger.hpp
+/// \file expr/operations/dagger.hpp
 
-#include <expr/conj.hpp>
-#include <expr/expr.hpp>
-#include <expr/transp.hpp>
+#include <expr/nodes/conj.hpp>
+#include <expr/nodes/expr.hpp>
+#include <expr/nodes/transp.hpp>
 
 namespace esnort
 {

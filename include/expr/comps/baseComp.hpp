@@ -5,9 +5,9 @@
 # include <config.hpp>
 #endif
 
-/// \file baseComp.hpp
+/// \file expr/comps/baseComp.hpp
 ///
-/// \brief Implements a tensor comp
+/// \brief Implements a tensor comp base functionalities
 
 #include <metaprogramming/inline.hpp>
 #include <metaprogramming/nonConstMethod.hpp>

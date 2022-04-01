@@ -5,12 +5,12 @@
 # include <config.hpp>
 #endif
 
-/// \file prod.hpp
+/// \file expr/nodes/prod.hpp
 
-#include <expr/comps.hpp>
-#include <expr/conj.hpp>
-#include <expr/expr.hpp>
-#include <expr/prodCompsDeducer.hpp>
+#include <expr/comps/comps.hpp>
+#include <expr/nodes/conj.hpp>
+#include <expr/nodes/expr.hpp>
+#include <expr/comps/prodCompsDeducer.hpp>
 #include <expr/subExprs.hpp>
 #include <metaprogramming/arithmeticTraits.hpp>
 
