@@ -89,6 +89,25 @@ namespace esnort
   template <ExecSpace ES>
   constexpr ExecSpace otherExecSpace=
     internal::_otherExecSpace<ES>();
+  
+  /// Common execution space between passed ones
+  template <ExecSpace...Es>
+  constexpr ExecSpace commonExecSpace()
+  {
+    constexpr ExecSpace u=ExecSpace::UNDEFINED,h=ExecSpace::HOST,d=ExecSpace::DEVICE;
+    constexpr bool atLeastOneHost=((Es==h) or...);
+    constexpr bool atLeastOneDevice=((Es==d) or...);
+    
+    static_assert(not (atLeastOneDevice and atLeastOneHost),"Cannot define common execution spaces among a mixture of host and device execution spaces");
+    
+    if constexpr(atLeastOneHost)
+      return h;
+    else
+      if constexpr(atLeastOneDevice)
+	return d;
+      else
+	return u;
+  }
 }
 
 #endif

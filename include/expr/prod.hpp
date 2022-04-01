@@ -76,15 +76,16 @@ namespace esnort
       constexpr auto e0=FactExpr<0>::execSpace;
       constexpr auto e1=FactExpr<1>::execSpace;
       
-      static_assert(e0==e1 or ((e0==u) xor (e1==u)),"Cannot define product in case the two execution spaces are both defined and different");
-    
+      
       static_assert(e0!=u or e1!=u,"Cannot define product in case the two execution spaces are both undefined");
-    
+      
       return (e0==u)?e1:e0;
     }
     
     /// Execution space
-    static constexpr ExecSpace execSpace=_execSpace();
+    static constexpr ExecSpace execSpace=commonExecSpace<std::remove_reference_t<_E>::execSpace...>();
+    
+    static_assert(execSpace!=ExecSpace::UNDEFINED,"Cannot define product in undefined exec space");
     
     /// Detect complex product
     static constexpr bool isComplProd=
@@ -119,6 +120,7 @@ namespace esnort
     /// Return whether can be assigned at compile time
     static constexpr bool canAssignAtCompileTime=false;
     
+    /// Determine if product can be simdified - to be extended
     static constexpr bool simdifyCase()
     {
       using S0=typename FactExpr<0>::SimdifyingComp;
@@ -142,6 +144,7 @@ namespace esnort
     /// First factor
     std::tuple<ExprRefOrVal<_E>...> factExprs;
     
+    /// Proxy for the I-subexpression
     template <int I>
     INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
     decltype(auto) factExpr() const
@@ -180,6 +183,7 @@ namespace esnort
     
 #undef PROVIDE_GET_REF
     
+    /// Gets the components for the I-th factor
     template <int I,
 	      typename FC,
 	      typename...NCcs>
