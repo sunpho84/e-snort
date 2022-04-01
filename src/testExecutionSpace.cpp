@@ -175,7 +175,7 @@ int in_main(int narg,char** arg)
   
   using T=internal::_NodeRefOrVal<decltype(s.getRef())>;
   
-  static_assert(not std::is_lvalue_reference_v<decltype(rrr)::BoundExpr>,"");
+  static_assert(not std::is_lvalue_reference_v<decltype(rrr)::SubNode<0>>,"");
   //auto ee=(decltype(rrr)::BoundExpr)(SpaceTime{0});
   // ExprRefOrVal<typename _E>
   
