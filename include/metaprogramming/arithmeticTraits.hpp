@@ -42,6 +42,9 @@ namespace esnort
     PROVIDE_ZERO(constexpr float,0.0f);
   };
   
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wignored-attributes"
+
 #if ENABLE_AVX
   
   /// Avx vector
@@ -77,6 +80,8 @@ namespace esnort
   };
   
 #endif
+  
+#pragma GCC diagnostic pop
   
   /// Returns the zero for the passed type
   template <typename T>
