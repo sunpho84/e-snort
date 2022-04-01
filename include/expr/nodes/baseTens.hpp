@@ -11,7 +11,7 @@
 #include <expr/comps/dynamicCompsProvider.hpp>
 #include <expr/nodes/dynamicTensDeclaration.hpp>
 #include <expr/assign/executionSpace.hpp>
-#include <expr/nodes/expr.hpp>
+#include <expr/nodes/node.hpp>
 #include <metaprogramming/crtp.hpp>
 #include <resources/memory.hpp>
 #include <resources/SIMD.hpp>
@@ -37,7 +37,7 @@ namespace esnort
   struct BaseTens<T,CompsList<C...>,F,ES> :
     DynamicCompsProvider<CompsList<C...>>,
     DetectableAsBaseTens,
-    Expr<T>
+    Node<T>
   {
     // /// Assign from another dynamic tensor
     // template <typename OtherT,
@@ -46,18 +46,18 @@ namespace esnort
     // INLINE_FUNCTION
     // BaseTens& assign(const BaseTens<OtherT,CompsList<C...>,OtherF,OtherES>& _oth)
     // {
-    //   this->Expr<T>::operator=(_oth);
+    //   this->Node<T>::operator=(_oth);
       
     //   return *this;
     // }
     
-    using Expr<T>::operator=;
+    using Node<T>::operator=;
     
     /// Copy-assign
     INLINE_FUNCTION
     BaseTens& operator=(const BaseTens& oth)
     {
-      Expr<T>::operator=(oth);
+      Node<T>::operator=(oth);
       
       return *this;
     }
@@ -66,7 +66,7 @@ namespace esnort
     INLINE_FUNCTION
     BaseTens& operator=(BaseTens&& oth)
     {
-      Expr<T>::operator=(std::move(oth));
+      Node<T>::operator=(std::move(oth));
       
       return *this;
     }

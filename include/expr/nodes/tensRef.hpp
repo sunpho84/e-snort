@@ -11,7 +11,7 @@
 #include <expr/comps/comps.hpp>
 #include <expr/comps/indexComputer.hpp>
 #include <expr/nodes/baseTens.hpp>
-#include <expr/nodes/expr.hpp>
+#include <expr/nodes/node.hpp>
 
 namespace esnort
 {
@@ -45,7 +45,7 @@ namespace esnort
 #undef BASE
 #undef THIS
     
-    /// Importing assignment operator from Expr
+    /// Importing assignment operator from Node
     using Base::operator=;
     
     /// Copy assign: we still assign the content

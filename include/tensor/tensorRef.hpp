@@ -7,7 +7,7 @@
 
 /// \file tensorRef.hpp
 
-#include <expr/expr.hpp>
+#include <expr/node.hpp>
 #include <ios/logger.hpp>
 
 namespace esnort
@@ -16,9 +16,9 @@ namespace esnort
 	    ExecSpace ES,
 	    bool IsConst>
   struct TensorRef  :
-    Expr<TensorRef<T,ES,IsConst>>
+    Node<TensorRef<T,ES,IsConst>>
   {
-    using Expr<TensorRef<T,ES,IsConst>>::operator=;
+    using Node<TensorRef<T,ES,IsConst>>::operator=;
     std::conditional_t<IsConst,const T*,T*> ptr;
     
     const T* getPtr() const

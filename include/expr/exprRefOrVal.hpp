@@ -1,22 +1,22 @@
-#ifndef _EXPR_REF_OR_VAL_HPP
-#define _EXPR_REF_OR_VAL_HPP
+#ifndef _NODE_REF_OR_VAL_HPP
+#define _NODE_REF_OR_VAL_HPP
 
-#include "metaprogramming/nonConstMethod.hpp"
 #ifdef HAVE_CONFIG_H
 # include <config.hpp>
 #endif
 
-/// \file exprReforVal.hpp
+/// \file expr/nodes/nodeReforVal.hpp
 
 #include <metaprogramming/constnessChanger.hpp>
+#include <metaprogramming/nonConstMethod.hpp>
 
 namespace esnort
 {
   namespace internal
   {
-    /// Helper to determine all parameters to implement reference inside an expression
+    /// Helper to determine all parameters to implement reference inside a node
     template <typename ACTUAL_TYPE> /// corresponding to decltype(e)
-    struct _ExprRefOrVal
+    struct _NodeRefOrVal
     {
       using E=
 	std::remove_const_t<std::decay_t<ACTUAL_TYPE>>;
@@ -50,12 +50,12 @@ namespace esnort
     };
   }
   
-  /// Type used to nest an expression
+  /// Type used to nest a node
   ///
   /// The passed type _E must correspond to decltype(e)
   template <typename _E>
-  using ExprRefOrVal=
-    typename internal::_ExprRefOrVal<_E>::type;
+  using NodeRefOrVal=
+    typename internal::_NodeRefOrVal<_E>::type;
 }
 
 #endif

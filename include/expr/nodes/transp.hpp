@@ -9,8 +9,8 @@
 
 #include <expr/comps/comp.hpp>
 #include <expr/comps/comps.hpp>
-#include <expr/nodes/expr.hpp>
-#include <expr/subExprs.hpp>
+#include <expr/nodes/node.hpp>
+#include <expr/nodes/subNodes.hpp>
 
 namespace esnort
 {
@@ -28,7 +28,7 @@ namespace esnort
   Transposer<std::tuple<_E...>,CompsList<C...>,_Fund>
   
 #define BASE					\
-    Expr<THIS>
+    Node<THIS>
   
   /// Transposer
   ///
@@ -38,7 +38,7 @@ namespace esnort
   struct THIS :
     DynamicCompsProvider<CompsList<C...>>,
     DetectableAsTransposer,
-    SubExprs<_E...>,
+    SubNodes<_E...>,
     BASE
   {
     /// Import the base expression
@@ -59,23 +59,23 @@ namespace esnort
     /// Fundamental tye
     using Fund=_Fund;
     
-    IMPORT_SUBEXPR_TYPES;
+    IMPORT_SUBNODE_TYPES;
     
     /// Executes where allocated
     static constexpr ExecSpace execSpace=
-      SubExpr<0>::execSpace;
+      SubNode<0>::execSpace;
     
     /// Returns the dynamic sizes
     decltype(auto) getDynamicSizes() const
     {
-      return SUBEXPR(0).getDynamicSizes();
+      return SUBNODE(0).getDynamicSizes();
     }
     
     /// Returns whether can assign
     INLINE_FUNCTION
     bool canAssign()
     {
-      return SUBEXPR(0).canAssign();
+      return SUBNODE(0).canAssign();
     }
     
     /// This is a lightweight object
@@ -86,22 +86,22 @@ namespace esnort
     
     /// Return whether can be assigned at compile time
     static constexpr bool canAssignAtCompileTime=
-      SubExpr<0>::canAssignAtCompileTime;
+      SubNode<0>::canAssignAtCompileTime;
     
     /// States whether the tensor can be simdified
     static constexpr bool canSimdify=
-      SubExpr<0>::canSimdify;
+      SubNode<0>::canSimdify;
     
     /// Components on which simdifying
     using SimdifyingComp=
-      Transp<typename SubExpr<0>::SimdifyingComp>;
+      Transp<typename SubNode<0>::SimdifyingComp>;
     
 #define PROVIDE_SIMDIFY(ATTRIB)					\
     /*! Returns a ATTRIB simdified view */			\
     INLINE_FUNCTION						\
     auto simdify() ATTRIB					\
     {								\
-      return transp(SUBEXPR(0).simdify());			\
+      return transp(SUBNODE(0).simdify());			\
     }
     
     PROVIDE_SIMDIFY(const);
@@ -115,7 +115,7 @@ namespace esnort
     INLINE_FUNCTION						\
     auto getRef() ATTRIB					\
     {								\
-      return transp(SUBEXPR(0).getRef());			\
+      return transp(SUBNODE(0).getRef());			\
     }
     
     PROVIDE_GET_REF(const);
@@ -129,7 +129,7 @@ namespace esnort
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
     Fund eval(const TD&...td) const
     {
-      return SUBEXPR(0)(transp(td)...);
+      return SUBNODE(0)(transp(td)...);
     }
     
     /// Construct
@@ -137,14 +137,14 @@ namespace esnort
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
     Transposer(T&& arg,
 	       UNIVERSAL_CONSTRUCTOR_IDENTIFIER) :
-      SubExprs<_E...>(std::forward<T>(arg))
+      SubNodes<_E...>(std::forward<T>(arg))
     {
     }
   };
   
   /// Transpose an expression
   template <typename _E,
-	    ENABLE_THIS_TEMPLATE_IF(isExpr<_E>)>
+	    ENABLE_THIS_TEMPLATE_IF(isNode<_E>)>
   HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
   decltype(auto) transp(_E&& e)
   {
@@ -157,7 +157,7 @@ namespace esnort
       std::decay_t<_E>;
     
     if constexpr(isTransposer<E>)
-      return e.template subExpr<0>;
+      return e.template subNode<0>;
     else
       {
 	/// Components

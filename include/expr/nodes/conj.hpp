@@ -9,8 +9,8 @@
 
 #include <expr/comps/comp.hpp>
 #include <expr/comps/comps.hpp>
-#include <expr/nodes/expr.hpp>
-#include <expr/subExprs.hpp>
+#include <expr/nodes/node.hpp>
+#include <expr/nodes/subNodes.hpp>
 
 namespace esnort
 {
@@ -30,7 +30,7 @@ namespace esnort
   Conjugator<std::tuple<_E...>,CompsList<C...>,_Fund>
 
 #define BASE					\
-    Expr<THIS>
+    Node<THIS>
   
   /// Component binder
   ///
@@ -40,7 +40,7 @@ namespace esnort
   struct THIS :
     DynamicCompsProvider<CompsList<C...>>,
     DetectableAsConjugator,
-    SubExprs<_E...>,
+    SubNodes<_E...>,
     BASE
   {
     /// Import the base expression
@@ -54,7 +54,7 @@ namespace esnort
     
     static_assert(sizeof...(_E)==1,"Expecting 1 argument");
     
-    IMPORT_SUBEXPR_TYPES;
+    IMPORT_SUBNODE_TYPES;
     
     /// Components
     using Comps=
@@ -65,12 +65,12 @@ namespace esnort
     
     /// Executes where allocated
     static constexpr ExecSpace execSpace=
-      SubExpr<0>::execSpace;
+      SubNode<0>::execSpace;
     
     /// Returns the dynamic sizes
     decltype(auto) getDynamicSizes() const
     {
-      return SUBEXPR(0).getDynamicSizes();
+      return SUBNODE(0).getDynamicSizes();
     }
     
     /// Returns whether can assign
@@ -91,19 +91,19 @@ namespace esnort
     
     /// States whether the tensor can be simdified
     static constexpr bool canSimdify=
-      SubExpr<0>::canSimdify and
-      not std::is_same_v<ComplId,typename SubExpr<0>::SimdifyingComp>;
+      SubNode<0>::canSimdify and
+      not std::is_same_v<ComplId,typename SubNode<0>::SimdifyingComp>;
     
     /// Components on which simdifying
     using SimdifyingComp=
-      std::conditional_t<canSimdify,typename SubExpr<0>::SimdifyingComp,void>;
+      std::conditional_t<canSimdify,typename SubNode<0>::SimdifyingComp,void>;
     
 #define PROVIDE_SIMDIFY(ATTRIB)					\
     /*! Returns a ATTRIB simdified view */			\
     INLINE_FUNCTION						\
     auto simdify() ATTRIB					\
     {								\
-      return conj(SUBEXPR(0).simdify());			\
+      return conj(SUBNODE(0).simdify());			\
     }
     
     PROVIDE_SIMDIFY(const);
@@ -117,7 +117,7 @@ namespace esnort
     INLINE_FUNCTION						\
     auto getRef() ATTRIB					\
     {								\
-      return conj(SUBEXPR(0).getRef());				\
+      return conj(SUBNODE(0).getRef());				\
     }
     
     PROVIDE_GET_REF(const);
@@ -137,7 +137,7 @@ namespace esnort
       
       /// Nested result
       decltype(auto) nestedRes=
-	SUBEXPR(0)(td...);
+	SUBNODE(0)(td...);
       
       if(reIm==0)
 	return nestedRes;
@@ -150,14 +150,14 @@ namespace esnort
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
     Conjugator(T&& arg,
 	       UNIVERSAL_CONSTRUCTOR_IDENTIFIER) :
-      SubExprs<_E...>(std::forward<T>(arg))
+      SubNodes<_E...>(std::forward<T>(arg))
     {
     }
   };
   
   /// Conjugate an expression
   template <typename _E,
-	    ENABLE_THIS_TEMPLATE_IF(isExpr<_E>)>
+	    ENABLE_THIS_TEMPLATE_IF(isNode<_E>)>
   HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
   decltype(auto) conj(_E&& e)
   {
@@ -166,7 +166,7 @@ namespace esnort
       std::decay_t<_E>;
     
     if constexpr(isConjugator<E>)
-      return e.template subExpr<0>;
+      return e.template subNode<0>;
     else
       {
 	/// Components

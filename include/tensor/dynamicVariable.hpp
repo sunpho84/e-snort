@@ -6,7 +6,7 @@
 #endif
 
 #include <expr/executionSpace.hpp>
-#include <expr/expr.hpp>
+#include <expr/node.hpp>
 #include <ios/logger.hpp>
 #include <metaprogramming/inline.hpp>
 #include <resources/memory.hpp>
@@ -21,17 +21,17 @@ namespace esnort
   template <typename T,
 	    ExecSpace ES>
   struct DynamicVariable :
-    Expr<THIS>,
+    Node<THIS>,
     VariableExecSpaceChanger<THIS,T,ES>
   {
-    using Expr<THIS>::operator=;
+    using Node<THIS>::operator=;
     
 #undef THIS
     
     DynamicVariable& operator=(const DynamicVariable& oth)
     {
-      (*static_cast<Expr<DynamicVariable>*>(this))=
-	(*static_cast<const Expr<DynamicVariable>*>(&oth));
+      (*static_cast<Node<DynamicVariable>*>(this))=
+	(*static_cast<const Node<DynamicVariable>*>(&oth));
       
       return *this;
     }

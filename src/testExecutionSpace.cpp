@@ -34,7 +34,7 @@ int j;
   using SpanRow=Span<RwCl::ROW,0>;
 
 // struct InvalidExpr :
-//   public Expr<InvalidExpr>
+//   public Node<InvalidExpr>
 // {
 // };
 
@@ -100,7 +100,7 @@ void testDag()
     
     auto b=(a*dag(a));
     
-    //LOGGER<<b.factExpr<0>().storage<<" "<<b.factExpr<1>().conjExpr.storage<<" "<<a.storage;
+    //LOGGER<<b.factNode<0>().storage<<" "<<b.factNode<1>().conjExpr.storage<<" "<<a.storage;
     
     // .fillDynamicTens();
     
@@ -173,7 +173,7 @@ int in_main(int narg,char** arg)
   
   auto rrr=s(SpanRow{0}).getRef();
   
-  using T=internal::_ExprRefOrVal<decltype(s.getRef())>;
+  using T=internal::_NodeRefOrVal<decltype(s.getRef())>;
   
   static_assert(not std::is_lvalue_reference_v<decltype(rrr)::BoundExpr>,"");
   //auto ee=(decltype(rrr)::BoundExpr)(SpaceTime{0});

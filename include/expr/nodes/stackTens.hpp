@@ -11,7 +11,7 @@
 #include <expr/comps/comps.hpp>
 #include <expr/comps/dynamicCompsProvider.hpp>
 #include <expr/assign/executionSpace.hpp>
-#include <expr/nodes/expr.hpp>
+#include <expr/nodes/node.hpp>
 #include <expr/comps/indexComputer.hpp>
 
 namespace esnort

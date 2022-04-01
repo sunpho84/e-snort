@@ -1,13 +1,13 @@
-#ifndef _EXPR_HPP
-#define _EXPR_HPP
+#ifndef _NODE_HPP
+#define _NODE_HPP
 
 #ifdef HAVE_CONFIG_H
 # include <config.hpp>
 #endif
 
-/// \file expr/nodes/expr.hpp
+/// \file expr/nodes/node.hpp
 ///
-/// \brief Declare base expression, to issue the assignments
+/// \brief Declare base node of the syntactic tree
 
 #include <type_traits>
 
@@ -16,7 +16,7 @@
 #include <expr/assign/deviceAssign.hpp>
 #include <expr/assign/directAssign.hpp>
 #include <expr/assign/executionSpace.hpp>
-#include <expr/nodes/exprDeclaration.hpp>
+#include <expr/nodes/nodeDeclaration.hpp>
 #include <expr/assign/simdAssign.hpp>
 #include <expr/assign/threadAssign.hpp>
 #include <ios/logger.hpp>
@@ -41,14 +41,14 @@ namespace esnort
   }
   
   template <typename T>
-  struct Expr :
-    DetectableAsExpr
+  struct Node :
+    DetectableAsNode
   {
     // /// Define the move-assignment operator
     // INLINE_FUNCTION
-    // Expr& operator=(Expr&& oth)
+    // Node& operator=(Node&& oth)
     // {
-    //   return this->operator=<T>(std::forward<Expr>(oth));
+    //   return this->operator=<T>(std::forward<Node>(oth));
     // }
     
     /// Returns whether can assign: this is actually used when no other assignability is defined
@@ -59,8 +59,8 @@ namespace esnort
     
     static constexpr bool canAssignAtCompileTime=false;
     
-    /// Used to check that the derived type satisfy the Expr criterion
-    constexpr Expr()
+    /// Used to check that the derived type satisfy the Node criterion
+    constexpr Node()
     {
       using namespace constraints;
       
@@ -80,7 +80,7 @@ namespace esnort
     /// Assert assignability
     template <typename U>
     INLINE_FUNCTION
-    constexpr void assertCanAssign(const Expr<U>& _rhs)
+    constexpr void assertCanAssign(const Node<U>& _rhs)
     {
       static_assert(tuplesContainsSameTypes<typename T::Comps,typename U::Comps>,"Cannot assign two expressions which differ for the components");
       
@@ -103,7 +103,7 @@ namespace esnort
     /// Assign from another expression
     template <typename Rhs>
     INLINE_FUNCTION
-    T& assign(const Expr<Rhs>& u)
+    T& assign(const Node<Rhs>& u)
     {
       assertCanAssign(u);
       
@@ -133,7 +133,7 @@ namespace esnort
     /// Assign from another expression
     template <typename Rhs>
     INLINE_FUNCTION
-    T& operator=(const Expr<Rhs>& u)
+    T& operator=(const Node<Rhs>& u)
     {
       return this->assign(u);
     }
@@ -141,7 +141,7 @@ namespace esnort
     /// Define the assignment operator with the same expression type,
     /// in terms of the templated version
     INLINE_FUNCTION
-    Expr& operator=(const Expr& oth)
+    Node& operator=(const Node& oth)
     {
       return this->assign(oth);
     }

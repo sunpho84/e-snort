@@ -10,7 +10,7 @@
 #include <expr/comps/comps.hpp>
 #include <expr/comps/dynamicCompsProvider.hpp>
 #include <expr/assign/executionSpace.hpp>
-#include <expr/nodes/exprDeclaration.hpp>
+#include <expr/nodes/nodeDeclaration.hpp>
 #include <expr/exprRefOrVal.hpp>
 #include <metaprogramming/templateEnabler.hpp>
 #include <metaprogramming/universalReference.hpp>
@@ -34,7 +34,7 @@ namespace esnort
   CompsBinder<CompsList<Bc...>,_Be,CompsList<C...>,_Fund>
 
 #define BASE					\
-    Expr<THIS>
+    Node<THIS>
   
   /// Component binder
   ///
@@ -111,7 +111,7 @@ namespace esnort
     const BoundComps boundComps;
     
     /// Expression that has been bound
-    ExprRefOrVal<_Be> boundExpr;
+    NodeRefOrVal<_Be> boundExpr;
     
 #define PROVIDE_SIMDIFY(ATTRIB)					\
     /*! Returns a ATTRIB simdified view */			\
@@ -170,7 +170,7 @@ namespace esnort
   /// Binds a subset of components
   template <typename _E,
 	    typename...BCs,
-	    ENABLE_THIS_TEMPLATE_IF(isExpr<_E>)>
+	    ENABLE_THIS_TEMPLATE_IF(isNode<_E>)>
   HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
   auto bindComps(_E&& e,
 		 const CompsList<BCs...>& bc)

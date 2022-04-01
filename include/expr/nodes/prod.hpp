@@ -9,9 +9,9 @@
 
 #include <expr/comps/comps.hpp>
 #include <expr/nodes/conj.hpp>
-#include <expr/nodes/expr.hpp>
+#include <expr/nodes/node.hpp>
 #include <expr/comps/prodCompsDeducer.hpp>
-#include <expr/subExprs.hpp>
+#include <expr/nodes/subNodes.hpp>
 #include <metaprogramming/arithmeticTraits.hpp>
 
 namespace esnort
@@ -31,7 +31,7 @@ namespace esnort
   Producer<CompsList<Cc...>,std::tuple<_E...>,CompsList<C...>,_Fund>
   
 #define BASE					\
-    Expr<THIS>
+    Node<THIS>
   
   /// Producer
   ///
@@ -42,7 +42,7 @@ namespace esnort
   struct THIS :
     DynamicCompsProvider<CompsList<C...>>,
     DetectableAsProducer,
-    SubExprs<_E...>,
+    SubNodes<_E...>,
     BASE
   {
     /// Import the base expression
@@ -56,7 +56,7 @@ namespace esnort
     
     static_assert(sizeof...(_E)==2,"Expecting 2 factors");
     
-    IMPORT_SUBEXPR_TYPES;
+    IMPORT_SUBNODE_TYPES;
     
     /// Components
     using Comps=
@@ -111,11 +111,11 @@ namespace esnort
     /// Determine if product can be simdified - to be extended
     static constexpr bool simdifyCase()
     {
-      using S0=typename SubExpr<0>::SimdifyingComp;
-      using S1=typename SubExpr<1>::SimdifyingComp;
+      using S0=typename SubNode<0>::SimdifyingComp;
+      using S1=typename SubNode<1>::SimdifyingComp;
       
-      constexpr bool c0=SubExpr<0>::canSimdify and not tupleHasType<ContractedComps,Transp<S0>> and not (isComplProd and std::is_same_v<ComplId,S0>);
-      constexpr bool c1=SubExpr<1>::canSimdify and not tupleHasType<ContractedComps,S1> and not (isComplProd and std::is_same_v<ComplId,S1>);
+      constexpr bool c0=SubNode<0>::canSimdify and not tupleHasType<ContractedComps,Transp<S0>> and not (isComplProd and std::is_same_v<ComplId,S0>);
+      constexpr bool c1=SubNode<1>::canSimdify and not tupleHasType<ContractedComps,S1> and not (isComplProd and std::is_same_v<ComplId,S1>);
       
       return c0 and c1 and std::is_same_v<S0,S1>;
     }
@@ -127,7 +127,7 @@ namespace esnort
     /// \todo improve
     
     /// Components on which simdifying
-    using SimdifyingComp=typename SubExpr<0>::SimdifyingComp;
+    using SimdifyingComp=typename SubNode<0>::SimdifyingComp;
     
 #define PROVIDE_SIMDIFY(ATTRIB)					\
     /*! Returns a ATTRIB simdified view */			\
@@ -135,8 +135,8 @@ namespace esnort
     auto simdify() ATTRIB					\
     {								\
       return							\
-	SUBEXPR(0).simdify()*					\
-	SUBEXPR(1).simdify();					\
+	SUBNODE(0).simdify()*					\
+	SUBNODE(1).simdify();					\
     }
     
     PROVIDE_SIMDIFY(const);
@@ -151,8 +151,8 @@ namespace esnort
     auto getRef() ATTRIB					\
     {								\
       return							\
-	SUBEXPR(0).getRef()*					\
-	SUBEXPR(1).getRef();					\
+	SUBNODE(0).getRef()*					\
+	SUBNODE(1).getRef();					\
     }
     
     PROVIDE_GET_REF(const);
@@ -168,7 +168,7 @@ namespace esnort
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
     static auto getCompsForFact(const CompsList<NCcs...>& nccs)
     {
-      using FreeC=TupleFilterAllTypes<typename SubExpr<I>::Comps,FC>;
+      using FreeC=TupleFilterAllTypes<typename SubNode<I>::Comps,FC>;
       
       return tupleGetSubset<FreeC>(nccs);
     }
@@ -193,12 +193,12 @@ namespace esnort
 	
 	auto e0=[this,&fc0,&c...](const auto&...extra) INLINE_ATTRIBUTE
 	{
-	  return std::apply(SUBEXPR(0),std::tuple_cat(fc0,std::make_tuple(c.transp()...,extra...)));
+	  return std::apply(SUBNODE(0),std::tuple_cat(fc0,std::make_tuple(c.transp()...,extra...)));
 	};
 	
 	auto e1=[this,&fc1,&c...](const auto&...extra) INLINE_ATTRIBUTE
 	{
-	  return std::apply(SUBEXPR(1),std::tuple_cat(fc1,std::make_tuple(c...,extra...)));
+	  return std::apply(SUBNODE(1),std::tuple_cat(fc1,std::make_tuple(c...,extra...)));
 	};
 	
 	if constexpr(isComplProd)
@@ -231,7 +231,7 @@ namespace esnort
 	     T2&& fact2,
 	     const DynamicComps& dynamicSizes,
 	     UNIVERSAL_CONSTRUCTOR_IDENTIFIER) :
-      SubExprs<_E...>(fact1,fact2),
+      SubNodes<_E...>(fact1,fact2),
       dynamicSizes(dynamicSizes)
     {
     }
@@ -239,7 +239,7 @@ namespace esnort
   
   template <typename _E1,
 	    typename _E2,
-	    ENABLE_THIS_TEMPLATE_IF(isExpr<_E1> and isExpr<_E2>)>
+	    ENABLE_THIS_TEMPLATE_IF(isNode<_E1> and isNode<_E2>)>
   auto prod(_E1&& e1,
 	    _E2&& e2)
   {
@@ -283,7 +283,7 @@ namespace esnort
   /// Catch the product operator
   template <typename E1,
 	    typename E2,
-	    ENABLE_THIS_TEMPLATE_IF(isExpr<E1> and isExpr<E2>)>
+	    ENABLE_THIS_TEMPLATE_IF(isNode<E1> and isNode<E2>)>
   auto operator*(E1&& e1,
 		 E2&& e2)
   {

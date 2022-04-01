@@ -17,10 +17,10 @@ namespace esnort
   /// Holds a variable on Host stack
   template <typename T>
   struct StackedVariable :
-    Expr<THIS>,
+    Node<THIS>,
     VariableExecSpaceChanger<THIS,T,ExecSpace::HOST>
   {
-    using Expr<THIS>::operator=;
+    using Node<THIS>::operator=;
     
 #undef THIS
     

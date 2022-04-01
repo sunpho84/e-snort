@@ -8,21 +8,21 @@
 /// \file expr/operations/dagger.hpp
 
 #include <expr/nodes/conj.hpp>
-#include <expr/nodes/expr.hpp>
+#include <expr/nodes/node.hpp>
 #include <expr/nodes/transp.hpp>
 
 namespace esnort
 {
   /// Take the dagger of an expression
   template <typename _E,
-	    ENABLE_THIS_TEMPLATE_IF(isExpr<_E>)>
+	    ENABLE_THIS_TEMPLATE_IF(isNode<_E>)>
   HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
   decltype(auto) dag(_E&& e)
   {
     using E=std::decay_t<_E>;
     
     if constexpr(isConjugator<E>)
-      return transpose(FORWARD_MEMBER_VAR(_E,e,conjExpr));
+      return transpose(FORWARD_MEMBER_VAR(_E,e,template subNode<0>));
     else
       if constexpr(isTransposer<E>)
 	return conj(FORWARD_MEMBER_VAR(_E,e,transpExpr));

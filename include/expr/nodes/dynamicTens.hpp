@@ -13,7 +13,7 @@
 #include <expr/comps/dynamicCompsProvider.hpp>
 #include <expr/nodes/dynamicTensDeclaration.hpp>
 #include <expr/assign/executionSpace.hpp>
-#include <expr/nodes/expr.hpp>
+#include <expr/nodes/node.hpp>
 #include <expr/comps/indexComputer.hpp>
 #include <expr/nodes/tensRef.hpp>
 #include <metaprogramming/constnessChanger.hpp>
@@ -218,7 +218,7 @@ namespace esnort
   
   template <typename T>
   INLINE_FUNCTION
-  auto Expr<T>::fillDynamicTens() const
+  auto Node<T>::fillDynamicTens() const
   {
     DynamicTens<typename T::Comps,typename T::Fund,T::execSpace> res(DE_CRTPFY(const T,this).getDynamicSizes());
     
