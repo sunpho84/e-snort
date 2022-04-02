@@ -21,9 +21,9 @@ namespace esnort
   template <typename T>
   struct ArithmeticTypeTraits;
   
-#define PROVIDE_ZERO(TYPE,OP)			\
+#define PROVIDE_ZERO(PREFIX,TYPE,OP)		\
   static INLINE_FUNCTION HOST_DEVICE_ATTRIB	\
-  TYPE zero()					\
+  PREFIX TYPE zero()				\
   {						\
     return OP;					\
   }						\

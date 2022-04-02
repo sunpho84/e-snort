@@ -11,34 +11,24 @@
 #include <expr/nodes/conj.hpp>
 #include <expr/nodes/node.hpp>
 #include <expr/comps/prodCompsDeducer.hpp>
+#include <expr/nodes/producerDeclaration.hpp>
 #include <expr/nodes/subNodes.hpp>
 #include <metaprogramming/arithmeticTraits.hpp>
 
 namespace esnort
 {
-  PROVIDE_DETECTABLE_AS(Producer);
-  
-  /// Producer
-  ///
-  /// Forward declaration to capture the components
-  template <typename _Ccs,
-	    typename _E,
-	    typename _Comps,
-	    typename _Fund>
-  struct Producer;
-  
 #define THIS					\
-  Producer<CompsList<Cc...>,std::tuple<_E...>,CompsList<C...>,_Fund>
+  Producer<CompsList<Cc...>,std::tuple<_E...>,CompsList<C...>,_Fund,std::index_sequence<Is...>>
   
 #define BASE					\
-    Node<THIS>
+  Node<THIS>
   
   /// Producer
-  ///
   template <typename...Cc,
 	    typename..._E,
 	    typename...C,
-	    typename _Fund>
+	    typename _Fund,
+	    size_t...Is>
   struct THIS :
     DynamicCompsProvider<CompsList<C...>>,
     DetectableAsProducer,
@@ -108,26 +98,29 @@ namespace esnort
     /// Return whether can be assigned at compile time
     static constexpr bool canAssignAtCompileTime=false;
     
+    template <int I>
+    using SimdifyingCompOfSubNode=
+      typename SubNode<I>::SimdifyingComp;
+    
     /// Determine if product can be simdified - to be extended
     static constexpr bool simdifyCase()
     {
-      using S0=typename SubNode<0>::SimdifyingComp;
-      using S1=typename SubNode<1>::SimdifyingComp;
-      
-      constexpr bool c0=SubNode<0>::canSimdify and not tupleHasType<ContractedComps,Transp<S0>> and not (isComplProd and std::is_same_v<ComplId,S0>);
-      constexpr bool c1=SubNode<1>::canSimdify and not tupleHasType<ContractedComps,S1> and not (isComplProd and std::is_same_v<ComplId,S1>);
-      
-      return c0 and c1 and std::is_same_v<S0,S1>;
+      return
+	(SubNode<Is>::canSimdify and...) and
+	((not tupleHasType<ContractedCompsForFact<Is>,SimdifyingCompOfSubNode<Is>>) and...) and
+	std::is_same_v<SimdifyingCompOfSubNode<Is>...> and
+	not (isComplProd and (std::is_same_v<ComplId,SimdifyingCompOfSubNode<Is>> or...));
     }
     
-    /// States whether the tensor can be simdified
+    /// States whether the operations can be simdified
     static constexpr bool canSimdify=
       simdifyCase();
     
     /// \todo improve
     
     /// Components on which simdifying
-    using SimdifyingComp=typename SubNode<0>::SimdifyingComp;
+    using SimdifyingComp=
+      typename SubNode<0>::SimdifyingComp;
     
 #define PROVIDE_SIMDIFY(ATTRIB)					\
     /*! Returns a ATTRIB simdified view */			\
@@ -135,8 +128,7 @@ namespace esnort
     auto simdify() ATTRIB					\
     {								\
       return							\
-	SUBNODE(0).simdify()*					\
-	SUBNODE(1).simdify();					\
+	(SUBNODE(Is).simdify()*...);				\
     }
     
     PROVIDE_SIMDIFY(const);
@@ -151,8 +143,7 @@ namespace esnort
     auto getRef() ATTRIB					\
     {								\
       return							\
-	SUBNODE(0).getRef()*					\
-	SUBNODE(1).getRef();					\
+	(SUBNODE(Is).getRef()*...);				\
     }
     
     PROVIDE_GET_REF(const);
@@ -160,6 +151,12 @@ namespace esnort
     PROVIDE_GET_REF(/* non const */);
     
 #undef PROVIDE_GET_REF
+    
+    template <int I>
+    using ContractedCompsForFact=
+      std::conditional_t<(I==0),
+			 CompsList<Transp<Cc>...>,
+			 CompsList<Cc...>>;
     
     /// Gets the components for the I-th factor
     template <int I,
@@ -178,78 +175,75 @@ namespace esnort
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
     Fund eval(const NCcs&..._nccs) const
     {
-      const auto nccs=std::make_tuple(_nccs...);
+      const auto allNccs=
+	std::make_tuple(_nccs...);
       
-      using MaybeComplId=std::conditional_t<isComplProd,CompsList<ComplId>,CompsList<>>;
-      const auto fc0=getCompsForFact<0,TupleCat<CompsList<Transp<Cc>...>,MaybeComplId>>(nccs);
-      const auto fc1=getCompsForFact<1,TupleCat<CompsList<       Cc...>,MaybeComplId>>(nccs);
+      using MaybeComplId=
+	std::conditional_t<isComplProd,CompsList<ComplId>,CompsList<>>;
       
       auto res=zero<Fund>();
       
-      loopOnAllComps<ContractedComps>(dynamicSizes,[this,&nccs,&res,fc0,fc1,_nccs...](const auto&...c) INLINE_ATTRIBUTE
+      loopOnAllComps<ContractedComps>(dynamicSizes,[this,&allNccs,&res](const auto&..._ccs) INLINE_ATTRIBUTE
       {
-	// Disable warning
-	[](auto...){}(_nccs...);
+	auto ccs2=
+	  std::make_tuple(std::make_tuple(_ccs.transp()...),
+			  std::make_tuple(_ccs...));
 	
-	auto e0=[this,&fc0,&c...](const auto&...extra) INLINE_ATTRIBUTE
-	{
-	  return std::apply(SUBNODE(0),std::tuple_cat(fc0,std::make_tuple(c.transp()...,extra...)));
-	};
-	
-	auto e1=[this,&fc1,&c...](const auto&...extra) INLINE_ATTRIBUTE
-	{
-	  return std::apply(SUBNODE(1),std::tuple_cat(fc1,std::make_tuple(c...,extra...)));
-	};
+	auto [e0,e1]=
+	  std::make_tuple([this,&allNccs,&ccs=std::get<Is>(ccs2)](const auto&...extra) INLINE_ATTRIBUTE
+	  {
+	    using ListOfIrrelevantComps=
+	      TupleCat<ContractedCompsForFact<Is>,MaybeComplId>;
+	    
+	    auto nccs=
+	      getCompsForFact<Is,ListOfIrrelevantComps>(allNccs);
+	    
+	    const auto res=
+	      std::apply(SUBNODE(Is),std::tuple_cat(ccs,nccs,std::make_tuple(extra...)));
+	    return res;
+	  }...);
 	
 	if constexpr(isComplProd)
 	  {
-	    const auto& reIm=std::get<ComplId>(nccs);
+	    const auto& reIm=std::get<ComplId>(allNccs);
 	    
 	    if(reIm==Re)
 	      {
-		res+=e0(Re)*e1(Re);
-		res-=e0(Im)*e1(Im);
+		sumAssignTheProd(res,e0(Re),e1(Re));
+		subAssignTheProd(res,e0(Im),e1(Im));
 	      }
 	    else
 	      {
-		res+=e0(Re)*e1(Im);
-		res+=e0(Im)*e1(Re);
+		sumAssignTheProd(res,e0(Re),e1(Im));
+		sumAssignTheProd(res,e0(Im),e1(Re));
 	      }
 	  }
 	else
-	  res+=e0()*e1();
+	  sumAssignTheProd(res,e0(),e1());
       });
       
       return res;
     }
     
     /// Construct
-    template <typename T1,
-	      typename T2>
+    template <typename...T>
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-    Producer(T1&& fact1,
-	     T2&& fact2,
-	     const DynamicComps& dynamicSizes,
-	     UNIVERSAL_CONSTRUCTOR_IDENTIFIER) :
-      SubNodes<_E...>(fact1,fact2),
+    Producer(const DynamicComps& dynamicSizes,
+	     UNIVERSAL_CONSTRUCTOR_IDENTIFIER,
+	     T&&...facts) :
+      SubNodes<_E...>(facts...),
       dynamicSizes(dynamicSizes)
     {
     }
   };
   
-  template <typename _E1,
-	    typename _E2,
-	    ENABLE_THIS_TEMPLATE_IF(isNode<_E1> and isNode<_E2>)>
-  auto prod(_E1&& e1,
-	    _E2&& e2)
+  template <typename..._E,
+	    ENABLE_THIS_TEMPLATE_IF(isNode<_E> and...)>
+  auto prod(_E&&...e)
   {
-    using E1=std::decay_t<_E1>;
-    
-    using E2=std::decay_t<_E2>;
-    
     /// Computes the product components
     using PCC=
-      ProdCompsDeducer<typename E1::Comps,typename E2::Comps>;
+      ProdCompsDeducer<typename std::decay_t<_E>::Comps...>;
     
     /// Gets the visible comps
     using VisibleComps=
@@ -261,29 +255,28 @@ namespace esnort
     
     /// Determine the fundamental type of the product
     using Fund=
-      decltype(typename E1::Fund{}*typename E2::Fund{});
+      decltype((typename std::decay_t<_E>::Fund{}*...));
     
     /// Resulting type
     using Res=
       Producer<ContractedComps,
-	       std::tuple<decltype(e1),decltype(e2)>,
+	       std::tuple<decltype(e)...>,
 	       VisibleComps,
 	       Fund>;
     
     /// Resulting dynamic components
     const auto& dc=
-      dynamicCompsCombiner<typename Res::DynamicComps>(std::make_tuple(e1.getDynamicSizes(),e2.getDynamicSizes()));
+      dynamicCompsCombiner<typename Res::DynamicComps>(std::make_tuple(e.getDynamicSizes()...));
     
     return
-      Res(std::forward<_E1>(e1),
-	  std::forward<_E2>(e2),
-	  dc,UNIVERSAL_CONSTRUCTOR_CALL);
+      Res(dc,UNIVERSAL_CONSTRUCTOR_CALL,std::forward<_E>(e)...);
   }
   
   /// Catch the product operator
   template <typename E1,
 	    typename E2,
 	    ENABLE_THIS_TEMPLATE_IF(isNode<E1> and isNode<E2>)>
+  INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
   auto operator*(E1&& e1,
 		 E2&& e2)
   {

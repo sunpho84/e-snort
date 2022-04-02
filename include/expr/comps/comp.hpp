@@ -13,12 +13,15 @@
 
 namespace esnort
 {
-  /// Compnent
+  PROVIDE_DETECTABLE_AS(Comp);
+  
+  /// Component
   template <compFeat::IsTransposable IsTransposable,
 	    typename Index,
 	    typename Derived>
   struct Comp  :
     compFeat::Transposable<IsTransposable,Derived>,
+    DetectableAsComp,
     BaseComp<Derived,Index>
   {
     using Base=BaseComp<Derived,Index>;
