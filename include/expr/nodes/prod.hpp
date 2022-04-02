@@ -14,6 +14,7 @@
 #include <expr/nodes/producerDeclaration.hpp>
 #include <expr/nodes/subNodes.hpp>
 #include <metaprogramming/arithmeticTraits.hpp>
+#include <metaprogramming/asConstexpr.hpp>
 
 namespace esnort
 {
@@ -189,19 +190,32 @@ namespace esnort
 	  std::make_tuple(std::make_tuple(_ccs.transp()...),
 			  std::make_tuple(_ccs...));
 	
-	auto [e0,e1]=
-	  std::make_tuple([this,&allNccs,&ccs=std::get<Is>(ccs2)](const auto&...extra) INLINE_ATTRIBUTE
+	/// Gets the evaluator for a given subnode
+	auto getSubNodeEvaluer=
+	  [this,&allNccs,&ccs2](auto i) INLINE_ATTRIBUTE
 	  {
-	    using ListOfIrrelevantComps=
-	      TupleCat<ContractedCompsForFact<Is>,MaybeComplId>;
-	    
-	    auto nccs=
-	      getCompsForFact<Is,ListOfIrrelevantComps>(allNccs);
-	    
-	    const auto res=
-	      std::apply(SUBNODE(Is),std::tuple_cat(ccs,nccs,std::make_tuple(extra...)));
-	    return res;
-	  }...);
+	    return
+	      [this,&i,&allNccs,&ccs=std::get<i>(ccs2)](const auto&...maybeReIm) INLINE_ATTRIBUTE
+	      {
+		/// Put together the comonents to be removed
+		using CompsToRemove=
+		  TupleCat<ContractedCompsForFact<i>,MaybeComplId>;
+		
+		/// Non contracted components
+		auto nccs=
+		  getCompsForFact<i,CompsToRemove>(allNccs);
+		
+		/// Result
+		const auto res=
+		  std::apply(SUBNODE(i),std::tuple_cat(ccs,nccs,std::make_tuple(maybeReIm...)));
+		
+		return res;
+	      };
+	  };
+	
+	/// Takes the two evaluators
+	auto [e0,e1]=
+	  std::make_tuple(getSubNodeEvaluer(asConstexpr<Is>)...);
 	
 	if constexpr(isComplProd)
 	  {

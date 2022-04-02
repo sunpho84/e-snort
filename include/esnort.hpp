@@ -32,6 +32,8 @@
 #include <ios/minimalLogger.hpp>
 
 #include <metaprogramming/arithmeticOperatorsViaCast.hpp>
+#include <metaprogramming/inline.hpp>
+#include <metaprogramming/asConstexpr.hpp>
 #include <metaprogramming/unrolledFor.hpp>
 
 #include <resources/aliver.hpp>
