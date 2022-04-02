@@ -22,6 +22,7 @@
 #include <expr/nodes/dynamicTens.hpp>
 #include <expr/comps/indexComputer.hpp>
 #include <expr/nodes/prod.hpp>
+#include <expr/nodes/sum.hpp>
 #include <expr/nodes/stackTens.hpp>
 #include <expr/assign/threadAssign.hpp>
 #include <expr/nodes/transp.hpp>

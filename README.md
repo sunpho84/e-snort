@@ -219,12 +219,11 @@ DONE
 - Binder
 - A reference copied to a gpu points inside a binder must get copied by value
 - Compl, conj, transp
+- Products
+- Sums
 
 TODO
 ---
-- Products
-BindComps to uniform to subexprs
-- Sums
 - Fma
 - Spawning expr assignment in the different case, how will we deal with \*=, -= etc? Do they have any usage, or should we divert to the =a*b case?
 
