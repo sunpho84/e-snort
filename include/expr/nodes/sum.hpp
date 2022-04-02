@@ -1,7 +1,6 @@
 #ifndef _SUM_HPP
 #define _SUM_HPP
 
-#include "expr/nodes/prod.hpp"
 #ifdef HAVE_CONFIG_H
 # include <config.hpp>
 #endif

@@ -1,43 +1,47 @@
-#ifndef _TRANSP_HPP
-#define _TRANSP_HPP
+#ifndef _TRACE_HPP
+#define _TRACE_HPP
 
 #ifdef HAVE_CONFIG_H
 # include <config.hpp>
 #endif
 
-/// \file expr/nodes/transp.hpp
+/// \file expr/nodes/trace.hpp
 
-#include <expr/comps/comp.hpp>
 #include <expr/comps/comps.hpp>
-#include <expr/nodes/node.hpp>
+#include <expr/comps/tracerCompsDeducer.hpp>
+#include <expr/comps/dynamicCompsProvider.hpp>
 #include <expr/nodes/subNodes.hpp>
+#include <expr/nodes/node.hpp>
+#include <metaprogramming/arithmeticOperatorsViaCast.hpp>
 
 namespace esnort
 {
-  PROVIDE_DETECTABLE_AS(Transposer);
+  PROVIDE_DETECTABLE_AS(Tracer);
   
-  /// Transposer
+  /// Tracer
   ///
   /// Forward declaration to capture the components
-  template <typename _E,
+  template <typename Tc,
+	    typename _E,
 	    typename _Comps,
 	    typename _Fund>
-  struct Transposer;
+  struct Tracer;
   
 #define THIS					\
-  Transposer<std::tuple<_E...>,CompsList<C...>,_Fund>
+  Tracer<CompsList<Tc...>,std::tuple<_E...>,CompsList<C...>,_Fund>
   
 #define BASE					\
-    Node<THIS>
+  Node<THIS>
   
-  /// Transposer
+  /// Tracer
   ///
-  template <typename..._E,
+  template <typename...Tc,
+	    typename..._E,
 	    typename...C,
 	    typename _Fund>
   struct THIS :
     DynamicCompsProvider<CompsList<C...>>,
-    DetectableAsTransposer,
+    DetectableAsTracer,
     SubNodes<_E...>,
     BASE
   {
@@ -51,6 +55,10 @@ namespace esnort
 #undef THIS
     
     static_assert(sizeof...(_E)==1,"Expecting 1 argument");
+    
+    /// Components
+    using TracedComps=
+      CompsList<Tc...>;
     
     /// Components
     using Comps=
@@ -76,7 +84,7 @@ namespace esnort
     INLINE_FUNCTION
     bool canAssign()
     {
-      return SUBNODE(0).canAssign();
+      return false;
     }
     
     /// This is a lightweight object
@@ -86,23 +94,22 @@ namespace esnort
     using Base::operator=;
     
     /// Return whether can be assigned at compile time
-    static constexpr bool canAssignAtCompileTime=
-      SubNode<0>::canAssignAtCompileTime;
+    static constexpr bool canAssignAtCompileTime=false;
     
     /// States whether the tensor can be simdified
     static constexpr bool canSimdify=
-      SubNode<0>::canSimdify;
+      SubNode<0>::canSimdify and not tupleHasType<TracedComps,typename SubNode<0>::SimdifyingComp>;
     
     /// Components on which simdifying
     using SimdifyingComp=
-      Transp<typename SubNode<0>::SimdifyingComp>;
+      typename SubNode<0>::SimdifyingComp;
     
 #define PROVIDE_SIMDIFY(ATTRIB)					\
     /*! Returns a ATTRIB simdified view */			\
     INLINE_FUNCTION						\
     auto simdify() ATTRIB					\
     {								\
-      return transp(SUBNODE(0).simdify());			\
+      return trace(SUBNODE(0).simdify());			\
     }
     
     PROVIDE_SIMDIFY(const);
@@ -116,7 +123,7 @@ namespace esnort
     INLINE_FUNCTION						\
     auto getRef() ATTRIB					\
     {								\
-      return transp(SUBNODE(0).getRef());			\
+      return trace(SUBNODE(0).getRef());			\
     }
     
     PROVIDE_GET_REF(const);
@@ -126,64 +133,55 @@ namespace esnort
 #undef PROVIDE_GET_REF
     
     /// Evaluate
-    template <typename...TD>
+    template <typename...NTc>
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-    Fund eval(const TD&...td) const
+    Fund eval(const NTc&...nTCs) const
     {
-      return SUBNODE(0)(transp(td)...);
+      /// Result
+      auto res=zero<Fund>();
+      
+      loopOnAllComps<TracedComps>(getDynamicSizes(),
+				  [this,&res,&nTCs...](const auto&...tCs) INLINE_ATTRIBUTE
+				  {
+				    /// First argument
+				    res+=
+				      this->nestedExpr(nTCs...,tCs...,tCs.transp()...);
+				  });
+      
+      return
+	res;
     }
     
     /// Construct
     template <typename T>
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-    Transposer(T&& arg,
-	       UNIVERSAL_CONSTRUCTOR_IDENTIFIER) :
+    Tracer(T&& arg) :
       SubNodes<_E...>(std::forward<T>(arg))
     {
     }
   };
   
-  /// Transpose an expression
+  /// Trace an expression
   template <typename _E,
 	    ENABLE_THIS_TEMPLATE_IF(isNode<_E>)>
   HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-  decltype(auto) transp(_E&& e)
+  decltype(auto) trace(_E&& e)
   {
-#if 0
-    LOGGER<<"Now inside transp";
-#endif
-    
     /// Base passed type
     using E=
       std::decay_t<_E>;
     
-    if constexpr(isTransposer<E>)
-      return e.template subNode<0>;
-    else
-      {
-	/// Components
-	using Comps=
-	  TranspMatrixTensorComps<typename E::Comps>;
-	
-	if constexpr(not compsAreTransposable<Comps>)
-	  {
-#if 0
-	    LOGGER<<"no need to transpose, returning the argument, which is "<<&e<<" "<<demangle(typeid(_E).name())<<(std::is_lvalue_reference_v<decltype(e)>?"&":(std::is_rvalue_reference_v<decltype(e)>?"&&":""));
-#endif
-	    
-	    return RemoveRValueReference<_E>(e);
-	  }
-	else
-	  {
-	    /// Type returned when evaluating the expression
-	    using Fund=
-	      typename E::Fund;
-	    
-	    return
-	      Transposer<std::tuple<_E>,Comps,Fund>(std::forward<_E>(e),
-						    UNIVERSAL_CONSTRUCTOR_CALL);
-	  }
-      }
+    using CompsDeducer=
+      TracerCompsDeducer<typename E::Comps>;
+    
+    using TracedComps=typename CompsDeducer::TracedComps;
+    
+    using Comps=typename CompsDeducer::VisibleComps;
+    
+    using Fund=typename E::Fund;
+    
+    return
+      Tracer<TracedComps,std::tuple<_E>,Comps,Fund>(std::forward<_E>(e));
   }
 }
 

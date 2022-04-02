@@ -26,6 +26,7 @@
 #include <expr/nodes/stackTens.hpp>
 #include <expr/assign/threadAssign.hpp>
 #include <expr/nodes/transp.hpp>
+#include <expr/nodes/trace.hpp>
 
 #include <ios/file.hpp>
 #include <ios/logger.hpp>
