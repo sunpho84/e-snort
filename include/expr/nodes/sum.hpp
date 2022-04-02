@@ -12,7 +12,6 @@
 #include <expr/nodes/conj.hpp>
 #include <expr/nodes/node.hpp>
 #include <expr/nodes/subNodes.hpp>
-#include <expr/nodes/sumTheProd.hpp>
 #include <metaprogramming/arithmeticTraits.hpp>
 #include <tuples/uniqueTupleFromTuple.hpp>
 
@@ -26,11 +25,11 @@ namespace esnort
   template <typename _E,
 	    typename _Comps,
 	    typename _Fund,
-	    typename _Is=std::index_sequence<0,1>>
+	    typename _Is=std::integer_sequence<int,0,1>>
   struct Summer;
   
 #define THIS								\
-  Summer<std::tuple<_E...>,CompsList<C...>,_Fund,std::index_sequence<Is...>>
+  Summer<std::tuple<_E...>,CompsList<C...>,_Fund,std::integer_sequence<int,Is...>>
   
 #define BASE					\
     Node<THIS>
@@ -40,7 +39,7 @@ namespace esnort
   template <typename..._E,
 	    typename...C,
 	    typename _Fund,
-	    size_t...Is>
+	    int...Is>
   struct THIS :
     DynamicCompsProvider<CompsList<C...>>,
     DetectableAsSummer,
@@ -81,6 +80,7 @@ namespace esnort
     const DynamicComps dynamicSizes;
     
     /// Returns the dynamic sizes
+    INLINE_FUNCTION HOST_DEVICE_ATTRIB
     decltype(auto) getDynamicSizes() const
     {
       return dynamicSizes;
@@ -181,6 +181,7 @@ namespace esnort
   
   template <typename..._E,
 	    ENABLE_THIS_TEMPLATE_IF(isNode<_E> and...)>
+  INLINE_FUNCTION HOST_DEVICE_ATTRIB
   auto sum(_E&&...e)
   {
     /// Computes the sum components
@@ -198,7 +199,7 @@ namespace esnort
 	     Fund>;
     
     /// Resulting dynamic components
-    const auto& dc=
+    const auto dc=
       dynamicCompsCombiner<typename Res::DynamicComps>(std::make_tuple(e.getDynamicSizes()...));
     
     return
@@ -213,14 +214,8 @@ namespace esnort
   auto operator+(E1&& e1,
 		 E2&& e2)
   {
-    if constexpr(isProducer<E2>)
-      return sumTheProd(e1,e2.template subNode<0>(),e2.template subNode<1>());
-    else
-      if constexpr(isProducer<E1>)
-	return e2+e1;
-      else
-	return
-	  sum(std::forward<E1>(e1),std::forward<E2>(e2));
+    return
+      sum(std::forward<E1>(e1),std::forward<E2>(e2));
   }
 }
 

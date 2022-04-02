@@ -44,6 +44,8 @@ using Comps=CompsList<ComplId,SpinRow,SpinCln>;
 StackTens<Comps,double> a;
 StackTens<CompsList<ComplId,SpinRow,SpinCln>,double> b;
 
+StackTens<CompsList<ComplId>,double> one;
+
 void testDag()
 {
   
@@ -79,9 +81,8 @@ void testDag()
   // });
   
   {
-    StackTens<CompsList<ComplId>,double> a;
-    real(a)=0.0;
-    imag(a)=1.0;
+    real(one)=0.0;
+    imag(one)=1.0;
 
     // LOGGER<<"/////////////////////////////////////////////////////////////////";
     
@@ -98,13 +99,24 @@ void testDag()
     // auto t=dag(a);
     // LOGGER<<a.storage<<" "<<t.conjExpr.storage;
     
-    auto b=(a*dag(a));
+    auto b=(one*dag(one)).fillDynamicTens();
+    
+    
+    ASM_BOOKMARK_BEGIN("sum");
+    auto c=(one+dag(one)).fillDynamicTens();
+    ASM_BOOKMARK_END("sum");
+    
+    ASM_BOOKMARK_BEGIN("sumTheProd");
+    auto d=(one+dag(one)*one).fillDynamicTens();
+    ASM_BOOKMARK_END("sumTheProd");
     
     //LOGGER<<b.factNode<0>().storage<<" "<<b.factNode<1>().conjExpr.storage<<" "<<a.storage;
     
     // .fillDynamicTens();
     
     LOGGER<<real(b)<<" "<<imag(b);
+    LOGGER<<real(c)<<" "<<imag(c);
+    LOGGER<<real(d)<<" "<<imag(d);
   }
 }
 
@@ -132,11 +144,41 @@ void testProd()
   });
 }
 
+namespace Tests
+{
+  DEFINE_UNTRANSPOSABLE_COMP(Sim,int,4,sim);
+  
+  using Comps=CompsList<SpinRow,ComplId,Sim>;
+  
+  StackTens<Comps,double> a,b,c;
+  
+  void testS()
+  {
+    loopOnAllComps<Comps>({},[](const SpinRow& sr,const ComplId& reIm,const Sim& sim)
+    {
+      b(sr,reIm,sim)=c(sr,reIm,sim)=(reIm==0);
+    });
+    
+    ASM_BOOKMARK_BEGIN("TESTS");
+    a=b*c;
+    ASM_BOOKMARK_END("TESTS");
+    
+    loopOnAllComps<Comps>({},[](const SpinRow& sr,const ComplId& reIm,const Sim& sim)
+    {
+      LOGGER<<a(sr,reIm,sim);
+    });
+  }
+}
+
 int in_main(int narg,char** arg)
 {
+  Tests::testS();
+  
+  LOGGER<<"/////////////////////////////////////////////////////////////////";
+  
   testProd();
   
-  return 0;
+  LOGGER<<"/////////////////////////////////////////////////////////////////";
   
   // ASM_BOOKMARK_BEGIN("TEST_INDEX");
   // j=index(CompsList<SpaceTime>{5},SpinRow{3},SpaceTime{1});
@@ -173,7 +215,7 @@ int in_main(int narg,char** arg)
   
   auto rrr=s(SpanRow{0}).getRef();
   
-  using T=internal::_NodeRefOrVal<decltype(s.getRef())>;
+  //using T=internal::_NodeRefOrVal<decltype(s.getRef())>;
   
   static_assert(not std::is_lvalue_reference_v<decltype(rrr)::SubNode<0>>,"");
   //auto ee=(decltype(rrr)::BoundExpr)(SpaceTime{0});

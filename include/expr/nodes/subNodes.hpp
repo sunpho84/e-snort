@@ -44,6 +44,7 @@ namespace esnort
     
     /// Constructor
     template <typename...T>
+    INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
     SubNodes(T&&...t) :
       subNodes(std::forward<T>(t)...)
     {

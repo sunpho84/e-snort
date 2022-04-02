@@ -13,7 +13,7 @@ namespace esnort
 {
   /// Returns I wrapped in a std::integral_constant
   template <auto I>
-  auto asConstexpr=
+  inline constexpr auto asConstexpr=
     std::integral_constant<decltype(I),I>{};
 }
 

@@ -66,6 +66,7 @@ namespace esnort
       SubNode<0>::execSpace;
     
     /// Returns the dynamic sizes
+    INLINE_FUNCTION HOST_DEVICE_ATTRIB
     decltype(auto) getDynamicSizes() const
     {
       return SUBNODE(0).getDynamicSizes();

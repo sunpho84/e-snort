@@ -19,7 +19,7 @@
 namespace esnort
 {
 #define THIS					\
-  Producer<CompsList<Cc...>,std::tuple<_E...>,CompsList<C...>,_Fund,std::index_sequence<Is...>>
+  Producer<CompsList<Cc...>,std::tuple<_E...>,CompsList<C...>,_Fund,std::integer_sequence<int,Is...>>
   
 #define BASE					\
   Node<THIS>
@@ -29,7 +29,7 @@ namespace esnort
 	    typename..._E,
 	    typename...C,
 	    typename _Fund,
-	    size_t...Is>
+	    int...Is>
   struct THIS :
     DynamicCompsProvider<CompsList<C...>>,
     DetectableAsProducer,
@@ -78,6 +78,7 @@ namespace esnort
     const DynamicComps dynamicSizes;
     
     /// Returns the dynamic sizes
+    INLINE_FUNCTION HOST_DEVICE_ATTRIB
     decltype(auto) getDynamicSizes() const
     {
       return dynamicSizes;
@@ -194,20 +195,22 @@ namespace esnort
 	auto getSubNodeEvaluer=
 	  [this,&allNccs,&ccs2](auto i) INLINE_ATTRIBUTE
 	  {
+	    constexpr int I=i();
+	    
 	    return
-	      [this,&i,&allNccs,&ccs=std::get<i>(ccs2)](const auto&...maybeReIm) INLINE_ATTRIBUTE
+	      [this,&allNccs,&ccs=std::get<I>(ccs2)](const auto&...maybeReIm) INLINE_ATTRIBUTE
 	      {
 		/// Put together the comonents to be removed
 		using CompsToRemove=
-		  TupleCat<ContractedCompsForFact<i>,MaybeComplId>;
+		  TupleCat<ContractedCompsForFact<I>,MaybeComplId>;
 		
 		/// Non contracted components
 		auto nccs=
-		  getCompsForFact<i,CompsToRemove>(allNccs);
+		  getCompsForFact<I,CompsToRemove>(allNccs);
 		
 		/// Result
 		const auto res=
-		  std::apply(SUBNODE(i),std::tuple_cat(ccs,nccs,std::make_tuple(maybeReIm...)));
+		  std::apply(SUBNODE(I),std::tuple_cat(ccs,nccs,std::make_tuple(maybeReIm...)));
 		
 		return res;
 	      };
@@ -253,6 +256,7 @@ namespace esnort
   
   template <typename..._E,
 	    ENABLE_THIS_TEMPLATE_IF(isNode<_E> and...)>
+  INLINE_FUNCTION HOST_DEVICE_ATTRIB
   auto prod(_E&&...e)
   {
     /// Computes the product components
@@ -279,7 +283,7 @@ namespace esnort
 	       Fund>;
     
     /// Resulting dynamic components
-    const auto& dc=
+    const auto dc=
       dynamicCompsCombiner<typename Res::DynamicComps>(std::make_tuple(e.getDynamicSizes()...));
     
     return

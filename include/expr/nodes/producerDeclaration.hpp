@@ -22,7 +22,7 @@ namespace esnort
 	    typename _E,
 	    typename _Comps,
 	    typename _Fund,
-	    typename _Is=std::index_sequence<0,1>>
+	    typename _Is=std::integer_sequence<int,0,1>>
   struct Producer;
 }
 
