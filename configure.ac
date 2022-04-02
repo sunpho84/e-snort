@@ -75,6 +75,13 @@ AC_DEFINE_UNQUOTED([ENABLE_SIMD],${ENABLE_SIMD},[Enable SIMD])
 SUMMARY_RESULT="$SUMMARY_RESULT
 SIMD             : $enable_SIMD"
 
+if test "$enable_SIMD" == "yes"
+then
+	AX_FMA
+fi
+SUMMARY_RESULT="$SUMMARY_RESULT
+FMA              : $enable_FMA"
+
 #check if we enable splitting MPI autosearch
 AC_ARG_ENABLE(MPI-autosearch,
 	AS_HELP_STRING([--enable-MPI-autosearch],[Enable MPI autosearch]),

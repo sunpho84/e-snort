@@ -1,4 +1,4 @@
-# usage: AX_SIMD_TYPE(name of the instruction set, default flag, load, macro)
+# usage: AX_SIMD_TYPE(name of the instruction set, default flag, load, store, macro)
 AC_DEFUN([AX_SIMD_TYPE], [
 
 #introduce flags
@@ -31,7 +31,7 @@ do
 done
 if test "${$1_available}" == "yes"
 then
-	AC_MSG_RESULT([yes flag needed (if any): $simd_flags])
+	AC_MSG_RESULT([yes, flag needed (if any): $simd_flags])
 else
 	AC_MSG_RESULT([no])
 fi
