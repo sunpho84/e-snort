@@ -190,6 +190,10 @@ Expr
 An expression is static polymorphic for a node in the AST
 Fund and Comps are written into the node
 
+Grill
+---
+We define grill!
+
 DONE
 ---
 - Move external variabiles to a specific file
@@ -221,15 +225,17 @@ DONE
 - Compl, conj, transp
 - Products
 - Sums
+- Fma
+- Trace from nissa
 
 TODO
 ---
-- Fma
 - Spawning expr assignment in the different case, how will we deal with \*=, -= etc? Do they have any usage, or should we divert to the =a*b case?
 
 
 - Reducer from nissa
 - Grid from...?
+- Fields
 - Neighbors
 - MPI io
 - Random generator

@@ -37,7 +37,7 @@ namespace esnort
       static constexpr bool isContracted()
       {
 	if constexpr(C::isTransposable)
-	  return (C::RC==RC and (std::is_same_v<Transp<C>,O>||...));
+	  return (C::RC==RC and (std::is_same_v<Transp<C>,O> or...));
 	else
 	  return false;
       }
