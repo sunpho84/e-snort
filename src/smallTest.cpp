@@ -7,7 +7,7 @@
 using namespace esnort;
 
 
-DEFINE_TRANSPOSABLE_COMP(Spin,int,4,spin);
+DECLARE_TRANSPOSABLE_COMP(Spin,int,4,spin);
 
 StackTens<OfComps<SpinRow,SpinCln>,double> dt;
 

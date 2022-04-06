@@ -114,6 +114,12 @@ namespace esnort
     {
     }
     
+    constexpr INLINE_FUNCTION
+    StackTens(const StackTens& oth)
+    {
+      std::copy(oth.storage,oth.storage+nElements,storage);
+    }
+    
     /// Construct from another tens-like
     template <typename TOth,
 	      ExecSpace OthES>
@@ -121,6 +127,14 @@ namespace esnort
     StackTens(const BaseTens<TOth,Comps,Fund,OthES>& oth)
     {
       (*this)=DE_CRTPFY(const TOth,&oth);
+    }
+    
+    /// Initialize from list
+    template <typename...Tail>
+    constexpr INLINE_FUNCTION
+    StackTens(const Fund& first,const Tail&...tail) :
+      storage{first,(Fund)tail...}
+    {
     }
   };
 }

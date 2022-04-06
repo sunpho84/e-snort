@@ -16,7 +16,7 @@ namespace esnort
   /// Loop over a component
   template <typename T,
 	    typename F,
-	    ENABLE_THIS_TEMPLATE_IF(T::sizeAtCompileTime)>
+	    ENABLE_THIS_TEMPLATE_IF(T::sizeAtCompileTime>0)>
   INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
   void compLoop(F f)
   {
