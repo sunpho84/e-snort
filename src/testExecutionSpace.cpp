@@ -173,17 +173,41 @@ DECLARE_UNTRANSPOSABLE_COMP(GlbSite,int64_t,0,glbSite);
 void testGrill()
 {
   using U=Universe<4>;
-  
+  using Dir=U::Dir;
   
   using GlbGrill=U::Grill<GlbCoord,GlbSite,true>;
-
-  StackTens<OfComps<U::Dir>,GlbCoord> sides(3,3,3,3);
+  
+  StackTens<OfComps<Dir>,GlbCoord> sides(3,3,3,3);
   
   GlbGrill glbGrill(sides);
+  
+  glbGrill.forAllSites([&glbGrill](const GlbSite& site)
+  {
+    loopOnAllComps<CompsList<Ori,Dir>>({},[&glbGrill](const GlbSite& site,const Ori& ori,const Dir& dir)
+    {
+      const auto coords=glbGrill.coordsOfPoint(site);
+      const GlbSite neigh=glbGrill.neighOfPoint(site,ori,dir);
+      const auto neighCoords=glbGrill.coordsOfPoint(neigh);
+      
+      auto printCoords=[](auto& l,const auto c)
+      {
+	l<<"("<<c(Dir(0))<<","<<c(Dir(1))<<","<<c(Dir(2))<<","<<c(Dir(3))<<")";
+      };
+      
+      auto l=LOGGER;
+      l<<"Site "<<site;
+      printCoords(l,coords);
+      l<<"ori "<<ori<<" dir "<<dir<<" neigh "<<neigh<<" ";
+      printCoords(l,neighCoords);
+    },site);
+    
+  });
 }
 
 int in_main(int narg,char** arg)
 {
+  testGrill();
+  
   Tests::testS();
   
   LOGGER<<"/////////////////////////////////////////////////////////////////";

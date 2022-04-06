@@ -58,32 +58,24 @@ namespace esnort
       /// Set the hash table of coordinates of all points
       void fillCoordsOfPointsHashTables()
       {
-	loopOnAllComps<CompsList<Site>>(std::make_tuple(DE_CRTPFY(T,this).volume),
-					[&](const Site& site)
-					{
-					  StackTens<OfComps<Dir>,Coord> c=DE_CRTPFY(T,this).computeCoordsOfPoint(site);
-					  
-					  loopOnAllComps<CompsList<Site,Dir>>(std::make_tuple(DE_CRTPFY(T,this).volume),
-									      [&c,this](const Site& site,
-											const Dir& dir)
-									      {
-										coordsOfPointsHashTable(site,dir)=
-										  c(dir);
-									      });
-					});
+	DE_CRTPFY(T,this).forAllSites([&](const Site& site)
+	{
+	  coordsOfPointsHashTable(site)=
+	    DE_CRTPFY(T,this).computeCoordsOfPoint(site);
+	});
       }
       
       /// Set the hash table of neighbors
       void fillNeighsOfPointsHashTables()
       {
 	loopOnAllComps<CompsList<Site,Ori,Dir>>(std::make_tuple(DE_CRTPFY(T,this).volume),
-						[&](const Site& site,
-						    const Ori& ori,
-						    const Dir& dir)
-						{
-						  neighsOfPointsHashTable(site,ori,dir)=
-						    DE_CRTPFY(T,this).computeNeighOfPoint(site,ori,dir);
-						});
+					   [&](const Site& site,
+					       const Ori& ori,
+					       const Dir& dir)
+					   {
+					     neighsOfPointsHashTable(site,ori,dir)=
+					       DE_CRTPFY(T,this).computeNeighOfPoint(site,ori,dir);
+					   });
       }
     };
     
@@ -152,7 +144,7 @@ namespace esnort
 	
 	if constexpr(Hashing)
 	  return
-	    neighsOfPointsHashTable(site,ori,dir);
+	    this->neighsOfPointsHashTable(site,ori,dir);
 	else
 	  return
 	    computeNeighOfPoint(site,ori,dir);
@@ -166,19 +158,30 @@ namespace esnort
     struct Grill :
       HashableProvider<Grill<Coord,Site,Hashing>,Coord,Site,Hashing>
     {
+      /// Type needed to store all coords
       using Coords=
 	StackTens<OfComps<Dir>,Coord>;
       
+      /// Volume
       Site volume;
       
+      /// Grid sides
       Coords sides;
       
+      /// Create from sides
       Grill(const Coords& sides) :
 	volume((sides(Dir(I))*...)),
 	sides(sides)
       {
 	if constexpr(Hashing)
 	  this->fillHashTables(volume);
+      }
+      
+      /// Loop on all points calling the passed function
+      template <typename F>
+      void forAllSites(F f) const
+      {
+	loopOnAllComps<CompsList<Site>>(std::make_tuple(volume),f);
       }
       
       /// Returns the coordinates shifted in the asked direction
@@ -208,13 +211,6 @@ namespace esnort
 	/// Actual destintion
 	const Coord dest=
 	  safeModulo(rawDest,side);
-	
-	// /// Absolute number of boundaries passed
-	// const Coord nBCpassed=
-	//   ((rawDest<0)?
-	//    Coord(-rawDest+side):
-	//    rawDest)
-	//   /side;
 	
 	compLoop<Dir>([&](const Dir& mu)
 	{
@@ -268,7 +264,7 @@ namespace esnort
 	    const Site q=site/d;
 	    
 	    /// Remainder, corresponding to the coordinate
-	    const Coord r=(typename Coord::Index)(site()-d*q);
+	    const Coord r=(typename Coord::Index)(site-d*q);
 	    
 	    // Store the component
 	    c(mu)=r;
