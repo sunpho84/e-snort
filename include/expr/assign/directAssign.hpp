@@ -18,7 +18,7 @@ namespace esnort
   /// Assign two expressions directly
   template <typename Lhs,
 	    typename Rhs>
-  INLINE_FUNCTION
+  INLINE_FUNCTION constexpr
   void directAssign(Lhs& lhs,
 		    const Rhs& rhs)
   {

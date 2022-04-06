@@ -65,6 +65,26 @@ namespace esnort
     return index(index,0,DE_CRTPFY(const C,&comps)...);
   }
   
+  // template <typename T>
+  // struct StackIndTerm
+  // {
+  //   const T value;
+
+  //   constexpr INLINE_FUNCTION
+  //   explicit StackIndTerm(const T& value) :
+  //     value(value)
+  //   {
+  //   }
+  // };
+  
+  // template <typename I,
+  // 	    typename T>
+  // constexpr INLINE_FUNCTION
+  // auto operator%(const I lhs,const StackIndTerm<T>& rhs)
+  // {
+  //   return rhs.value+T::sizeAtCompileTime*lhs;
+  // }
+  
   /// Dispatch the internal index calculation
   ///
   /// In this case we have no dynamic component
@@ -104,6 +124,7 @@ namespace esnort
     };
     
     return index(index,0,DE_CRTPFY(const C,&comps)...);
+    //    return (0%...%StackIndTerm(DE_CRTPFY(const C,&comps)));
   }
   
   /// Returns the index after reordering elements

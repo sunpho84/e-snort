@@ -8,12 +8,12 @@ namespace esnort
   /// Returns a lambda function to perform assignment
   template <typename Lhs,
 	    typename Rhs>
-  INLINE_FUNCTION
+  INLINE_FUNCTION constexpr
   auto getAssigner(Lhs& lhs,
 		   const Rhs& rhs)
   {
     return
-      [&lhs,&rhs](const auto&...comps) INLINE_ATTRIBUTE
+      [&lhs,&rhs](const auto&...comps) CONSTEXPR_INLINE_ATTRIBUTE
       {
 	lhs(comps...)=rhs(comps...);
       };

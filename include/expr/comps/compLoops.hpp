@@ -127,7 +127,7 @@ namespace esnort
       {
 	/// Loop task
 	auto task=
-	  [&dynamicSizes,&function,&processedComps...] DEVICE_ATTRIB (const FirstComp& comp) INLINE_ATTRIBUTE
+	  [&dynamicSizes,&function,&processedComps...] DEVICE_ATTRIB (const FirstComp& comp) CONSTEXPR_INLINE_ATTRIBUTE
 	{
 	  if constexpr(sizeof...(RemainingComps))
 	    _CompsLooper<CompsList<RemainingComps...>>::deviceLoop(dynamicSizes,function,processedComps...,comp);

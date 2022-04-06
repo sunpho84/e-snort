@@ -130,6 +130,19 @@ namespace esnort
       (*this)=DE_CRTPFY(const TOth,&oth);
     }
     
+    /// Construct from another tens-like
+    template <typename F,
+	      ENABLE_THIS_TEMPLATE_IF(std::is_invocable_v<F,C...>)>
+    constexpr INLINE_FUNCTION
+    StackTens(F f) : storage{}
+    {
+      loopOnAllComps<Comps>({},[this,f](const auto&...c) CONSTEXPR_INLINE_ATTRIBUTE
+      {
+	this->storage[esnort::index({},c...)]=
+	  f(c...);
+      });
+    }
+    
     /// Initialize from list
     template <typename...Tail>
     constexpr INLINE_FUNCTION
