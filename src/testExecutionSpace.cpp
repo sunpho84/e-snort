@@ -15,9 +15,9 @@ using namespace esnort;
 
 /////////////////////////////////////////////////////////////////
 
-DEFINE_TRANSPOSABLE_COMP(Spin,int,4,spin);
-DEFINE_TRANSPOSABLE_COMP(Span,int,4,span);
-DEFINE_UNTRANSPOSABLE_COMP(SpaceTime,int64_t,0,spaceTime);
+DECLARE_TRANSPOSABLE_COMP(Spin,int,4,spin);
+DECLARE_TRANSPOSABLE_COMP(Span,int,4,span);
+DECLARE_UNTRANSPOSABLE_COMP(SpaceTime,int64_t,0,spaceTime);
 
 int j;
 
@@ -29,9 +29,6 @@ int j;
 // {
   
 // };
-
-  using SpinRow=Spin<RwCl::ROW,0>;
-  using SpanRow=Span<RwCl::ROW,0>;
 
 // struct InvalidExpr :
 //   public Node<InvalidExpr>
@@ -146,7 +143,7 @@ void testProd()
 
 namespace Tests
 {
-  DEFINE_UNTRANSPOSABLE_COMP(Sim,int,4,sim);
+  DECLARE_UNTRANSPOSABLE_COMP(Sim,int,4,sim);
   
   using Comps=CompsList<SpinRow,ComplId,Sim>;
   
@@ -168,6 +165,21 @@ namespace Tests
       LOGGER<<a(sr,reIm,sim);
     });
   }
+}
+
+DECLARE_UNTRANSPOSABLE_COMP(GlbCoord,int,0,glbCoord);
+DECLARE_UNTRANSPOSABLE_COMP(GlbSite,int64_t,0,glbSite);
+
+void testGrill()
+{
+  using U=Universe<4>;
+  
+  
+  using GlbGrill=U::Grill<GlbCoord,GlbSite,true>;
+
+  StackTens<OfComps<U::Dir>,GlbCoord> sides(3,3,3,3);
+  
+  GlbGrill glbGrill(sides);
 }
 
 int in_main(int narg,char** arg)

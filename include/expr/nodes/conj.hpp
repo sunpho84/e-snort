@@ -14,7 +14,7 @@
 
 namespace esnort
 {
-  DEFINE_UNTRANSPOSABLE_COMP(ComplId,int,2,reIm);
+  DECLARE_UNTRANSPOSABLE_COMP(ComplId,int,2,reIm);
   
   PROVIDE_DETECTABLE_AS(Conjugator);
   

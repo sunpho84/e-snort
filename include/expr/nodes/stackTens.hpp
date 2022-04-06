@@ -114,6 +114,7 @@ namespace esnort
     {
     }
     
+    /// Copy constructor
     constexpr INLINE_FUNCTION
     StackTens(const StackTens& oth)
     {

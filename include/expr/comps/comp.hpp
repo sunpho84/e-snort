@@ -8,6 +8,7 @@
 /// \file expr/comps/comp.hpp
 
 #include <expr/comps/baseComp.hpp>
+#include <expr/comps/compRwCl.hpp>
 #include <expr/comps/transposableComp.hpp>
 #include <metaprogramming/detectableAs.hpp>
 
@@ -47,35 +48,37 @@ namespace esnort
   
   PROVIDE_DETECTABLE_AS(TransposableComp);
   
-#define DEFINE_TRANSPOSABLE_COMP(NAME,TYPE,SIZE,FACTORY)	\
+#define DECLARE_TRANSPOSABLE_COMP(NAME,TYPE,SIZE,FACTORY)	\
   template <RwCl _RC=RwCl::ROW,					\
 	    int _Which=0>					\
-  struct NAME :							\
+  struct NAME ## RwOrCl:					\
     DetectableAsTransposableComp,				\
     Comp<compFeat::IsTransposable::TRUE,			\
 	 TYPE,							\
-	 NAME<_RC,_Which>>					\
+	 NAME ## RwOrCl<_RC,_Which>>				\
   {								\
     using Base=							\
       Comp<compFeat::IsTransposable::TRUE,			\
       TYPE,							\
-      NAME<_RC,_Which>>;					\
+      NAME ## RwOrCl<_RC,_Which>>;				\
     								\
     using Base::Base;						\
     								\
     static constexpr int sizeAtCompileTime=SIZE;		\
   };								\
   								\
-  using NAME ## Row=NAME<RwCl::ROW,0>;				\
+  using NAME ## Row=NAME ## RwOrCl<RwCl::ROW,0>;		\
   								\
-  using NAME ## Cln=NAME<RwCl::CLN,0>;				\
+  using NAME=NAME ## Row;					\
+  								\
+  using NAME ## Cln=NAME ## RwOrCl<RwCl::CLN,0>;		\
   								\
   /*! Transposed of a transposable component */			\
   template <RwCl RC,						\
 	    int Which>						\
   INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB			\
-  NAME<transpRwCl<RC>,Which>					\
-  transp(const NAME<RC,Which>& c)				\
+  NAME ## RwOrCl<transpRwCl<RC>,Which>				\
+  transp(const NAME ## RwOrCl<RC,Which>& c)			\
   {								\
     return c();							\
   }								\
@@ -84,7 +87,7 @@ namespace esnort
 								\
   DECLARE_COMPONENT_FACTORY(FACTORY ## Cln,NAME ## Cln)
 
-#define DEFINE_UNTRANSPOSABLE_COMP(NAME,TYPE,SIZE,FACTORY)	\
+#define DECLARE_UNTRANSPOSABLE_COMP(NAME,TYPE,SIZE,FACTORY)	\
   struct NAME :							\
     Comp<compFeat::IsTransposable::FALSE,			\
 	 TYPE,							\

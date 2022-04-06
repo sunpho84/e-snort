@@ -21,7 +21,7 @@ namespace esnort
   {
     /// Subnodes
     std::tuple<NodeRefOrVal<_E>...> subNodes;
-
+    
 #define PROVIDE_SUBNODE(ATTRIB)				\
     /*! Proxy for the I-subexpression */		\
     template <int I>					\
