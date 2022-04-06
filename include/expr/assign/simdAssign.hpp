@@ -22,7 +22,7 @@ namespace esnort
   void simdAssign(Lhs& lhs,
 		  const Rhs& rhs)
   {
-    /*LOGGER<<"Using simd assign";*/
+    LOGGER_LV3_NOTIFY("Using simd assign");
     
     lhs.simdify()=rhs.simdify();
   }

@@ -22,7 +22,7 @@ namespace esnort
   void directAssign(Lhs& lhs,
 		    const Rhs& rhs)
   {
-    LOGGER<<"Using direct assign";
+    LOGGER_LV3_NOTIFY("Using direct assign");
     
     loopOnAllComps<typename Lhs::Comps>(lhs.getDynamicSizes(),getAssigner(lhs,rhs));
   }
