@@ -23,8 +23,10 @@
 /// Clang has its own way to express inline of a lambda
 #ifdef __clang__
 # define MUTABLE_INLINE_ATTRIBUTE INLINE_ATTRIBUTE mutable
+# define CONSTEXPR_INLINE_ATTRIBUTE INLINE_ATTRIBUTE constexpr
 #else
 # define MUTABLE_INLINE_ATTRIBUTE mutable INLINE_ATTRIBUTE
+# define CONSTEXPR_INLINE_ATTRIBUTE constexpr INLINE_ATTRIBUTE
 #endif
 
 #endif

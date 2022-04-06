@@ -76,18 +76,43 @@ namespace esnort
 	StackTens<OfComps<Dir>,Coord>;
       
       /// Volume
-      Site volume;
+      Site _volume;
       
-      /// Grid sides
-      Coords sides;
+      /// Volume, const access
+      INLINE_FUNCTION HOST_DEVICE_ATTRIB
+      const Site& volume() const
+      {
+	return _volume;
+      }
+      
+      /// Sides
+      Coords _sides;
+      
+      /// Sides, constant access
+      INLINE_FUNCTION HOST_DEVICE_ATTRIB
+      const Coords& sides() const
+      {
+	return _sides;
+      }
+      
+      /// Set the sides
+      void setSides(const Coords& sides,
+		    const bool& fillHashTables=true)
+      {
+	_volume=(sides(Dir(I))*...);
+	_sides=sides;
+	
+	if constexpr(Hashing)
+	  if(fillHashTables)
+	    this->fillHashTables(volume());
+      }
       
       /// Create from sides
-      Grill(const Coords& sides) :
-	volume((sides(Dir(I))*...)),
-	sides(sides)
+      Grill(const Coords& _sides,
+	    const bool& fillHashTables=true)
       {
-	if constexpr(Hashing)
-	  this->fillHashTables(volume);
+	setSides(_sides,
+		 fillHashTables);
       }
       
       /// Fill all the HashTables
@@ -107,7 +132,7 @@ namespace esnort
 		computeCoordsOfPoint(site);
 	    });
 	    
-	    loopOnAllComps<CompsList<Site,Ori,Dir>>(std::make_tuple(volume),
+	    loopOnAllComps<CompsList<Site,Ori,Dir>>(std::make_tuple(volume()),
 						    [&](const Site& site,
 							const Ori& ori,
 							const Dir& dir)
@@ -156,7 +181,7 @@ namespace esnort
       template <typename F>
       void forAllSites(F f) const
       {
-	loopOnAllComps<CompsList<Site>>(std::make_tuple(volume),f);
+	loopOnAllComps<CompsList<Site>>(std::make_tuple(volume()),f);
       }
       
       /// Returns the coordinates shifted in the asked direction
@@ -181,7 +206,7 @@ namespace esnort
 	  in(dir)+offset;
 	
 	const Coord& side=
-	  sides(dir);
+	  sides()(dir);
 	
 	/// Actual destintion
 	const Coord dest=
@@ -213,7 +238,7 @@ namespace esnort
 	{
 	  /// Grill side
 	  const Coord& s=
-	    sides(mu);
+	    sides()(mu);
 	  
 	  // Increment the coordinate
 	  out=out*s+cs(mu);
@@ -233,7 +258,7 @@ namespace esnort
 	for(Dir mu=NDims-1;mu>=0;mu--)
 	  {
 	    /// Dividend, corresponding to the \c mu side length
-	    const Coord& d=sides(mu);
+	    const Coord& d=sides()(mu);
 	    
 	    /// Quotient, corresponding to the index of the remaining \c nDims-1 components
 	    const Site q=site/d;
