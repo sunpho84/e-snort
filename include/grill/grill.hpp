@@ -32,8 +32,7 @@ namespace esnort
     /// Hashable properties of a \c Grill
     ///
     /// Forward implementation
-    template <typename T,           // Derived class
-	      typename Coord,       // Type of coordinate values
+    template <typename Coord,       // Type of coordinate values
 	      typename Site,        // Type of index of points
 	      bool Hashing>         // Store or not tables
     struct HashableTableProvider;
@@ -41,11 +40,9 @@ namespace esnort
     /// Hashable properties of a \c Grill
     ///
     /// Hashing version
-    template <typename T,           // Derived type
-	      typename Coord,       // Type of coordinate values
+    template <typename Coord,       // Type of coordinate values
 	      typename Site>        // Type of index of points
-    struct HashableTableProvider<T,
-				 Coord,
+    struct HashableTableProvider<Coord,
 				 Site,
 				 true>
     {
@@ -54,101 +51,17 @@ namespace esnort
       
       /// Hashed neighbors
       DynamicTens<OfComps<Site,Ori,Dir>,Site,ExecSpace::HOST> neighsOfPointsHashTable;
-      
-      /// Set the hash table of coordinates of all points
-      void fillCoordsOfPointsHashTables()
-      {
-	DE_CRTPFY(T,this).forAllSites([&](const Site& site)
-	{
-	  coordsOfPointsHashTable(site)=
-	    DE_CRTPFY(T,this).computeCoordsOfPoint(site);
-	});
-      }
-      
-      /// Set the hash table of neighbors
-      void fillNeighsOfPointsHashTables()
-      {
-	loopOnAllComps<CompsList<Site,Ori,Dir>>(std::make_tuple(DE_CRTPFY(T,this).volume),
-					   [&](const Site& site,
-					       const Ori& ori,
-					       const Dir& dir)
-					   {
-					     neighsOfPointsHashTable(site,ori,dir)=
-					       DE_CRTPFY(T,this).computeNeighOfPoint(site,ori,dir);
-					   });
-      }
     };
     
     /// Hashable properties of a \c Grill
     ///
     /// Not-Hashing version
-    template <typename T,           // Derived type
-	      typename Coords,      // Type of coordinate values
+    template <typename Coords,      // Type of coordinate values
 	      typename Site>        // Type of index of points
-    struct HashableTableProvider<T,
-				 Coords,
+    struct HashableTableProvider<Coords,
 				 Site,
 				 false>
     {
-    };
-    
-    /// Hashable properties of a \c Grill
-    ///
-    /// Forward implementation
-    template <typename T,           // Derived class
-	      typename Coords,      // Type of coordinate values
-	      typename Site,        // Type of index of points
-	      bool Hashing>         // Store or not tables
-    struct HashableProvider :
-      HashableTableProvider<T,Coords,Site,Hashing>
-    {
-      /// Fill all the HashTables
-      void fillHashTables(const Site& size)
-      {
-	static_assert(Hashing,"Cannot initialize the hash table if not present");
-	
-	if constexpr(Hashing)
-	  {
-	    this->coordsOfPointsHashTable.allocate(std::make_tuple(size));
-	    this->neighsOfPointsHashTable.allocate(std::make_tuple(size));
-	    
-	    this->fillCoordsOfPointsHashTables();
-	    this->fillNeighsOfPointsHashTables();
-	  }
-      }
-      
-      /////////////////////////////////////////////////////////////////
-      
-      /// Get the coords of given point
-      constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
-      decltype(auto) coordsOfPoint(const Site& site) const
-      {
-	// DE_CRTPFY(T,this).assertPointIsInRange(site);
-	
-	if constexpr(Hashing)
-	  return
-	    this->coordsOfPointsHashTable(site);
-	else
-	  return DE_CRTPFY(T,this).computeCoordsOfPoint(site);
-      }
-      
-      /// Return the neighbor in the given oriented dir
-      constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
-      const Site& neighOfPoint(const Site& site,
-			       const Ori& ori,
-			       const Dir& dir)
-	const
-      {
-	// CRTP_THIS.assertPointIsInRange(i);
-	// CRTP_THIS.assertOriDirIsInRange(oriDir);
-	
-	if constexpr(Hashing)
-	  return
-	    this->neighsOfPointsHashTable(site,ori,dir);
-	else
-	  return
-	    computeNeighOfPoint(site,ori,dir);
-      }
     };
     
     /// A grill
@@ -156,7 +69,7 @@ namespace esnort
 	      typename Site,
 	      bool Hashing>
     struct Grill :
-      HashableProvider<Grill<Coord,Site,Hashing>,Coord,Site,Hashing>
+      HashableTableProvider<Coord,Site,Hashing>
     {
       /// Type needed to store all coords
       using Coords=
@@ -175,6 +88,68 @@ namespace esnort
       {
 	if constexpr(Hashing)
 	  this->fillHashTables(volume);
+      }
+      
+      /// Fill all the HashTables
+      void fillHashTables(const Site& size)
+      {
+	static_assert(Hashing,"Cannot initialize the hash table if not present");
+	
+	if constexpr(Hashing)
+	  {
+	    this->coordsOfPointsHashTable.allocate(std::make_tuple(size));
+	    this->neighsOfPointsHashTable.allocate(std::make_tuple(size));
+	    
+	    /// Set the hash table of coordinates of all points
+	    forAllSites([&](const Site& site)
+	    {
+	      this->coordsOfPointsHashTable(site)=
+		computeCoordsOfPoint(site);
+	    });
+	    
+	    loopOnAllComps<CompsList<Site,Ori,Dir>>(std::make_tuple(volume),
+						    [&](const Site& site,
+							const Ori& ori,
+							const Dir& dir)
+						    {
+						      this->neighsOfPointsHashTable(site,ori,dir)=
+							computeNeighOfPoint(site,ori,dir);
+						    });
+	  }
+      }
+      
+      /////////////////////////////////////////////////////////////////
+      
+      /// Get the coords of given point
+      constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
+      decltype(auto) coordsOfPoint(const Site& site) const
+      {
+	// DE_CRTPFY(T,this).assertPointIsInRange(site);
+	
+	if constexpr(Hashing)
+	  return
+	    (this->coordsOfPointsHashTable(site));
+	else
+	  return
+	    computeCoordsOfPoint(site);
+      }
+      
+      /// Return the neighbor in the given oriented dir
+      constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
+      decltype(auto) neighOfPoint(const Site& site,
+				  const Ori& ori,
+				  const Dir& dir)
+	const
+      {
+	// CRTP_THIS.assertPointIsInRange(i);
+	// CRTP_THIS.assertOriDirIsInRange(oriDir);
+	
+	if constexpr(Hashing)
+	  return
+	    (this->neighsOfPointsHashTable(site,ori,dir));
+	else
+	  return
+	    computeNeighOfPoint(site,ori,dir);
       }
       
       /// Loop on all points calling the passed function
@@ -201,7 +176,7 @@ namespace esnort
 	const Coord offset=
 	  moveOffset[ori]*amount;
 	
-	/// Destintion not considering wrap
+	/// Destination not considering wrap
 	const Coord rawDest=
 	  in(dir)+offset;
 	
