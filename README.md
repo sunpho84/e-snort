@@ -190,6 +190,8 @@ Expr
 An expression is static polymorphic for a node in the AST
 Fund and Comps are written into the node
 
+When it will be the time, we can generalize sum into algebricCombine
+
 Grill
 ---
 We define grill!

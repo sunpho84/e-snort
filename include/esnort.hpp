@@ -28,6 +28,8 @@
 #include <expr/nodes/transp.hpp>
 #include <expr/nodes/trace.hpp>
 
+#include <grill/grill.hpp>
+
 #include <ios/file.hpp>
 #include <ios/logger.hpp>
 #include <ios/minimalLogger.hpp>
