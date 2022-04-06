@@ -75,6 +75,8 @@ namespace esnort
       using Coords=
 	StackTens<OfComps<Dir>,Coord>;
       
+      /////////////////////////////////////////////////////////////////
+      
       /// Volume
       Site _volume;
       
@@ -84,6 +86,8 @@ namespace esnort
       {
 	return _volume;
       }
+      
+      /////////////////////////////////////////////////////////////////
       
       /// Sides
       Coords _sides;
@@ -95,17 +99,38 @@ namespace esnort
 	return _sides;
       }
       
-      /// Set the sides
+      /////////////////////////////////////////////////////////////////
+      
+      /// Surface sizes
+      StackTens<OfComps<Dir>,Site> _surfSizes;
+      
+      /// Surface size, constant access
+      INLINE_FUNCTION HOST_DEVICE_ATTRIB
+      const Site& surfSize(const Dir& dir) const
+      {
+	return _surfSizes(dir);
+      }
+      
+      /////////////////////////////////////////////////////////////////
+      
+      /// Set the sides and derived quantities
       void setSides(const Coords& sides,
 		    const bool& fillHashTables=true)
       {
 	_volume=(sides(Dir(I))*...);
 	_sides=sides;
+	compLoop<Dir>([this,&sides](const Dir& dir) INLINE_ATTRIBUTE
+	{
+	  _surfSizes(dir)=_volume/sides(dir);
+	});
+	
 	
 	if constexpr(Hashing)
 	  if(fillHashTables)
 	    this->fillHashTables(volume());
       }
+      
+      /////////////////////////////////////////////////////////////////
       
       /// Create from sides
       Grill(const Coords& _sides,

@@ -201,6 +201,11 @@ void testGrill()
       printCoords(l,neighCoords);
     },site);
     
+    compLoop<Dir>([&glbGrill](const Dir& dir)
+    {
+      LOGGER<<"Dir: "<<dir<<" surf size: "<<glbGrill.surfSize(dir);
+    });
+    
   });
 }
 
