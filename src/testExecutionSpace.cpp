@@ -177,9 +177,10 @@ void testGrill()
   
   using GlbGrill=U::Grill<GlbCoord,GlbSite,true>;
   
-  StackTens<OfComps<Dir>,GlbCoord> sides(3,3,3,3);
+  U::DirTens<GlbCoord> sides(3,3,3,3);
+  U::DirTens<bool> wrapping(1,1,1,1);
   
-  GlbGrill glbGrill(sides);
+  GlbGrill glbGrill(sides,wrapping);
   
   glbGrill.forAllSites([&glbGrill](const GlbSite& site)
   {
@@ -205,8 +206,10 @@ void testGrill()
     {
       LOGGER<<"Dir: "<<dir<<" surf size: "<<glbGrill.surfSize(dir);
     });
-    
   });
+  
+  LOGGER<<"Surf volume: "<<glbGrill.surfVol();
+  LOGGER<<"Bulk volume: "<<glbGrill.bulkVol();
 }
 
 int in_main(int narg,char** arg)

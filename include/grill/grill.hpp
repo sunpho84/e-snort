@@ -29,6 +29,12 @@ namespace esnort
   {
     DECLARE_TRANSPOSABLE_COMP(Dir,int,NDims,dir);
     
+    /// Tensor with Dir component and F type
+    template <typename F>
+    using DirTens=StackTens<OfComps<Dir>,F>;
+    
+    DECLARE_TRANSPOSABLE_COMP(Surf,int,NDims,dir);
+    
     /// Hashable properties of a \c Grill
     ///
     /// Forward implementation
@@ -73,18 +79,18 @@ namespace esnort
     {
       /// Type needed to store all coords
       using Coords=
-	StackTens<OfComps<Dir>,Coord>;
+	DirTens<Coord>;
       
       /////////////////////////////////////////////////////////////////
       
       /// Volume
-      Site _volume;
+      Site _vol;
       
       /// Volume, const access
       INLINE_FUNCTION HOST_DEVICE_ATTRIB
-      const Site& volume() const
+      const Site& vol() const
       {
-	return _volume;
+	return _vol;
       }
       
       /////////////////////////////////////////////////////////////////
@@ -99,10 +105,17 @@ namespace esnort
 	return _sides;
       }
       
+      /// Side in a given direction, constant access
+      INLINE_FUNCTION HOST_DEVICE_ATTRIB
+      const Coord& side(const Dir& dir) const
+      {
+	return _sides(dir);
+      }
+      
       /////////////////////////////////////////////////////////////////
       
       /// Surface sizes
-      StackTens<OfComps<Dir>,Site> _surfSizes;
+      DirTens<Site> _surfSizes;
       
       /// Surface size, constant access
       INLINE_FUNCTION HOST_DEVICE_ATTRIB
@@ -113,31 +126,145 @@ namespace esnort
       
       /////////////////////////////////////////////////////////////////
       
-      /// Set the sides and derived quantities
-      void setSides(const Coords& sides,
-		    const bool& fillHashTables=true)
+      /// Determine if the lattice wraps in a given direction
+      DirTens<bool> _wrapping;
+      
+      /// Gets the wrapping in a given direction, constant access
+      INLINE_FUNCTION HOST_DEVICE_ATTRIB
+      const bool& wrapping(const Dir& dir) const
       {
-	_volume=(sides(Dir(I))*...);
+	return _wrapping(dir);
+      }
+      
+      // /// Set the wrapping to a given direction
+      // INLINE_FUNCTION HOST_DEVICE_ATTRIB
+      // void setWrappingTo(const Dir& dir,const bool& b)
+      // {
+      // 	_wrapping(dir)=b;
+      // }
+      
+      // /// Set the wrapping for all directions
+      // INLINE_FUNCTION HOST_DEVICE_ATTRIB
+      // void setWrappingAllDirsTo(const bool& b)
+      // {
+      // 	compLoop<Dir>([this,&b](const Dir& dir) INLINE_ATTRIBUTE
+      // 	{
+      // 	  setWrappingTo(dir,b);
+      // 	});
+      // }
+      
+      /// Returns the side in the bulk considering the wrapping
+      Coord bulkSide(const Dir& dir) const
+      {
+	Coord side=side(dir);
+	
+	if(wrapping(dir))
+	  return side;
+	else
+	  if(side<=2)
+	    return 0;
+	  else
+	    side-2;
+      }
+      
+      /////////////////////////////////////////////////////////////////
+      
+      /// Halo sizes
+      DirTens<Site> _haloSizes;
+      
+      /// Halo size in a given direction, constant access
+      INLINE_FUNCTION HOST_DEVICE_ATTRIB
+      const Site& haloSize(const Dir& dir) const
+      {
+	return _haloSizes(dir);
+      }
+      
+      /// Total halo volume
+      Site _totHaloVol;
+      
+      /// Total halo volume, constant access
+      INLINE_FUNCTION HOST_DEVICE_ATTRIB
+      const Site& totHaloVol() const
+      {
+	return _totHaloVol;
+      }
+      
+      /// Initialize border sizes
+      void initBordSizes()
+      {
+	_haloSizes=_surfSizes-_wrapping*_surfSizes;
+	
+	_totHaloVol=(_haloSizes(Dir(I))+...);
+      }
+      
+      /////////////////////////////////////////////////////////////////
+      
+      /// Volume in the bulk
+      Site _bulkVol;
+      
+      /// Volume in the bulk, const access
+      const Site bulkVol() const
+      {
+	return _bulkVol;
+      }
+      
+      /// Initialize the bulk volume
+      void initBulkVol()
+      {
+	_bulkVol=(((Site)bulkSide(I))*...);
+      }
+      
+      /////////////////////////////////////////////////////////////////
+      
+      /// Volume not in the bulk
+      Site _surfVol;
+      
+      /// Volume not in the bulk, const access
+      const Site surfVol() const
+      {
+	return _surfVol;
+      }
+      
+      /// Initialize the volume of the lattice part not in the bulk
+      void initSurfVol()
+      {
+	_surfVol=_vol-_bulkVol;
+      }
+      
+      /////////////////////////////////////////////////////////////////
+      
+      /// Set the sides and derived quantities
+      void setSidesAndWrapping(const Coords& sides,
+			       const DirTens<bool>& wrapping,
+			       const bool& fillHashTables=true)
+      {
+	_vol=(sides(Dir(I))*...);
 	_sides=sides;
+	_wrapping=wrapping;
 	compLoop<Dir>([this,&sides](const Dir& dir) INLINE_ATTRIBUTE
 	{
-	  _surfSizes(dir)=_volume/sides(dir);
+	  _surfSizes(dir)=_vol/sides(dir);
 	});
 	
+	initBordSizes();
+	initBulkVol();
+	initSurfVol();
 	
 	if constexpr(Hashing)
 	  if(fillHashTables)
-	    this->fillHashTables(volume());
+	    this->fillHashTables(vol());
       }
       
       /////////////////////////////////////////////////////////////////
       
       /// Create from sides
       Grill(const Coords& _sides,
+	    const DirTens<bool>& wrapping,
 	    const bool& fillHashTables=true)
       {
-	setSides(_sides,
-		 fillHashTables);
+	setSidesAndWrapping(_sides,
+			    wrapping,
+			    fillHashTables);
       }
       
       /// Fill all the HashTables
@@ -157,7 +284,7 @@ namespace esnort
 		computeCoordsOfPoint(site);
 	    });
 	    
-	    loopOnAllComps<CompsList<Site,Ori,Dir>>(std::make_tuple(volume()),
+	    loopOnAllComps<CompsList<Site,Ori,Dir>>(std::make_tuple(vol()),
 						    [&](const Site& site,
 							const Ori& ori,
 							const Dir& dir)
@@ -206,7 +333,7 @@ namespace esnort
       template <typename F>
       void forAllSites(F f) const
       {
-	loopOnAllComps<CompsList<Site>>(std::make_tuple(volume()),f);
+	loopOnAllComps<CompsList<Site>>(std::make_tuple(vol()),f);
       }
       
       /// Returns the coordinates shifted in the asked direction
@@ -273,12 +400,12 @@ namespace esnort
       }
       
       /// Compute the coordinate of point i
-      StackTens<OfComps<Dir>,Coord> computeCoordsOfPoint(Site site /*don't make const*/) const
+      DirTens<Coord> computeCoordsOfPoint(Site site /*don't make const*/) const
       {
 	// assertPointIsInRange(i);
 	
 	/// Result
-	StackTens<OfComps<Dir>,Coord> c;
+	DirTens<Coord> c;
 	
 	for(Dir mu=NDims-1;mu>=0;mu--)
 	  {
