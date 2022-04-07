@@ -1,11 +1,11 @@
-#ifndef _SUM_HPP
-#define _SUM_HPP
+#ifndef _ALGEBRIC_SUM_HPP
+#define _ALGEBRIC_SUM_HPP
 
 #ifdef HAVE_CONFIG_H
 # include <config.hpp>
 #endif
 
-/// \file expr/nodes/sum.hpp
+/// \file expr/nodes/algebricSum.hpp
 
 #include <expr/comps/comps.hpp>
 #include <expr/nodes/conj.hpp>
@@ -16,32 +16,34 @@
 
 namespace esnort
 {
-  PROVIDE_DETECTABLE_AS(Summer);
+  PROVIDE_DETECTABLE_AS(AlgebricSummer);
   
-  /// Summer
+  /// AlgebricSummer
   ///
   /// Forward declaration to capture the components
   template <typename _E,
 	    typename _Comps,
 	    typename _Fund,
-	    typename _Is=std::integer_sequence<int,0,1>>
-  struct Summer;
+	    typename _Comb,
+	    typename _Is=std::make_integer_sequence<int,std::tuple_size_v<_E>>>
+  struct AlgebricSummer;
   
 #define THIS								\
-  Summer<std::tuple<_E...>,CompsList<C...>,_Fund,std::integer_sequence<int,Is...>>
+  AlgebricSummer<std::tuple<_E...>,CompsList<C...>,_Fund,_Comb,std::integer_sequence<int,Is...>>
   
 #define BASE					\
     Node<THIS>
   
-  /// Summer
+  /// AlgebricSummer
   ///
   template <typename..._E,
 	    typename...C,
 	    typename _Fund,
+	    typename _Comb,
 	    int...Is>
   struct THIS :
     DynamicCompsProvider<CompsList<C...>>,
-    DetectableAsSummer,
+    DetectableAsAlgebricSummer,
     SubNodes<_E...>,
     BASE
   {
@@ -69,7 +71,7 @@ namespace esnort
     static constexpr ExecSpace execSpace=
       commonExecSpace<std::remove_reference_t<_E>::execSpace...>();
     
-    static_assert(execSpace!=ExecSpace::UNDEFINED,"Cannot define sum in undefined exec space");
+    static_assert(execSpace!=ExecSpace::UNDEFINED,"Cannot define algebric sum in undefined exec space");
     
     /// List of dynamic comps
     using DynamicComps=
@@ -101,7 +103,7 @@ namespace esnort
     /// Return whether can be assigned at compile time
     static constexpr bool canAssignAtCompileTime=false;
     
-    /// Determine if sum can be simdified - to be extended
+    /// Determine if algebric sum can be simdified - to be extended
     static constexpr bool simdifyCase()
     {
       return
@@ -112,6 +114,12 @@ namespace esnort
     /// States whether the tensor can be simdified
     static constexpr bool canSimdify=
       simdifyCase();
+    
+    /// Type of the combining function
+    using Comb=_Comb;
+    
+    /// Combining function
+    Comb combine;
     
     /// \todo improve
     
@@ -124,7 +132,7 @@ namespace esnort
     auto simdify() ATTRIB					\
     {								\
       return							\
-	(SUBNODE(Is).simdify()+...);				\
+	combine(SUBNODE(Is).simdify()...);			\
     }
     
     PROVIDE_SIMDIFY(const);
@@ -139,7 +147,7 @@ namespace esnort
     auto getRef() ATTRIB					\
     {								\
       return							\
-	(SUBNODE(Is).getRef()+...);				\
+	combine(SUBNODE(Is).getRef()...);				\
     }
     
     PROVIDE_GET_REF(const);
@@ -163,59 +171,76 @@ namespace esnort
     Fund eval(const Cs&...cs) const
     {
       return
-	(std::apply(SUBNODE(Is),getCompsForAddend<Is>(cs...))+...);
+	combine(std::apply(SUBNODE(Is),getCompsForAddend<Is>(cs...))...);
     }
     
     /// Construct
     template <typename...T>
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-    Summer(const DynamicComps& dynamicSizes,
-	   UNIVERSAL_CONSTRUCTOR_IDENTIFIER,
-	   T&&...addends) :
+    AlgebricSummer(const DynamicComps& dynamicSizes,
+		   UNIVERSAL_CONSTRUCTOR_IDENTIFIER,
+		   Comb combine,
+		   T&&...addends) :
       SubNodes<_E...>(addends...),
-      dynamicSizes(dynamicSizes)
+      dynamicSizes(dynamicSizes),
+      combine(combine)
     {
     }
   };
   
-  template <typename..._E,
+  template <typename Comb,
+	    typename..._E,
 	    ENABLE_THIS_TEMPLATE_IF(isNode<_E> and...)>
   INLINE_FUNCTION HOST_DEVICE_ATTRIB
-  auto sum(_E&&...e)
+  auto algebricSum(Comb combine,_E&&...e)
   {
-    /// Computes the sum components
+    /// Computes the result components
     using Comps=
       UniqueTupleFromTuple<TupleCat<typename std::decay_t<_E>::Comps...>>;
     
-    /// Determine the fundamental type of the sum
+    /// Determine the fundamental type of the result
     using Fund=
-      decltype((typename std::decay_t<_E>::Fund{}+...));
+      decltype(combine(typename std::decay_t<_E>::Fund{}...));
     
     /// Resulting type
     using Res=
-      Summer<std::tuple<decltype(e)...>,
-	     Comps,
-	     Fund>;
+      AlgebricSummer<std::tuple<decltype(e)...>,
+		     Comps,
+		     Fund,
+		     Comb>;
     
     /// Resulting dynamic components
     const auto dc=
       dynamicCompsCombiner<typename Res::DynamicComps>(std::make_tuple(e.getDynamicSizes()...));
     
     return
-      Res(dc,UNIVERSAL_CONSTRUCTOR_CALL,std::forward<_E>(e)...);
+      Res(dc,UNIVERSAL_CONSTRUCTOR_CALL,combine,std::forward<_E>(e)...);
   }
   
-  /// Catch the sum operator
-  template <typename E1,
-	    typename E2,
-	    ENABLE_THIS_TEMPLATE_IF(isNode<E1> and isNode<E2>)>
-  INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
-  auto operator+(E1&& e1,
-		 E2&& e2)
-  {
-    return
-      sum(std::forward<E1>(e1),std::forward<E2>(e2));
+#define CATCH_OPERATOR(OP)						\
+  /*! Catch the OP operator */						\
+  template <typename E1,						\
+	    typename E2,						\
+	    ENABLE_THIS_TEMPLATE_IF(isNode<E1> and isNode<E2>)>		\
+  INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB				\
+  auto operator OP(E1&& e1,						\
+		   E2&& e2)						\
+  {									\
+    auto combine=							\
+      [](const auto&...s) CONSTEXPR_INLINE_ATTRIBUTE			\
+      {									\
+	return (s OP ...);						\
+      };								\
+									\
+    return								\
+      algebricSum(combine,std::forward<E1>(e1),std::forward<E2>(e2));	\
   }
+  
+  CATCH_OPERATOR(+);
+  
+  CATCH_OPERATOR(-);
+  
+#undef CATCH_OPERATOR
 }
 
 #endif

@@ -229,6 +229,7 @@ DONE
 - Sums
 - Fma
 - Trace from nissa
+- Algebric sum in place of sum
 
 TODO
 ---

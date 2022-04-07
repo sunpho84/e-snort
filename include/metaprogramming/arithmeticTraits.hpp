@@ -59,6 +59,15 @@ namespace esnort
     return os;								\
   }
   
+  /// long int
+  template<>
+  struct ArithmeticTypeTraits<long int>
+  {
+    PROVIDE_ZERO(constexpr,long int,0);
+    PROVIDE_SUMASSIGN_THE_PROD(constexpr,long int,out+=f1*f2);
+    PROVIDE_SUBASSIGN_THE_PROD(constexpr,long int,out-=f1*f2);
+  };
+  
   /// Double
   template<>
   struct ArithmeticTypeTraits<double>
@@ -178,6 +187,8 @@ namespace esnort
     return ArithmeticTypeTraits<T>::zero();
   }
   
+  /////////////////////////////////////////////////////////////////
+  
   /// Returns the result of summing a product
   template <typename T>
   constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
@@ -192,6 +203,28 @@ namespace esnort
   auto subAssignTheProd(T& a,const T& f1,const T& f2)
   {
     return ArithmeticTypeTraits<T>::subAssignTheProd(a,f1,f2);
+  }
+  
+  /////////////////////////////////////////////////////////////////
+  
+  /// Returns the result of summing a product
+  template <typename T1,
+	    typename T2,
+	    typename T3>
+  constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
+  auto sumAssignTheProd(T1& a,const T2& f1,const T3& f2)
+  {
+    return a+=f1*f2;
+  }
+  
+  /// Returns the result of subracting a product
+  template <typename T1,
+	    typename T2,
+	    typename T3>
+  constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
+  auto subAssignTheProd(T1& a,const T2& f1,const T3& f2)
+  {
+    return a-=f1*f2;
   }
 }
 
