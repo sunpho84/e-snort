@@ -29,6 +29,10 @@ namespace esnort
 	f(i);
   }
   
+#define COMP_LOOP(COMP,NAME,BODY...)			\
+  compLoop<COMP>([&](const COMP& NAME) INLINE_ATTRIBUTE	\
+		 BODY);
+  
   /// Loop over a component
   template <typename T,
 	    typename F,

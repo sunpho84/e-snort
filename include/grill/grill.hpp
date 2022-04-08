@@ -13,7 +13,26 @@
 
 namespace esnort
 {
+  constexpr bool DEBUG_GRILL=true;
+  
+  /// Assert that a site is in the volume
+  template <typename T>
+  static constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
+  void assertIsInRange(const char* name,const T& val,const T& max)
+  {
+    if constexpr(DEBUG_GRILL)
+      if(val<0 or val>=max)
+	CRASH<<name<<" value "<<val<<" not valid, maximal value: "<<max;
+  }
+  
   DECLARE_UNTRANSPOSABLE_COMP(Ori,int,2,ori);
+  
+  /// Assert that ori is an orientation
+  constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
+  void assertIsOri(const Ori& ori)
+  {
+    assertIsInRange("ori",ori,Ori(2));
+  }
   
   /// Offset to move \c BW or \c FW
   constexpr int moveOffset[2]=
@@ -29,17 +48,54 @@ namespace esnort
   {
     DECLARE_TRANSPOSABLE_COMP(Dir,int,NDims,dir);
     
+    /// Assert that dir is a direction
+    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
+    static void assertIsDir(const Dir& dir)
+    {
+      assertIsInRange("dir",dir,Dir(NDims));
+    }
+    
     /// Tensor with Dir component and F type
     template <typename F>
     using DirTens=StackTens<OfComps<Dir>,F>;
     
     DECLARE_TRANSPOSABLE_COMP(Surf,int,NDims,dir);
     
+    /// Compute the coordinate of site i
+    template <typename Site,
+	      typename Coord>
+    INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
+    static DirTens<Coord> computeCoordsOfSiteInBoxOfSize(Site site /*don't make const*/,const DirTens<Coord>& sides)
+      {
+	/// Result
+	DirTens<Coord> c;
+	
+	for(Dir mu=NDims-1;mu>=0;mu--)
+	  {
+	    /// Dividend, corresponding to the \c mu side length
+	    const Coord& d=sides(mu);
+	    
+	    /// Quotient, corresponding to the index of the remaining \c nDims-1 components
+	    const Site q=site/d;
+	    
+	    /// Remainder, corresponding to the coordinate
+	    const Coord r=(typename Coord::Index)(site-d*q);
+	    
+	    // Store the component
+	    c(mu)=r;
+	    
+	    // Iterate on the remaining nDims-1 components
+	    site=q;
+	  }
+	
+	return c;
+      }
+    
     /// Hashable properties of a \c Grill
     ///
     /// Forward implementation
     template <typename Coord,       // Type of coordinate values
-	      typename Site,        // Type of index of points
+	      typename Site,        // Type of index of sites
 	      bool Hashing>         // Store or not tables
     struct HashableTableProvider;
     
@@ -47,23 +103,26 @@ namespace esnort
     ///
     /// Hashing version
     template <typename Coord,       // Type of coordinate values
-	      typename Site>        // Type of index of points
+	      typename Site>        // Type of index of sites
     struct HashableTableProvider<Coord,
 				 Site,
 				 true>
     {
-      /// Hashed coords of all points
-      DynamicTens<OfComps<Site,Dir>,Coord,ExecSpace::HOST> coordsOfPointsHashTable;
+      /// Hashed coords of all sites
+      DynamicTens<OfComps<Site,Dir>,Coord,ExecSpace::HOST> coordsOfSitesHashTable;
       
       /// Hashed neighbors
-      DynamicTens<OfComps<Site,Ori,Dir>,Site,ExecSpace::HOST> neighsOfPointsHashTable;
+      DynamicTens<OfComps<Site,Ori,Dir>,Site,ExecSpace::HOST> neighsOfSitesHashTable;
+      
+      /// Wrapping surface site corresponding to a given halo
+      DynamicTens<OfComps<Site>,Site,ExecSpace::HOST> surfSiteOfHaloSitesHashTable;
     };
     
     /// Hashable properties of a \c Grill
     ///
     /// Not-Hashing version
     template <typename Coords,      // Type of coordinate values
-	      typename Site>        // Type of index of points
+	      typename Site>        // Type of index of sites
     struct HashableTableProvider<Coords,
 				 Site,
 				 false>
@@ -93,6 +152,13 @@ namespace esnort
 	return _vol;
       }
       
+      /// Assert that a site is in the volume
+      constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
+      void assertIsSite(const Site& site) const
+      {
+	assertIsInRange("site",site,vol());
+      }
+      
       /////////////////////////////////////////////////////////////////
       
       /// Sides
@@ -110,6 +176,21 @@ namespace esnort
       const Coord& side(const Dir& dir) const
       {
 	return _sides(dir);
+      }
+      
+      /// Assert that a coordinate is in the valid range
+      INLINE_FUNCTION HOST_DEVICE_ATTRIB
+      void assertIsCoord(const Coord& coord,const Dir& dir) const
+      {
+	assertIsInRange("coord",coord,side(dir));
+      }
+      
+      /// Assert that coordinates are in the valid range
+      INLINE_FUNCTION HOST_DEVICE_ATTRIB
+      void assertAreCoords(const Coords& coords) const
+      {
+	for(Dir dir=0;dir<NDims;dir++)
+	  assertIsCoord(coords(dir),dir);
       }
       
       /////////////////////////////////////////////////////////////////
@@ -156,15 +237,15 @@ namespace esnort
       /// Returns the side in the bulk considering the wrapping
       Coord bulkSide(const Dir& dir) const
       {
-	Coord side=side(dir);
+	Coord bulkSide=side(dir);
 	
 	if(wrapping(dir))
-	  return side;
+	  return bulkSide;
 	else
-	  if(side<=2)
+	  if(bulkSide<=2)
 	    return 0;
 	  else
-	    side-2;
+	    return bulkSide-2;
       }
       
       /////////////////////////////////////////////////////////////////
@@ -189,12 +270,19 @@ namespace esnort
 	return _totHaloVol;
       }
       
-      /// Initialize border sizes
-      void initBordSizes()
+      /// Initialize halo sizes
+      void initHaloSizes()
       {
 	_haloSizes=_surfSizes-_wrapping*_surfSizes;
 	
-	_totHaloVol=(_haloSizes(Dir(I))+...);
+	_totHaloVol=2*(_haloSizes(Dir(I))+...);
+      }
+      
+      /// Assert that a halo site
+      INLINE_FUNCTION HOST_DEVICE_ATTRIB
+      void assertIsHaloSite(const Site& halo) const
+      {
+	assertIsInRange("coord",halo,totHaloVol());
       }
       
       /////////////////////////////////////////////////////////////////
@@ -211,7 +299,7 @@ namespace esnort
       /// Initialize the bulk volume
       void initBulkVol()
       {
-	_bulkVol=(((Site)bulkSide(I))*...);
+	_bulkVol=(((Site)bulkSide(I)())*...);
       }
       
       /////////////////////////////////////////////////////////////////
@@ -233,6 +321,34 @@ namespace esnort
       
       /////////////////////////////////////////////////////////////////
       
+      /// Offset where the halo for each orientation and direction starts
+      StackTens<OfComps<Ori,Dir>,Site> _haloOffsets;
+      
+      /// Constant access the offset where the halo for each
+      /// orientation and direction starts. First offset is 0
+      const Site& haloOffset(const Ori& ori,const Dir& dir) const
+      {
+	return _haloOffsets(ori,dir);
+      }
+      
+      /// Initializes the site where the halo of each direction starts
+      void initHaloOffsets()
+      {
+	Site offset=0;
+	
+	for(Ori ori=0;ori<2;ori++)
+	  for(Dir dir=0;dir<NDims;dir++)
+	    {
+	      _haloOffsets(ori,dir)=offset;
+	      offset+=_haloSizes(dir);
+	    }
+	
+	if(offset!=totHaloVol())
+	  CRASH<<"Not reached the total halo volume, "<<offset<<" while "<<totHaloVol()<<" expected";
+      }
+      
+      /////////////////////////////////////////////////////////////////
+      
       /// Set the sides and derived quantities
       void setSidesAndWrapping(const Coords& sides,
 			       const DirTens<bool>& wrapping,
@@ -241,18 +357,87 @@ namespace esnort
 	_vol=(sides(Dir(I))*...);
 	_sides=sides;
 	_wrapping=wrapping;
-	compLoop<Dir>([this,&sides](const Dir& dir) INLINE_ATTRIBUTE
-	{
-	  _surfSizes(dir)=_vol/sides(dir);
-	});
+	COMP_LOOP(Dir,dir,
+		  {
+		    _surfSizes(dir)=_vol/sides(dir);
+		  });
 	
-	initBordSizes();
+	initHaloSizes();
 	initBulkVol();
 	initSurfVol();
+	initHaloOffsets();
 	
 	if constexpr(Hashing)
 	  if(fillHashTables)
 	    this->fillHashTables(vol());
+      }
+      
+      /////////////////////////////////////////////////////////////////
+      
+      /// Compute the site of given coords in the given ori,dir halo
+      Site haloSiteOfCoords(const Coords& cs,const Ori& ori,const Dir& dir) const
+      {
+	/// Returned site
+	Site out=0;
+	
+	COMP_LOOP(Dir,mu,
+		  {
+		    if(mu!=dir)
+		      out=out*sides()(mu)+cs(mu);
+		  });
+	
+	return haloOffset(ori,dir)+out;
+      }
+      
+      /// Returns the orientation and direction of a point in the halo
+      auto oriDirOfHaloSite(const Site& haloSite) const
+      {
+	assertIsHaloSite(haloSite);
+	
+	const Ori ori=(Ori::Index)(haloSite/(totHaloVol()/2));
+	
+	assertIsOri(ori);
+	
+	Dir dir=0;
+	
+	while(dir<NDims-1 and haloOffset(ori,dir+1)<=haloSite)
+	  dir++;
+	
+	assertIsDir(dir);
+	
+	return std::make_tuple(ori,dir);
+      }
+      
+      /// Computes the (wrapping) surface site corresponding to a given halo
+      Site computeSurfSiteOfHaloSite(Site haloSite /* don't make const */)
+      {
+	assertIsHaloSite(haloSite);
+	
+	const auto [ori,dir]=oriDirOfHaloSite(haloSite);
+	
+	haloSite-=haloOffset(ori,dir);
+	
+	Coords haloSides=sides();
+	haloSides(dir)=1;
+	
+	Coords c=computeCoordsOfSiteInBoxOfSize(haloSite,haloSides);
+	
+	c(dir)=safeModulo(c(dir)+moveOffset[ori],side(dir)());
+	
+	return siteOfCoords(c);
+      }
+      
+      /// Wrapping surface site corresponding to a given halo
+      Site surfSiteOfHaloSite(const Site& haloSite)
+      {
+	assertIsHaloSite(haloSite);
+	
+	if constexpr(Hashing)
+	  return
+	    (this->surfSiteOfHaloSitesHashTable(haloSite));
+	else
+	  return
+	    computeSurfSiteOfHaloSite(haloSite);
       }
       
       /////////////////////////////////////////////////////////////////
@@ -274,14 +459,22 @@ namespace esnort
 	
 	if constexpr(Hashing)
 	  {
-	    this->coordsOfPointsHashTable.allocate(std::make_tuple(size));
-	    this->neighsOfPointsHashTable.allocate(std::make_tuple(size));
+	    this->coordsOfSitesHashTable.allocate(std::make_tuple(size));
+	    this->neighsOfSitesHashTable.allocate(std::make_tuple(size));
+	    this->surfSiteOfHaloSitesHashTable.allocate(std::make_tuple(size));
 	    
-	    /// Set the hash table of coordinates of all points
+	    // Set the hash table of coordinates of all sites
 	    forAllSites([&](const Site& site)
 	    {
-	      this->coordsOfPointsHashTable(site)=
-		computeCoordsOfPoint(site);
+	      this->coordsOfSitesHashTable(site)=
+		computeCoordsOfSite(site);
+	    });
+	    
+	    // Set the hash table of surface site of each halo site
+	    forAllHaloSites([&](const Site& haloSite)
+	    {
+	      this->surfSiteOfHaloSitesHashTable(haloSite)=
+		computeSurfSiteOfHaloSite(haloSite);
 	    });
 	    
 	    loopOnAllComps<CompsList<Site,Ori,Dir>>(std::make_tuple(vol()),
@@ -289,51 +482,61 @@ namespace esnort
 							const Ori& ori,
 							const Dir& dir)
 						    {
-						      this->neighsOfPointsHashTable(site,ori,dir)=
-							computeNeighOfPoint(site,ori,dir);
+						      this->neighsOfSitesHashTable(site,ori,dir)=
+							computeNeighOfSite(site,ori,dir);
 						    });
 	  }
       }
       
       /////////////////////////////////////////////////////////////////
       
-      /// Get the coords of given point
+      /// Get the coords of given site
       constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
-      decltype(auto) coordsOfPoint(const Site& site) const
+      decltype(auto) coordsOfSite(const Site& site) const
       {
-	// DE_CRTPFY(T,this).assertPointIsInRange(site);
+	assertIsSite(site);
 	
 	if constexpr(Hashing)
 	  return
-	    (this->coordsOfPointsHashTable(site));
+	    (this->coordsOfSitesHashTable(site));
 	else
 	  return
-	    computeCoordsOfPoint(site);
+	    computeCoordsOfSite(site);
       }
       
       /// Return the neighbor in the given oriented dir
       constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
-      decltype(auto) neighOfPoint(const Site& site,
-				  const Ori& ori,
-				  const Dir& dir)
+      decltype(auto) neighOfSite(const Site& site,
+				 const Ori& ori,
+				 const Dir& dir)
 	const
       {
-	// CRTP_THIS.assertPointIsInRange(i);
-	// CRTP_THIS.assertOriDirIsInRange(oriDir);
+	assertIsSite(site);
+	assertIsOri(ori);
+	assertIsDir(dir);
 	
 	if constexpr(Hashing)
 	  return
-	    (this->neighsOfPointsHashTable(site,ori,dir));
+	    (this->neighsOfSitesHashTable(site,ori,dir));
 	else
 	  return
-	    computeNeighOfPoint(site,ori,dir);
+	    computeNeighOfSite(site,ori,dir);
       }
       
-      /// Loop on all points calling the passed function
+      /// Loop on all sites calling the passed function
       template <typename F>
+      constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
       void forAllSites(F f) const
       {
 	loopOnAllComps<CompsList<Site>>(std::make_tuple(vol()),f);
+      }
+      
+      /// Loop on all halo sites calling the passed function
+      template <typename F>
+      constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
+      void forAllHaloSites(F f) const
+      {
+	loopOnAllComps<CompsList<Site>>(std::make_tuple(totHaloVol()),f);
       }
       
       /// Returns the coordinates shifted in the asked direction
@@ -364,81 +567,84 @@ namespace esnort
 	const Coord dest=
 	  safeModulo(rawDest,side);
 	
-	compLoop<Dir>([&](const Dir& mu)
-	{
-	  if(mu!=dir)
-	    out(mu)=
-	      in(mu);
-	  else
-	    out(mu)=
-	      dest;
-	});
+	COMP_LOOP(Dir,mu,
+		  {
+		    if(mu!=dir)
+		      out(mu)=
+			in(mu);
+		    else
+		      out(mu)=
+			dest;
+		  });
 	
 	return
 	  out;
       }
       
-      /// Compute the point of given coords
-      Site pointOfCoords(const Coords& cs) const ///< Coordinates of the point
+      /// Compute the site of given coords
+      Site siteOfCoords(const Coords& cs) const ///< Coordinates of the site
       {
-	// assertCoordsAreInRange(cs);
+	assertAreCoords(cs);
 	
-	/// Returned point
+	/// Returned site
 	Site out=0;
 	
-	compLoop<Dir>([&](const Dir& mu)
-	{
-	  /// Grill side
-	  const Coord& s=
-	    sides()(mu);
-	  
-	  // Increment the coordinate
-	  out=out*s+cs(mu);
-	});
+	COMP_LOOP(Dir,mu,
+		  {
+		    out=out*sides()(mu)+cs(mu);
+		  });
 	
 	return out;
       }
       
-      /// Compute the coordinate of point i
-      DirTens<Coord> computeCoordsOfPoint(Site site /*don't make const*/) const
+      /// Compute the coordinate of site
+      DirTens<Coord> computeCoordsOfSite(const Site& site) const
       {
-	// assertPointIsInRange(i);
+	assertIsSite(site);
 	
-	/// Result
-	DirTens<Coord> c;
-	
-	for(Dir mu=NDims-1;mu>=0;mu--)
-	  {
-	    /// Dividend, corresponding to the \c mu side length
-	    const Coord& d=sides()(mu);
-	    
-	    /// Quotient, corresponding to the index of the remaining \c nDims-1 components
-	    const Site q=site/d;
-	    
-	    /// Remainder, corresponding to the coordinate
-	    const Coord r=(typename Coord::Index)(site-d*q);
-	    
-	    // Store the component
-	    c(mu)=r;
-	    
-	    // Iterate on the remaining nDims-1 components
-	    site=q;
-	  }
-	
-	return c;
+	return computeCoordsOfSiteInBoxOfSize(site,sides());
       }
       
-      /// Compute the neighbor in the oriented direction oriDir of point i
-      Site computeNeighOfPoint(const Site& site,      ///< Point
+      /// Compute the neighbor in the oriented direction oriDir of site i
+      Site computeNeighOfSite(const Site& site,   ///< Site
 			       const Ori& ori,     ///< Orientation
 			       const Dir& dir)     ///< Direction
 	const
       {
-	// assertPointIsInRange(i);
-	// assertOriDirIsInRange(oriDir);
+	assertIsSite(site);
+	assertIsOri(ori);
+	assertIsDir(dir);
 	
-	return
-	  pointOfCoords(shiftedCoords(this->coordsOfPoint(site),ori,dir));
+	/// Current site coords
+	decltype(auto) siteCoords=this->coordsOfSite(site);
+	
+	/// Trivial shift of current site coord in the direction dir and orientation ori
+	const Coord triviallyShftedCoord=siteCoords(dir)+moveOffset[ori];
+	
+	/// Shifted coords including wrap
+	Coords neighCoords=shiftedCoords(siteCoords,ori,dir);
+	
+	const bool neighIsNotOnHalo=
+	  wrapping(dir) or neighCoords(dir)==triviallyShftedCoord;
+	
+	// LOGGER<<site<<" "<<ori<<" "<<dir<<" ";
+	// COMP_LOOP(Dir,dir,{LOGGER<<siteCoords(dir);});
+	// LOGGER<<"Neigh: ";
+	// COMP_LOOP(Dir,dir,{LOGGER<<neighCoords(dir);});
+	// LOGGER<<" "<<wrapping(dir)<<" or "<<neighCoords(dir)<<"=="<<triviallyShftedCoord<<" : "<<neighIsNotOnHalo;
+	
+	if(neighIsNotOnHalo)
+	  return
+	    siteOfCoords(neighCoords);
+	else
+	  return
+	    vol()+haloSiteOfCoords(neighCoords,ori,dir);
+      }
+      
+      /// Determines if a site is on halo
+      bool siteIsOnHalo(const Site& site) const
+      {
+	return site>=vol();
       }
     };
   };
