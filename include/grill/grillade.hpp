@@ -16,11 +16,13 @@ namespace esnort
   struct Universe<NDims,std::integer_sequence<int,I...>>::Grillade
   {
 #define DECLARE_GRILL(SITE_INT_TYPE,NSITES,COMP_NAME,comp_name,HASHING)	\
+    									\
     DECLARE_UNTRANSPOSABLE_COMP(COMP_NAME ## Coord,int,0,comp_name ## Coord); \
-									\
+    									\
     DECLARE_UNTRANSPOSABLE_COMP(COMP_NAME ## Site,SITE_INT_TYPE,NSITES,comp_name ## Coord); \
-									\
-									\
+    									\
+    using COMP_NAME ## Coords=DirTens<COMP_NAME ## Coord>;		\
+    									\
     Grill<COMP_NAME ## Coord,COMP_NAME ## Site,HASHING> comp_name ## Grill
     
     DECLARE_GRILL(int64_t,0,Glb,glb,false);

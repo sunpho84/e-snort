@@ -57,7 +57,8 @@ namespace esnort
     
     /// Evaluate returning always the value
     template <typename...C>
-    const Fund& eval(const C&...) const
+    constexpr INLINE_FUNCTION
+    Fund eval(const C&...) const
     {
       return value;
     }
@@ -77,7 +78,7 @@ namespace esnort
     }
     
     /// Constructor
-    Scalar(const F& value) :
+    constexpr Scalar(const F& value) :
       value(value)
     {
     }
@@ -85,6 +86,7 @@ namespace esnort
   
   /// Creates a scalar
   template <typename F>
+  constexpr INLINE_FUNCTION
   Scalar<F> scalar(const F& val)
   {
     return Scalar(val);

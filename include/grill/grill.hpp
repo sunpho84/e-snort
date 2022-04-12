@@ -364,6 +364,11 @@ namespace esnort
     
     /////////////////////////////////////////////////////////////////
     
+    /// Default constructor
+    Grill()
+    {
+    }
+    
     /// Create from sides
     Grill(const Coords& _sides,
 	  const DirTens<bool>& wrapping,

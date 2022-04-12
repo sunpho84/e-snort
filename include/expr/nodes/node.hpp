@@ -103,7 +103,7 @@ namespace esnort
     
     /// Assign from another expression
     template <typename Rhs>
-    INLINE_FUNCTION
+    constexpr INLINE_FUNCTION
     T& assign(const Node<Rhs>& u)
     {
       assertCanAssign(u);
@@ -150,7 +150,7 @@ namespace esnort
     
     /// Define the assignment operator with the same expression type,
     /// in terms of the templated version
-    INLINE_FUNCTION
+    constexpr INLINE_FUNCTION
     Node& operator=(const Node& oth)
     {
       return this->assign(oth);
