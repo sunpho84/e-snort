@@ -101,6 +101,8 @@ namespace esnort
 	      typename Site,
 	      bool Hashing>
     struct Grill;
+    
+    struct Grillade;
   };
 }
 
