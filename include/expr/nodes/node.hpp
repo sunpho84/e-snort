@@ -16,6 +16,7 @@
 #include <expr/assign/deviceAssign.hpp>
 #include <expr/assign/directAssign.hpp>
 #include <expr/assign/executionSpace.hpp>
+#include <expr/nodes/scalar.hpp>
 #include <expr/nodes/nodeDeclaration.hpp>
 #include <expr/assign/simdAssign.hpp>
 #include <expr/assign/threadAssign.hpp>
@@ -74,7 +75,7 @@ namespace esnort
 		    hasMember_canAssignAtCompileTime<T> and
 		    hasMember_hasDynamicComps<T> and
 		    hasMember_storeByRef<T>,
-		    "Incomplete expression");
+		    "Incomplete node type");
    }
     
     /// Assert assignability
@@ -82,7 +83,7 @@ namespace esnort
     INLINE_FUNCTION
     constexpr void assertCanAssign(const Node<U>& _rhs)
     {
-      static_assert(tuplesContainsSameTypes<typename T::Comps,typename U::Comps>,"Cannot assign two expressions which differ for the components");
+      //static_assert(tuplesContainsSameTypes<typename T::Comps,typename U::Comps>,"Cannot assign two expressions which differ for the components");
       
       static_assert(T::canAssignAtCompileTime,"Trying to assign to a non-assignable expression");
       
@@ -132,10 +133,19 @@ namespace esnort
     
     /// Assign from another expression
     template <typename Rhs>
-    INLINE_FUNCTION
+    constexpr INLINE_FUNCTION
     T& operator=(const Node<Rhs>& u)
     {
       return this->assign(u);
+    }
+    
+    /// Assign from a scalar
+    template <typename Oth,
+	      ENABLE_THIS_TEMPLATE_IF(std::is_arithmetic_v<Oth>)>
+    constexpr INLINE_FUNCTION
+    T& operator=(const Oth& value)
+    {
+      return (*this)=scalar(value);
     }
     
     /// Define the assignment operator with the same expression type,
@@ -151,7 +161,7 @@ namespace esnort
     
 #define PROVIDE_SUBSCRIBE(ATTRIB)					\
     template <typename...C>						\
-    HOST_DEVICE_ATTRIB constexpr INLINE_FUNCTION			\
+    constexpr INLINE_FUNCTION						\
     decltype(auto) operator()(const C&...cs) ATTRIB			\
     {									\
       /*! Leftover components */					\
