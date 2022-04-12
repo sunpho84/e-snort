@@ -82,14 +82,22 @@ namespace esnort
 	    typename F>
   struct CompsListSimdifiableTraits;
   
-  /// Returns whether the last component can simdify
-  template <typename...Tp,
-	    typename F>
-  struct CompsListSimdifiableTraits<CompsList<Tp...>,F>
+  /// Empty comps
+  template <typename F>
+  struct CompsListSimdifiableTraits<CompsList<>,F>
   {
-    static constexpr int nComps=sizeof...(Tp);
+    using LastComp=void;
+  };
+  
+  /// Returns whether the last component can simdify
+  template <typename Head,
+	    typename...Tail,
+	    typename F>
+  struct CompsListSimdifiableTraits<CompsList<Head,Tail...>,F>
+  {
+    static constexpr int nComps=1+sizeof...(Tail);
     
-    using LastComp=esnort::LastComp<CompsList<Tp...>>;
+    using LastComp=esnort::LastComp<CompsList<Head,Tail...>>;
     
     static constexpr int _lastCompSizeProvider()
     {
@@ -115,7 +123,7 @@ namespace esnort
       Traits::nNonSimdifiedElements();
     
     using Comps=
-      TupleReplaceType<CompsList<Tp...>,LastComp,NonSimdifiedComp<typename LastComp::Index,nNonSimdifiedElements>>;
+      TupleReplaceType<CompsList<Head,Tail...>,LastComp,NonSimdifiedComp<typename LastComp::Index,nNonSimdifiedElements>>;
   };
   
   /////////////////////////////////////////////////////////////////
