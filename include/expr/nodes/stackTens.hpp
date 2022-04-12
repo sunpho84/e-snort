@@ -66,7 +66,7 @@ namespace esnort
       return *this;
     }
     
-    static_assert((C::sizeIsKnownAtCompileTime &...),"Trying to instantiate a stack tensor with dynamic comps");
+    static_assert((C::sizeIsKnownAtCompileTime and ... and true),"Trying to instantiate a stack tensor with dynamic comps");
     
     /// Components
     using Comps=CompsList<C...>;
@@ -129,11 +129,13 @@ namespace esnort
       (*this)=DE_CRTPFY(const TOth,&oth);
     }
     
-    /// Construct from another tens-like
+    /// Construct from an invocable
     template <typename F,
-	      ENABLE_THIS_TEMPLATE_IF(std::is_invocable_v<F,C...>)>
+	      ENABLE_THIS_TEMPLATE_IF(std::is_invocable_v<F,C...> and
+	      not isNode<F>)>
     constexpr INLINE_FUNCTION
-    StackTens(F f) : storage{}
+    StackTens(// InitializerFunction,
+	      F f) : storage{}
     {
       loopOnAllComps<Comps>({},[this,f](const auto&...c) CONSTEXPR_INLINE_ATTRIBUTE
       {

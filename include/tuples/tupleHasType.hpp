@@ -58,7 +58,7 @@ namespace esnort
       template <typename T,
 		typename...U>
       static constexpr int howManyTimeInList=
-	(std::is_same_v<T,U>+...);
+	(std::is_same_v<T,U>+...+0);
       
       /// Result
       static constexpr bool value=
