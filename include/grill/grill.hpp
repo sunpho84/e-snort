@@ -13,16 +13,15 @@
 
 namespace esnort
 {
-  constexpr bool DEBUG_GRILL=true;
-  
   /// Assert that a site is in the volume
   template <typename T>
   static constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
   void assertIsInRange(const char* name,const T& val,const T& max)
   {
-    if constexpr(DEBUG_GRILL)
+#ifdef ENABLE_GRILL_DEBUG
       if(val<0 or val>=max)
 	CRASH<<name<<" value "<<val<<" not valid, maximal value: "<<max;
+#endif
   }
   
   DECLARE_UNTRANSPOSABLE_COMP(Ori,int,2,ori);

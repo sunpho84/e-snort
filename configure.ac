@@ -122,6 +122,19 @@ then
 	fi
 fi
 
+#Grill debug
+AC_ARG_ENABLE(grill-debug,
+	AS_HELP_STRING([--enable-grill-debug],[Enable grill debug]),
+	enable_grill_debug="${enableval}",
+	enable_grill_debug="no")
+SUMMARY_RESULT="$SUMMARY_RESULT
+grill_debug      : $enable_grill_debug"
+
+if test "$enable_grill_debug" == "yes"
+then
+	AC_DEFINE([ENABLE_GRILL_DEBUG],1,[Enable grill debug])
+fi
+
 #check openmp
 AX_OPENMP
 
