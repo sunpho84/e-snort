@@ -59,6 +59,15 @@ namespace esnort
     return os;								\
   }
   
+  /// int
+  template<>
+  struct ArithmeticTypeTraits<int>
+  {
+    PROVIDE_ZERO(constexpr,int,0);
+    PROVIDE_SUMASSIGN_THE_PROD(constexpr,int,out+=f1*f2);
+    PROVIDE_SUBASSIGN_THE_PROD(constexpr,int,out-=f1*f2);
+  };
+  
   /// long int
   template<>
   struct ArithmeticTypeTraits<long int>
