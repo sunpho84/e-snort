@@ -130,6 +130,16 @@ namespace esnort
     
     /// Filter the first occurrence of type F
     ///
+    /// Case in which the type is not found
+    template <typename Scanned,
+	      typename F>
+    struct _TupleFilterType<Scanned,std::tuple<>,F>
+    {
+      using type=Scanned;
+    };
+    
+    /// Filter the first occurrence of type F
+    ///
     /// Case in which we have just found the type F
     template <typename...Ss,
 	      typename...Ts,
@@ -154,7 +164,7 @@ namespace esnort
 			    std::tuple<T1,Ts...>,
 			    F>
     {
-      static_assert(sizeof...(Ts)>0,"Components to be filtered not available among the tuple types");
+      //static_assert(sizeof...(Ts)>0,"Components to be filtered not available among the tuple types");
       
       /// Add the current type in the scanned list and moves on
       using type=
