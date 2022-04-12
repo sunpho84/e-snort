@@ -65,25 +65,25 @@ namespace esnort
     return index(index,0,DE_CRTPFY(const C,&comps)...);
   }
   
-  // template <typename T>
-  // struct StackIndTerm
-  // {
-  //   const T value;
-
-  //   constexpr INLINE_FUNCTION
-  //   explicit StackIndTerm(const T& value) :
-  //     value(value)
-  //   {
-  //   }
-  // };
+  template <typename T>
+  struct StackIndTerm
+  {
+    const T value;
+    
+    constexpr INLINE_FUNCTION
+    explicit StackIndTerm(const T& value) :
+      value(value)
+    {
+    }
+  };
   
-  // template <typename I,
-  // 	    typename T>
-  // constexpr INLINE_FUNCTION
-  // auto operator%(const I lhs,const StackIndTerm<T>& rhs)
-  // {
-  //   return rhs.value+T::sizeAtCompileTime*lhs;
-  // }
+  template <typename I,
+	    typename T>
+  constexpr INLINE_FUNCTION
+  auto operator%(const I lhs,const StackIndTerm<T>& rhs)
+  {
+    return rhs.value+T::sizeAtCompileTime*lhs;
+  }
   
   /// Dispatch the internal index calculation
   ///
@@ -98,33 +98,33 @@ namespace esnort
     using GlbIndex=
       std::common_type_t<int,Index...>;
     
-    /// Recursive computer
-    constexpr auto index=
-      [](const auto& index,
-	 const GlbIndex& outer,
-	 const auto& head,
-	 const auto&...tail) INLINE_ATTRIBUTE
-    {
-      /// Type of the component
-      using Head=
-	std::decay_t<decltype(head)>;
+    // /// Recursive computer
+    // constexpr auto index=
+    //   [](const auto& index,
+    // 	 const GlbIndex& outer,
+    // 	 const auto& head,
+    // 	 const auto&...tail) INLINE_ATTRIBUTE
+    // {
+    //   /// Type of the component
+    //   using Head=
+    // 	std::decay_t<decltype(head)>;
       
-      /// Maximal value
-      constexpr GlbIndex size=Head::sizeAtCompileTime;
+    //   /// Maximal value
+    //   constexpr GlbIndex size=Head::sizeAtCompileTime;
       
-      /// Value of the index when including this component
-      const GlbIndex inner=
-	outer*size+head();
+    //   /// Value of the index when including this component
+    //   const GlbIndex inner=
+    // 	outer*size+head();
       
-      if constexpr(sizeof...(tail))
-	return
-	  index(index,inner,tail...);
-      else
-	return inner;
-    };
+    //   if constexpr(sizeof...(tail))
+    // 	return
+    // 	  index(index,inner,tail...);
+    //   else
+    // 	return inner;
+    // };
     
-    return index(index,0,DE_CRTPFY(const C,&comps)...);
-    //    return (0%...%StackIndTerm(DE_CRTPFY(const C,&comps)));
+    // return index(index,0,DE_CRTPFY(const C,&comps)...);
+    return (GlbIndex(0)%...%StackIndTerm(DE_CRTPFY(const C,&comps)));
   }
   
   /// Returns the index after reordering elements
