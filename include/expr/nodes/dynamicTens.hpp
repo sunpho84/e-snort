@@ -157,11 +157,10 @@ namespace esnort
 	allocated=false;
     }
     
-    /// Create from copy
-    template <typename TOth,
-	      ExecSpace OthES>
+    /// Create from another node
+    template <typename TOth>
     constexpr INLINE_FUNCTION
-    DynamicTens(const BaseTens<TOth,Comps,Fund,OthES>& oth) :
+    explicit DynamicTens(const Node<TOth>& oth) :
       DynamicTens(DE_CRTPFY(const TOth,&oth).getDynamicSizes())
     {
       (*this)=DE_CRTPFY(const TOth,&oth);

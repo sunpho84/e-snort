@@ -121,11 +121,10 @@ namespace esnort
       std::copy(oth.storage,oth.storage+nElements,storage);
     }
     
-    /// Construct from another tens-like
-    template <typename TOth,
-	      ExecSpace OthES>
+    /// Construct from another node
+    template <typename TOth>
     constexpr INLINE_FUNCTION
-    StackTens(const BaseTens<TOth,Comps,Fund,OthES>& oth)
+    StackTens(const Node<TOth>& oth)
     {
       (*this)=DE_CRTPFY(const TOth,&oth);
     }
