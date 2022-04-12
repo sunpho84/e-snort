@@ -59,6 +59,18 @@ namespace esnort
     
     DECLARE_TRANSPOSABLE_COMP(Surf,int,NDims,dir);
     
+    /// Returns a vector containing 1 in a certain direction
+    template <typename F>
+    static constexpr INLINE_FUNCTION
+    DirTens<F> versor(const Dir& dir)
+    {
+      DirTens<F> res=F(0);
+      
+      res(dir)=1;
+      
+      return res;
+    }
+    
     /// Compute the coordinate of site i
     template <typename Site,
 	      typename Coord>
