@@ -111,12 +111,14 @@ namespace esnort
     static constexpr bool storeByRef=true;
     
     /// Allocate the storage
-    void allocate(const DynamicComps& _dynamicSizes)
+    template <typename...T,
+	      ENABLE_THIS_TEMPLATE_IF(tupleHaveTypes<std::tuple<T...>,DynamicComps>)>
+    void allocate(const std::tuple<T...>& _dynamicSizes)
     {
       if(allocated)
 	CRASH<<"Already allocated";
       
-      dynamicSizes=_dynamicSizes;
+      tupleFillWithSubset(dynamicSizes,_dynamicSizes);
       
       nElements=indexMaxValue<C...>(this->dynamicSizes);
       
