@@ -129,20 +129,27 @@ namespace esnort
       (*this)=DE_CRTPFY(const TOth,&oth);
     }
     
-    /// Construct from an invocable
-    template <typename F,
-	      ENABLE_THIS_TEMPLATE_IF(std::is_invocable_v<F,C...> and
-	      not isNode<F>)>
+    /// Construct from fundamental
     constexpr INLINE_FUNCTION
-    StackTens(// InitializerFunction,
-	      F f) : storage{}
+    StackTens(const Fund& oth) : storage{}
     {
-      loopOnAllComps<Comps>({},[this,f](const auto&...c) CONSTEXPR_INLINE_ATTRIBUTE
-      {
-	this->storage[esnort::index({},c...)]=
-	  f(c...);
-      });
+      (*this)=scalar(oth);
     }
+    
+    // /// Construct from an invocable
+    // template <typename F,
+    // 	      ENABLE_THIS_TEMPLATE_IF(std::is_invocable_v<F,C...> and
+    // 	      not isNode<F>)>
+    // constexpr INLINE_FUNCTION
+    // StackTens(// InitializerFunction,
+    // 	      F f) : storage{}
+    // {
+    //   loopOnAllComps<Comps>({},[this,f](const auto&...c) CONSTEXPR_INLINE_ATTRIBUTE
+    //   {
+    // 	this->storage[esnort::index({},c...)]=
+    // 	  f(c...);
+    //   });
+    // }
     
     /// Initialize from list
     template <typename...Tail>

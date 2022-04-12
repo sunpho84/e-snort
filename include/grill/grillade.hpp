@@ -31,15 +31,26 @@ namespace esnort
     
     DECLARE_GRILL(int64_t,0,Loc,loc,true);
     
-    DECLARE_GRILL(int,2,Par,par,true);
+    DECLARE_GRILL(int,0,Par,par,true); /// This should be set to 2, but we hit the problem of allocating a non-allocatable
     
     DECLARE_GRILL(int64_t,0,LocEo,locEo,true);
     
 #undef DECLARE_GRILL
     
-    Grillade()
+    /// Initializes all directions as wrapping
+    static constexpr DirTens<bool> allDirWraps() {return true;}
+    
+    /// Initialize a grillade
+    Grillade(const GlbCoords& glbSides,
+	     const RankCoords& rankSides,
+	     const Dir& parityDir)
     {
-      parGrill.setSidesAndWrapping({2,1,1,1},{1,1,1,1});
+      glbGrill.setSidesAndWrapping(glbSides,allDirWraps());
+      
+      const ParCoords parSides=
+	ParCoords(1)+versor<ParCoord>(parityDir);
+      
+      parGrill.setSidesAndWrapping(parSides,allDirWraps());
     }
   };
 }
