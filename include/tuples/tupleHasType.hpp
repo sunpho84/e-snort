@@ -38,6 +38,18 @@ namespace esnort
   constexpr bool tupleHasType=
     TypeIsInList<N,Tp>::template t<T>::value;
   
+  template <typename Tp,
+	    typename T,
+	    int N=1>
+  constexpr bool tupleHaveTypes=false;
+  
+  /// Returns whether the tuple has all the given types
+  template <typename Tp,
+	    typename...T,
+	    int N>
+  inline constexpr bool tupleHaveTypes<Tp,std::tuple<T...>,N> =
+    (tupleHasType<Tp,T> and ... and true);
+  
   namespace internal
   {
     /// Returns whether the two tuples T1 and T2 contains the same types
