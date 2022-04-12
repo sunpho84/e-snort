@@ -13,20 +13,23 @@
 #include <debug/demangle.hpp>
 #include <debug/minimalCrash.hpp>
 
-#include <expr/comps/comp.hpp>
-#include <expr/comps/compRwCl.hpp>
-#include <expr/nodes/conj.hpp>
-#include <expr/operations/dagger.hpp>
 #include <expr/assign/deviceAssign.hpp>
 #include <expr/assign/directAssign.hpp>
-#include <expr/nodes/dynamicTens.hpp>
-#include <expr/comps/indexComputer.hpp>
-#include <expr/nodes/prod.hpp>
-#include <expr/nodes/algebricSum.hpp>
-#include <expr/nodes/stackTens.hpp>
 #include <expr/assign/threadAssign.hpp>
-#include <expr/nodes/transp.hpp>
+
+#include <expr/comps/comp.hpp>
+#include <expr/comps/compRwCl.hpp>
+#include <expr/comps/indexComputer.hpp>
+
+#include <expr/nodes/algebricSum.hpp>
+#include <expr/nodes/conj.hpp>
+#include <expr/nodes/dynamicTens.hpp>
+#include <expr/nodes/prod.hpp>
+#include <expr/nodes/stackTens.hpp>
 #include <expr/nodes/trace.hpp>
+#include <expr/nodes/transp.hpp>
+
+#include <expr/operations/dagger.hpp>
 
 #include <grill/grill.hpp>
 #include <grill/grillade.hpp>

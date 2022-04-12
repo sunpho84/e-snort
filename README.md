@@ -235,10 +235,10 @@ TODO
 ---
 - Spawning expr assignment in the different case, how will we deal with \*=, -= etc? Do they have any usage, or should we divert to the =a*b case?
 
-
+- Neighbors
+- Scalar should simdify
 - Reducer from nissa
 - Grid from...?
 - Fields
-- Neighbors
 - MPI io
 - Random generator
