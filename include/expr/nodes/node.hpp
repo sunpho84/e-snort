@@ -182,6 +182,44 @@ namespace esnort
     
 #undef PROVIDE_SUBSCRIBE
   };
+
+#define PROVIDE_CATCH_OP_WITH_ARITHMETIC(OP)				\
+									\
+  /* Catch operator OP between a node and an arithmetic type */		\
+  template <typename T,							\
+	    typename Oth,						\
+	    ENABLE_THIS_TEMPLATE_IF(std::is_arithmetic_v<Oth>)>		\
+  constexpr INLINE_FUNCTION						\
+  auto operator OP(const Node<T>& node,const Oth& value)		\
+  {									\
+    return DE_CRTPFY(const T,&node) OP scalar(value);			\
+  }									\
+  									\
+  /* Catch operator OP between an arithmetic type and a node */		\
+  template <typename T,							\
+	    typename Oth,						\
+	    ENABLE_THIS_TEMPLATE_IF(std::is_arithmetic_v<Oth>)>		\
+  constexpr INLINE_FUNCTION						\
+  auto operator OP(const Oth& value,const Node<T>& node)		\
+  {									\
+    return scalar(value) OP DE_CRTPFY(const T,&node);			\
+  }
+  
+  PROVIDE_CATCH_OP_WITH_ARITHMETIC(+);
+  
+  PROVIDE_CATCH_OP_WITH_ARITHMETIC(-);
+  
+  PROVIDE_CATCH_OP_WITH_ARITHMETIC(*);
+  
+  PROVIDE_CATCH_OP_WITH_ARITHMETIC(/);
+  
+  PROVIDE_CATCH_OP_WITH_ARITHMETIC(%);
+  
+  PROVIDE_CATCH_OP_WITH_ARITHMETIC(==);
+  
+  PROVIDE_CATCH_OP_WITH_ARITHMETIC(!=);
+  
+#undef PROVIDE_CATCH_OP_WITH_ARITHMETIC
 }
 
 #endif
