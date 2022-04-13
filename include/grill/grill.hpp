@@ -18,13 +18,17 @@ namespace esnort
   /// Hashing version
   template <int NDims,
 	    int...I>
-  template <typename Coord,       // Type of coordinate values
-	    typename Site>        // Type of index of sites
+  template <typename GT>       // Type of coordinate values
   struct Universe<NDims,std::integer_sequence<int,I...>>::
-  HashableTableProvider<Coord,
-			       Site,
-			       true>
+  HashableTableProvider<GT,
+			true>
   {
+    using Site=typename GT::Site;
+    
+    using HaloSite=typename GT::HaloSite;
+    
+    using Coord=typename GT::Coord;
+    
     /// Hashed coords of all sites
     DynamicTens<OfComps<Site,Dir>,Coord,ExecSpace::HOST> coordsOfSitesHashTable;
     
@@ -32,7 +36,7 @@ namespace esnort
     DynamicTens<OfComps<Site,Ori,Dir>,Site,ExecSpace::HOST> neighsOfSitesHashTable;
     
     /// Wrapping surface site corresponding to a given halo
-    DynamicTens<OfComps<Site>,Site,ExecSpace::HOST> surfSiteOfHaloSitesHashTable;
+    DynamicTens<OfComps<HaloSite>,Site,ExecSpace::HOST> surfSiteOfHaloSitesHashTable;
   };
   
   /// Hashable properties of a \c Grill
@@ -40,27 +44,51 @@ namespace esnort
   /// Not-Hashing version
   template <int NDims,
 	    int...I>
-  template <typename Coords,      // Type of coordinate values
-	    typename Site>        // Type of index of sites
+  template <typename GT>          // Type of coordinate values
   struct Universe<NDims,std::integer_sequence<int,I...>>::
-  HashableTableProvider<Coords,
-			       Site,
-			       false>
+  HashableTableProvider<GT,
+			false>
   {
   };
+  
+  /// Provides all types for the grill
+  template <typename SiteIntType,
+	    int NSites,
+	    const char* Name>
+  struct GrillTypes
+  {
+    DECLARE_UNTRANSPOSABLE_COMP(Coord,int,0,coord);
     
+    DECLARE_UNTRANSPOSABLE_COMP(Site,SiteIntType,NSites,site);
+    
+    DECLARE_UNTRANSPOSABLE_COMP(HaloSite,SiteIntType,0,haloSite);
+  };
+  
   /// A grill
   template <int NDims,
 	    int...I>
-  template <typename Coord,
-	    typename Site,
-	    bool Hashing>
+  template <typename SiteIntType,
+	    int NSites,
+	    bool Hashing,
+	    const char* Name>
   struct Universe<NDims,std::integer_sequence<int,I...>>::Grill :
-  HashableTableProvider<Coord,Site,Hashing>
+  GrillTypes<SiteIntType,NSites,Name>,
+    HashableTableProvider<GrillTypes<SiteIntType,NSites,Name>,Hashing>
   {
+    using GT=GrillTypes<SiteIntType,NSites,Name>;
+    
+    using Site=typename GT::Site;
+    
+    using HaloSite=typename GT::HaloSite;
+    
+    using Coord=typename GT::Coord;
+    
     /// Type needed to store all coords
     using Coords=
       DirTens<Coord>;
+    
+    /// Name of the grill
+    static constexpr const char* name=Name;
     
     /////////////////////////////////////////////////////////////////
     
@@ -173,21 +201,21 @@ namespace esnort
     /////////////////////////////////////////////////////////////////
     
     /// Halo sizes
-    DirTens<Site> _haloSizes;
+    DirTens<HaloSite> _haloSizes;
     
     /// Halo size in a given direction, constant access
     INLINE_FUNCTION HOST_DEVICE_ATTRIB
-    const Site& haloSize(const Dir& dir) const
+    const HaloSite& haloSize(const Dir& dir) const
     {
       return _haloSizes(dir);
     }
     
     /// Total halo volume
-    Site _totHaloVol;
+    HaloSite _totHaloVol;
     
     /// Total halo volume, constant access
     INLINE_FUNCTION HOST_DEVICE_ATTRIB
-    const Site& totHaloVol() const
+    const HaloSite& totHaloVol() const
     {
       return _totHaloVol;
     }
@@ -202,7 +230,7 @@ namespace esnort
     
     /// Assert that a halo site
     INLINE_FUNCTION HOST_DEVICE_ATTRIB
-    void assertIsHaloSite(const Site& halo) const
+    void assertIsHaloSite(const HaloSite& halo) const
     {
       assertIsInRange("coord",halo,totHaloVol());
     }
@@ -244,11 +272,11 @@ namespace esnort
     /////////////////////////////////////////////////////////////////
     
     /// Offset where the halo for each orientation and direction starts
-    StackTens<OfComps<Ori,Dir>,Site> _haloOffsets;
+    StackTens<OfComps<Ori,Dir>,HaloSite> _haloOffsets;
     
     /// Constant access the offset where the halo for each
     /// orientation and direction starts. First offset is 0
-    const Site& haloOffset(const Ori& ori,const Dir& dir) const
+    const HaloSite& haloOffset(const Ori& ori,const Dir& dir) const
     {
       return _haloOffsets(ori,dir);
     }
@@ -256,7 +284,7 @@ namespace esnort
     /// Initializes the site where the halo of each direction starts
     void initHaloOffsets()
     {
-      Site offset=0;
+      HaloSite offset=0;
       
       for(Ori ori=0;ori<2;ori++)
 	for(Dir dir=0;dir<NDims;dir++)
@@ -297,10 +325,10 @@ namespace esnort
     /////////////////////////////////////////////////////////////////
     
     /// Compute the site of given coords in the given ori,dir halo
-    Site haloSiteOfCoords(const Coords& cs,const Ori& ori,const Dir& dir) const
+    HaloSite haloSiteOfCoords(const Coords& cs,const Ori& ori,const Dir& dir) const
     {
       /// Returned site
-      Site out=0;
+      HaloSite out=0;
       
       COMP_LOOP(Dir,mu,
 		{
@@ -312,7 +340,7 @@ namespace esnort
     }
     
     /// Returns the orientation and direction of a point in the halo
-    auto oriDirOfHaloSite(const Site& haloSite) const
+    auto oriDirOfHaloSite(const HaloSite& haloSite) const
     {
       assertIsHaloSite(haloSite);
       
@@ -331,7 +359,7 @@ namespace esnort
     }
     
     /// Computes the (wrapping) surface site corresponding to a given halo
-    Site computeSurfSiteOfHaloSite(Site haloSite /* don't make const */)
+    Site computeSurfSiteOfHaloSite(HaloSite haloSite /* don't make const */)
     {
       assertIsHaloSite(haloSite);
       
@@ -350,7 +378,7 @@ namespace esnort
     }
     
     /// Wrapping surface site corresponding to a given halo
-    Site surfSiteOfHaloSite(const Site& haloSite)
+    Site surfSiteOfHaloSite(const HaloSite& haloSite)
     {
       assertIsHaloSite(haloSite);
       
@@ -388,7 +416,7 @@ namespace esnort
 	{
 	  this->coordsOfSitesHashTable.allocate(std::make_tuple(size));
 	  this->neighsOfSitesHashTable.allocate(std::make_tuple(size));
-	  this->surfSiteOfHaloSitesHashTable.allocate(std::make_tuple(size));
+	  this->surfSiteOfHaloSitesHashTable.allocate(std::make_tuple(totHaloVol()));
 	  
 	  // Set the hash table of coordinates of all sites
 	  forAllSites([&](const Site& site)
@@ -398,7 +426,7 @@ namespace esnort
 	  });
 	  
 	  // Set the hash table of surface site of each halo site
-	  forAllHaloSites([&](const Site& haloSite)
+	  forAllHaloSites([&](const HaloSite& haloSite)
 	  {
 	    this->surfSiteOfHaloSitesHashTable(haloSite)=
 	      computeSurfSiteOfHaloSite(haloSite);
@@ -463,7 +491,7 @@ namespace esnort
     constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
     void forAllHaloSites(F f) const
     {
-      loopOnAllComps<CompsList<Site>>(std::make_tuple(totHaloVol()),f);
+      loopOnAllComps<CompsList<HaloSite>>(std::make_tuple(totHaloVol()),f);
     }
     
     /// Returns the coordinates shifted in the asked direction
