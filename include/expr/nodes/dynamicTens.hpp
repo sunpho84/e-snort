@@ -153,9 +153,9 @@ namespace esnort
     constexpr
     DynamicTens()
     {
-      if constexpr(DynamicCompsProvider<Comps>::nDynamicComps==0)
-	allocate();
-      else
+      // if constexpr(DynamicCompsProvider<Comps>::nDynamicComps==0)
+      // 	allocate();
+      // else
 	allocated=false;
     }
     
@@ -173,7 +173,6 @@ namespace esnort
       DynamicTens(oth.getDynamicSizes())
     {
       LOGGER_LV3_NOTIFY("Using copy constructor of DynamicTens");
-      allocate(oth.getDynamicSizes());
       (*this)=oth;
     }
     
