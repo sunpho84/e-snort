@@ -1,11 +1,13 @@
-#ifndef _ALGEBRIC_SUM_HPP
-#define _ALGEBRIC_SUM_HPP
+#ifndef _CWISE_COMBINE_HPP
+#define _CWISE_COMBINE_HPP
 
 #ifdef HAVE_CONFIG_H
 # include <config.hpp>
 #endif
 
-/// \file expr/nodes/algebricSum.hpp
+/// \file expr/nodes/cWiseCombine.hpp
+
+/// Combines multiple nodes with a specified function
 
 #include <expr/comps/comps.hpp>
 #include <expr/nodes/conj.hpp>
@@ -16,9 +18,9 @@
 
 namespace esnort
 {
-  PROVIDE_DETECTABLE_AS(AlgebricSummer);
+  PROVIDE_DETECTABLE_AS(CWiseCombiner);
   
-  /// AlgebricSummer
+  /// CWiseCombiner
   ///
   /// Forward declaration to capture the components
   template <typename _E,
@@ -26,15 +28,15 @@ namespace esnort
 	    typename _Fund,
 	    typename _Comb,
 	    typename _Is=std::make_integer_sequence<int,std::tuple_size_v<_E>>>
-  struct AlgebricSummer;
+  struct CWiseCombiner;
   
 #define THIS								\
-  AlgebricSummer<std::tuple<_E...>,CompsList<C...>,_Fund,_Comb,std::integer_sequence<int,Is...>>
+  CWiseCombiner<std::tuple<_E...>,CompsList<C...>,_Fund,_Comb,std::integer_sequence<int,Is...>>
   
 #define BASE					\
     Node<THIS>
   
-  /// AlgebricSummer
+  /// CWiseCombiner
   ///
   template <typename..._E,
 	    typename...C,
@@ -43,7 +45,7 @@ namespace esnort
 	    int...Is>
   struct THIS :
     DynamicCompsProvider<CompsList<C...>>,
-    DetectableAsAlgebricSummer,
+    DetectableAsCWiseCombiner,
     SubNodes<_E...>,
     BASE
   {
@@ -71,7 +73,7 @@ namespace esnort
     static constexpr ExecSpace execSpace=
       commonExecSpace<std::remove_reference_t<_E>::execSpace...>();
     
-    static_assert(execSpace!=ExecSpace::UNDEFINED,"Cannot define algebric sum in undefined exec space");
+    static_assert(execSpace!=ExecSpace::UNDEFINED,"Cannot define cowfficient wise combination in undefined exec space");
     
     /// List of dynamic comps
     using DynamicComps=
@@ -103,7 +105,7 @@ namespace esnort
     /// Return whether can be assigned at compile time
     static constexpr bool canAssignAtCompileTime=false;
     
-    /// Determine if algebric sum can be simdified - to be extended
+    /// Determine if coefficient-wise combination can be simdified - to be extended
     static constexpr bool simdifyCase()
     {
       return
@@ -177,7 +179,7 @@ namespace esnort
     /// Construct
     template <typename...T>
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-    AlgebricSummer(const DynamicComps& dynamicSizes,
+    CWiseCombiner(const DynamicComps& dynamicSizes,
 		   UNIVERSAL_CONSTRUCTOR_IDENTIFIER,
 		   Comb combine,
 		   T&&...addends) :
@@ -192,7 +194,7 @@ namespace esnort
 	    typename..._E,
 	    ENABLE_THIS_TEMPLATE_IF(isNode<_E> and...)>
   INLINE_FUNCTION HOST_DEVICE_ATTRIB
-  auto algebricSum(Comb combine,_E&&...e)
+  auto cWiseCombine(Comb combine,_E&&...e)
   {
     /// Computes the result components
     using Comps=
@@ -204,7 +206,7 @@ namespace esnort
     
     /// Resulting type
     using Res=
-      AlgebricSummer<std::tuple<decltype(e)...>,
+      CWiseCombiner<std::tuple<decltype(e)...>,
 		     Comps,
 		     Fund,
 		     Comb>;
@@ -233,12 +235,20 @@ namespace esnort
       };								\
 									\
     return								\
-      algebricSum(combine,std::forward<E1>(e1),std::forward<E2>(e2));	\
+      cWiseCombine(combine,std::forward<E1>(e1),std::forward<E2>(e2));	\
   }
   
   CATCH_OPERATOR(+);
   
   CATCH_OPERATOR(-);
+  
+  CATCH_OPERATOR(/);
+  
+  CATCH_OPERATOR(%);
+  
+  CATCH_OPERATOR(==);
+  
+  CATCH_OPERATOR(!=);
   
 #undef CATCH_OPERATOR
 }

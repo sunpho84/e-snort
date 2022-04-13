@@ -21,8 +21,8 @@
 #include <expr/comps/compRwCl.hpp>
 #include <expr/comps/indexComputer.hpp>
 
-#include <expr/nodes/algebricSum.hpp>
 #include <expr/nodes/conj.hpp>
+#include <expr/nodes/cWiseCombine.hpp>
 #include <expr/nodes/dynamicTens.hpp>
 #include <expr/nodes/prod.hpp>
 #include <expr/nodes/stackTens.hpp>
