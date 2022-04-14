@@ -18,7 +18,8 @@ namespace esnort
   {
 #define DECLARE_GRILL(SITE_INT_TYPE,NSITES,COMP_NAME,comp_name,HASHING)	\
     									\
-    static constexpr char _ ## COMP_NAME ## Name[]=TO_STRING(COMP_NAME);	\
+    static constexpr char _ ## COMP_NAME ## Name[]=			\
+      TO_STRING(COMP_NAME);						\
     									\
     using COMP_NAME ## Grill=						\
       Grill<SITE_INT_TYPE,NSITES,HASHING,_ ## COMP_NAME ## Name>;	\
@@ -45,6 +46,17 @@ namespace esnort
     DECLARE_GRILL(int64_t,0,LocEo,locEo,true);
     
 #undef DECLARE_GRILL
+
+    template <typename L,
+	      typename T>
+    static void printCoords(L&& l,const DirTens<T>& c)
+    {
+      COMP_LOOP(Dir,dir,
+		{
+		  l<<c(dir);
+		  if(dir!=NDims-1) l<<" ";
+		});
+    }
     
     /// Initializes all directions as wrapping
     static constexpr DirTens<bool> allDirWraps()
@@ -78,6 +90,8 @@ namespace esnort
     {
       glbGrill.setSidesAndWrapping(glbSides,allDirWraps());
       
+      rankGrill.setSidesAndWrapping(rankSides,allDirWraps());
+      
       /////////////////////////////////////////////////////////////////
       
       const ParCoords parSides=
@@ -88,6 +102,8 @@ namespace esnort
       /////////////////////////////////////////////////////////////////
       
       const LocCoords locSides=glbSides/rankSides;
+      LOGGER<<"Local sides: ";
+      printCoords(LOGGER,locSides);
       
       assertIsPartitionable(glbSides,"global",rankSides,"rank");
       
@@ -105,9 +121,66 @@ namespace esnort
       
       /////////////////////////////////////////////////////////////////
       
+      LOGGER<<"Rank "<<Mpi::rank;
+      
+      LOGGER<<"Rank sides: ";
+      printCoords(LOGGER,rankGrill.sides());
+      
+      const RankCoords rankCoords=rankGrill.coordsOfSite(Mpi::rank);
+      LOGGER<<"Coordinates of the rank: ";
+      printCoords(LOGGER,rankCoords);
+      
+      const GlbCoords originGlbCoords=rankCoords*locSides;
+      
+      LOGGER<<"Coordinates of the origin: ";
+      printCoords(LOGGER,originGlbCoords);
+      
+      /////////////////////////////////////////////////////////////////
+      
+      const LocSite locVol=locGrill.vol();
+      
+      DynamicTens<CompsList<LocSite>,GlbCoords,ExecSpace::HOST> glbCoordsOfLocSite(std::make_tuple(locVol));
+      locGrill.forAllSites([this,&glbCoordsOfLocSite,&originGlbCoords](const LocSite& locSite)
+      {
+	const LocCoords locCoords=locGrill.coordsOfSite(locSite);
+	
+	glbCoordsOfLocSite(locSite)=locCoords+originGlbCoords;
+      });
+      
+      /////////////////////////////////////////////////////////////////
+      
+      DynamicTens<OfComps<LocSite>,ParSite,ExecSpace::HOST> parSiteOfLocSite(std::make_tuple(locVol));
+      
+      locGrill.forAllSites([this,&parSiteOfLocSite,&glbCoordsOfLocSite](const LocSite& locSite)
+      {
+	const GlbCoords glbCoords=glbCoordsOfLocSite(locSite);
+	
+	auto l=LOGGER;
+	l<<" "<<locSite<<" ";
+	printCoords(l,glbCoords);
+	
+	parSiteOfLocSite(locSite)=(glbCoords(Dir(I))+...)%2;
+      });
+      
+      LocCoords r;
+      r=0;
+      for(r(Dir(2))=0;r(Dir(2))<locSides(Dir(2));r(Dir(2))++)
+	{
+	  auto l=LOGGER;
+	  l<<" ";
+	  for(r(Dir(3))=0;r(Dir(3))<locSides(Dir(3));r(Dir(3))++)
+	    {
+	      const LocSite locSite=locGrill.siteOfCoords(r);
+	      l<<parSiteOfLocSite(locSite);
+	    }
+	}
+      
       const LocEoSite locEoVol=locEoGrill.vol();
       
+      /////////////////////////////////////////////////////////////////
+      
       DynamicTens<OfComps<ParSite,LocEoSite>,LocSite,ExecSpace::HOST> locSiteOfParLocEoSite(std::make_tuple(locEoVol));
+      
       
     }
   };
