@@ -12,7 +12,7 @@
 
 namespace esnort
 {
-  /// Assert that a site is in the volume
+  /// Assert that a quantity is in the given range
   template <typename T>
   static constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
   void assertIsInRange(const char* name,const T& val,const T& max)
