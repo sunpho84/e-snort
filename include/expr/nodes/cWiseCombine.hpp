@@ -250,6 +250,12 @@ namespace esnort
   
   CATCH_OPERATOR(!=);
   
+  CATCH_OPERATOR(and);
+  
+  CATCH_OPERATOR(or);
+  
+  CATCH_OPERATOR(xor);
+  
 #undef CATCH_OPERATOR
 }
 
