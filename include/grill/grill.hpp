@@ -51,19 +51,6 @@ namespace esnort
   {
   };
   
-  /// Provides all types for the grill
-  template <typename SiteIntType,
-	    int NSites,
-	    const char* Name>
-  struct GrillTypes
-  {
-    DECLARE_UNTRANSPOSABLE_COMP(Coord,int,0,coord);
-    
-    DECLARE_UNTRANSPOSABLE_COMP(Site,SiteIntType,NSites,site);
-    
-    DECLARE_UNTRANSPOSABLE_COMP(HaloSite,SiteIntType,0,haloSite);
-  };
-  
   /// A grill
   template <int NDims,
 	    int...I>
@@ -75,74 +62,6 @@ namespace esnort
   GrillTypes<SiteIntType,NSites,Name>,
     HashableTableProvider<GrillTypes<SiteIntType,NSites,Name>,Hashing>
   {
-    using GT=GrillTypes<SiteIntType,NSites,Name>;
-    
-    using Site=typename GT::Site;
-    
-    using HaloSite=typename GT::HaloSite;
-    
-    using Coord=typename GT::Coord;
-    
-    /// Type needed to store all coords
-    using Coords=
-      DirTens<Coord>;
-    
-    /// Name of the grill
-    static constexpr const char* name=Name;
-    
-    /////////////////////////////////////////////////////////////////
-    
-    /// Volume
-    Site _vol;
-    
-    /// Volume, const access
-    INLINE_FUNCTION HOST_DEVICE_ATTRIB
-    const Site& vol() const
-    {
-      return _vol;
-    }
-    
-    /// Assert that a site is in the volume
-    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
-    void assertIsSite(const Site& site) const
-    {
-      assertIsInRange("site",site,vol());
-    }
-    
-    /////////////////////////////////////////////////////////////////
-    
-    /// Sides
-    Coords _sides;
-    
-    /// Sides, constant access
-    INLINE_FUNCTION HOST_DEVICE_ATTRIB
-    const Coords& sides() const
-    {
-      return _sides;
-    }
-    
-    /// Side in a given direction, constant access
-    INLINE_FUNCTION HOST_DEVICE_ATTRIB
-    const Coord& side(const Dir& dir) const
-    {
-      return _sides(dir);
-    }
-    
-    /// Assert that a coordinate is in the valid range
-    INLINE_FUNCTION HOST_DEVICE_ATTRIB
-    void assertIsCoord(const Coord& coord,const Dir& dir) const
-    {
-      assertIsInRange("coord",coord,side(dir));
-    }
-    
-    /// Assert that coordinates are in the valid range
-    INLINE_FUNCTION HOST_DEVICE_ATTRIB
-    void assertAreCoords(const Coords& coords) const
-    {
-      for(Dir dir=0;dir<NDims;dir++)
-	assertIsCoord(coords(dir),dir);
-    }
-    
     /////////////////////////////////////////////////////////////////
     
     /// Surface sizes
