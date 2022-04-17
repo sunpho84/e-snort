@@ -69,6 +69,21 @@ namespace esnort
     LOGGER<<"Configured at "<<CONFIG_TIME<<" with flags: "<<CONFIG_FLAGS<<"";
   }
   
+  void printAvailableFeatures()
+  {
+#if ENABLE_AVX512
+    LOGGER<<"Avx512 availale";
+#endif
+
+#if ENABLE_AVX
+    LOGGER<<"Avx availale";
+#endif
+    
+#if ENABLE_MMX
+    LOGGER<<"Mmx availale";
+#endif
+  }
+  
   /// Says bye bye
   void printBailout()
   {
@@ -85,6 +100,7 @@ namespace esnort
     printVersionContacts();
     printGitInfo();
     printConfigurePars();
+    printAvailableFeatures();
     
     envFlags::readAll();
     
