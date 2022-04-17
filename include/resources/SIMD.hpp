@@ -132,6 +132,18 @@ namespace esnort
 	return Size;
     }
   };
+  
+  constexpr int maxAvailableSimdSize=
+#if   ENABLE_AVX512
+	      16
+#elif ENABLE_AVX
+	      8
+#elif ENABLE_MMX
+	      4
+#else
+	      1
+#endif
+	      ;
 }
 
 #endif

@@ -88,11 +88,15 @@ namespace esnort
 	     const RankCoords& rankSides,
 	     const Dir& parityDir)
     {
+      // Set the global and rank grills
+      
       glbGrill.setSidesAndWrapping(glbSides,allDirWraps());
       
       rankGrill.setSidesAndWrapping(rankSides,allDirWraps());
       
       /////////////////////////////////////////////////////////////////
+      
+      // Set the sides of the parity grill and initializes it
       
       const ParCoords parSides=
 	1+versor<ParCoord>(parityDir);
@@ -100,6 +104,8 @@ namespace esnort
       parGrill.setSidesAndWrapping(parSides,allDirWraps());
       
       /////////////////////////////////////////////////////////////////
+      
+      // Set the local grill
       
       const LocCoords locSides=glbSides/rankSides;
       LOGGER<<"Local sides: ";
@@ -113,13 +119,7 @@ namespace esnort
       
       /////////////////////////////////////////////////////////////////
       
-      assertIsPartitionable(locSides,"local",parSides,"parity");
-      
-      const LocEoCoords locEoSides=locSides/parSides;
-      
-      locEoGrill.setSidesAndWrapping(locEoSides,glbIsNotPartitioned);
-      
-      /////////////////////////////////////////////////////////////////
+      // Set rank coordinate and local origin global coordinates
       
       LOGGER<<"Rank "<<Mpi::rank;
       
@@ -137,6 +137,8 @@ namespace esnort
       
       /////////////////////////////////////////////////////////////////
       
+      // Set the global coordinate of the local sites
+      
       const LocSite locVol=locGrill.vol();
       
       DynamicTens<CompsList<LocSite>,GlbCoords,ExecSpace::HOST> glbCoordsOfLocSite(std::make_tuple(locVol));
@@ -149,39 +151,57 @@ namespace esnort
       
       /////////////////////////////////////////////////////////////////
       
-      DynamicTens<OfComps<LocSite>,ParSite,ExecSpace::HOST> parSiteOfLocSite(std::make_tuple(locVol));
+      // Set the local e/o grill
       
-      locGrill.forAllSites([this,&parSiteOfLocSite,&glbCoordsOfLocSite](const LocSite& locSite)
-      {
-	const GlbCoords glbCoords=glbCoordsOfLocSite(locSite);
-	
-	auto l=LOGGER;
-	l<<" "<<locSite<<" ";
-	printCoords(l,glbCoords);
-	
-	parSiteOfLocSite(locSite)=(glbCoords(Dir(I))+...)%2;
-      });
+      assertIsPartitionable(locSides,"local",parSides,"parity");
       
-      LocCoords r;
-      r=0;
-      for(r(Dir(2))=0;r(Dir(2))<locSides(Dir(2));r(Dir(2))++)
-	{
-	  auto l=LOGGER;
-	  l<<" ";
-	  for(r(Dir(3))=0;r(Dir(3))<locSides(Dir(3));r(Dir(3))++)
-	    {
-	      const LocSite locSite=locGrill.siteOfCoords(r);
-	      l<<parSiteOfLocSite(locSite);
-	    }
-	}
+      const LocEoCoords locEoSides=locSides/parSides;
+      
+      locEoGrill.setSidesAndWrapping(locEoSides,glbIsNotPartitioned);
       
       const LocEoSite locEoVol=locEoGrill.vol();
       
       /////////////////////////////////////////////////////////////////
       
+      // Set the parity and even/odd of the local sites, and the local site of a given parity and locale e/o site
+      
+      using ParLocEoSite=std::tuple<ParSite,LocEoSite>;
+      
+      DynamicTens<OfComps<LocSite>,ParLocEoSite,ExecSpace::HOST> parLocEoSiteOfLocSite(std::make_tuple(locVol));
       DynamicTens<OfComps<ParSite,LocEoSite>,LocSite,ExecSpace::HOST> locSiteOfParLocEoSite(std::make_tuple(locEoVol));
       
+      locGrill.forAllSites([this,&parLocEoSiteOfLocSite,&locSiteOfParLocEoSite,&glbCoordsOfLocSite,&parityDir](const LocSite& locSite)
+      {
+	const LocCoords locCoords=locGrill.coordsOfSite(locSite);
+	const LocEoCoords locEoCoords=locCoords/parSides;
+	const LocEoSite locEoSite=locEoGrill.siteOfCoords(locEoCoords);
+	
+	const GlbCoords glbCoords=glbCoordsOfLocSite(locSite);
+	const ParSite parSite=(glbCoords(Dir(I))+...)%2;
+	
+	parLocEoSiteOfLocSite(locSite)={parSite,locEoSite};
+	locSiteOfParLocEoSite(parSite,locEoSite)=locSite;
+      });
       
+      /////////////////////////////////////////////////////////////////
+      
+      DynamicTens<OfComps<ParSite,LocEoSite,Ori,Dir>,LocEoSite,ExecSpace::HOST> neighsOfLoceo(std::make_tuple(locEoVol));
+      
+      for(ParSite parSite=0;parSite<2;parSite++)
+	locEoGrill.forAllSites([this,&parSite,&neighsOfLoceo,&locSiteOfParLocEoSite](const LocEoSite& locEoSite)
+	{
+	  const LocSite locSite=locSiteOfParLocEoSite(parSite,locEoSite);
+	  
+	  const GlbCoords glbCoords=glbCoordsOfLocSite(locSite);
+	  
+	  for(Ori ori=0;ori<2;ori++)
+	    for(Dir dir=0;dir<NDims;dir++)
+	      {
+		const GlbCoords glbNeighCoords=glbCoords-moveOffset[ori]*versor<int>(dir);
+		const LocCoords locNeighCoords=glbNeighCoords-originGlbCoords;
+		const LocSite locNeigh=locGrill.neighOfSite(locSite,ori,dir);
+	      }
+      });
     }
   };
 }
