@@ -75,7 +75,7 @@ namespace esnort
     template <typename Site,
 	      typename Coord>
     INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
-    static DirTens<Coord> computeCoordsOfSiteInBoxOfSize(Site site /*don't make const*/,const DirTens<Coord>& sides)
+    static DirTens<Coord> computeCoordsOfSiteInBoxOfSides(Site site /*don't make const*/,const DirTens<Coord>& sides)
       {
 	/// Result
 	DirTens<Coord> c;
@@ -100,6 +100,23 @@ namespace esnort
 	
 	return c;
       }
+    
+    /// Compute the site of given coords in the given ori,dir halo
+    template <typename Site,
+	      typename Coord>
+    INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
+    static Site computeSiteOfCoordsInBoxOfSides(const DirTens<Coord>& coords,const DirTens<Coord>& sides)
+    {
+      /// Returned site
+      Site out=0;
+      
+      COMP_LOOP(Dir,mu,
+		{
+		    out=out*sides(mu)+coords(mu);
+		});
+      
+      return out;
+    }
     
     /// Hashable properties of a \c Grill
     ///

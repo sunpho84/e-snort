@@ -9,6 +9,7 @@
 
 #include <expr/comps/compLoops.hpp>
 #include <grill/universe.hpp>
+#include <metaprogramming/forEachInTuple.hpp>
 
 namespace esnort
 {
@@ -44,6 +45,23 @@ namespace esnort
     PROVIDE_ASSERT_IS_COORD(NAME, name);		\
     PROVIDE_ASSERT_ARE_COORDS(NAME, name)
   
+#define PROVIDE_COORDS_OF_SITE_COMPUTER(NAME,name,SIDES)		\
+									\
+    /*! Computes the coordinates of the passed name ## Site */		\
+    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB			\
+    NAME ## Coords compute ## NAME ## Coords(const NAME ## Site& name ## Site) const \
+    {									\
+      return computeCoordsOfSiteInBoxOfSides(name ## Site,SIDES);	\
+    }									\
+									\
+    /*! Computes the global site given the global coordinates */	\
+    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB			\
+    NAME ## Site compute ## NAME ## Site(const NAME ## Coords& name ## Coords) const \
+    {									\
+      return								\
+	computeSiteOfCoordsInBoxOfSides<NAME ## Site>(name ## Coords,SIDES); \
+    }
+  
   template <int NDims,
 	    int...I>
   struct Universe<NDims,std::integer_sequence<int,I...>>::Grillade
@@ -58,16 +76,9 @@ namespace esnort
     
     GlbCoords glbSides;
     
-    GlbCoords originGlbCoords;
-    
     PROVIDE_ASSERT_SITE_COORD_COORDS(Glb,glb,glbVol);
     
-    /// Computes the coordinates of the passed glbSite
-    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
-    GlbCoords computeGlbCoords(const GlbSite& glbSite) const
-    {
-      return computeCoordsOfSiteInBoxOfSize(glbSite,glbSides);
-    }
+    PROVIDE_COORDS_OF_SITE_COMPUTER(Glb,glb,glbSides);
     
     /////////////////////////////////////////////////////////////////
     
@@ -81,7 +92,10 @@ namespace esnort
     
     RankCoords nRanksPerDir;
     
-    RankCoords rankCoords;
+    DynamicTens<OfComps<Rank>,RankCoords,ExecSpace::HOST> rankCoords;
+    
+    /// Coordinates of the present rank
+    RankCoords thisRankCoords;
     
     Rank nRanks;
     
@@ -89,14 +103,14 @@ namespace esnort
     
     DirTens<bool> glbIsNotSimdPartitioned;
     
+    DynamicTens<OfComps<Rank>,GlbCoords,ExecSpace::HOST> originGlbCoords;
+    
+    /// Global coordinates of the origin of present rank
+    GlbCoords thisRankOriginGlbCoords;
+    
     PROVIDE_ASSERT_SITE_COORD_COORDS(Rank,rank,nRanks);
     
-    /// Computes the coordinates of the passed rank
-    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
-    RankCoords computeRankCoords(const RankSite& rank) const
-    {
-      return computeCoordsOfSiteInBoxOfSize(rank,nRanksPerDir);
-    }
+    PROVIDE_COORDS_OF_SITE_COMPUTER(Rank,rank,nRanksPerDir);
     
     /////////////////////////////////////////////////////////////////
     
@@ -114,12 +128,7 @@ namespace esnort
     
     PROVIDE_ASSERT_SITE_COORD_COORDS(SimdRank,simdRank,nSimdRanks);
     
-    /// Computes the coordinates of the passed simd rank
-    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
-    SimdRankCoords computeSimdRankCoords(const SimdRankSite& simdRank) const
-    {
-      return computeCoordsOfSiteInBoxOfSize(simdRank,nSimdRanksPerDir);
-    }
+    PROVIDE_COORDS_OF_SITE_COMPUTER(SimdRank,simdRank,nSimdRanksPerDir);
     
     StackTens<OfComps<SimdRank>,SimdRankCoords> simdRankCoords;
     
@@ -139,12 +148,7 @@ namespace esnort
     
     PROVIDE_ASSERT_SITE_COORD_COORDS(Loc,loc,locVol);
     
-    /// Computes the coordinates of the passed locSite
-    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
-    LocCoords computeLocCoords(const LocSite& locSite) const
-    {
-      return computeCoordsOfSiteInBoxOfSize(locSite,locSides);
-    }
+    PROVIDE_COORDS_OF_SITE_COMPUTER(Loc,loc,locSides);
     
     // /// Computes the coordinates of the passed locSite
     // GlbCoords computeGlbCoords(const LocSite& locSite) const
@@ -178,6 +182,11 @@ namespace esnort
     DECLARE_UNTRANSPOSABLE_COMP(Parity,int,2,parity);
     
     ParityCoords paritySides;
+    
+    DynamicTens<OfComps<Rank>,Parity,ExecSpace::HOST> originParity;
+    
+    /// Parity of the origin of the present rank
+    Parity thisRankOriginParity;
     
     StackTens<OfComps<Parity>,ParityCoords> parityCoords;
     
@@ -236,23 +245,18 @@ namespace esnort
       assertIsInRange("simdLocEoSite",simdLocEoSite,simdLocEoVol);
     }
     
-    /// Computes the coordinates of the passed simdLocEoSite
-    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
-    SimdLocEoCoords computeSimdLocEoCoords(const SimdLocEoSite& simdLocEoSite) const
-    {
-      return computeCoordsOfSiteInBoxOfSize(simdLocEoSite,simdLocEoSides);
-    }
+    PROVIDE_COORDS_OF_SITE_COMPUTER(SimdLocEo,simdLocEo,simdLocEoSides);
     
     /////////////////////////////////////////////////////////////////
     
-    // /// Components needed to identify a local site within a e/o simd representation
-    // using SimdEoRepOfLocSite=OfComps<Parity,SimdLocEoSite,SimdRank>;
+    /// Components needed to identify a local site within a e/o simd representation
+    using SimdEoRepOfLocSite=OfComps<Parity,SimdLocEoSite,SimdRank>;
     
     /// Computes the coordinate of the site, adding to the global
     /// origin the simdRank origin and adding the local simd eo
     /// coords inflated along the parity direction, and adjusting
     /// the resulting parity
-    GlbCoords computeGlbCoordsOfsimdEoRepOfLocSite(const Parity& parity,
+    GlbCoords computeGlbCoordsOfSimdEoRepOfLocSite(const Parity& parity,
 						   const SimdLocEoSite& simdLocEoSite,
 						   const SimdRank& simdRank) const
     {
@@ -266,7 +270,7 @@ namespace esnort
 	simdRankLocOrigins(simdRank);
       
       const GlbCoords glbCoords=
-	originGlbCoords+simdRankLocOrigin+simdLocCoords;
+	thisRankOriginGlbCoords+simdRankLocOrigin+simdLocCoords;
       
       /// Computes the parity of the resulting coordinate
       const Parity glbParity=
@@ -276,6 +280,41 @@ namespace esnort
 	(glbParity+parity)%2;
       
       return glbCoords+parityCoords(neededParity);
+    }
+    
+    /// Components needed to identify a gloval site within a e/o simd representation
+    using SimdEoRepOfGlbSite=OfComps<Rank,Parity,SimdLocEoSite,SimdRank>;
+    
+    SimdEoRepOfGlbSite computeSimdEoRepOfLocSiteOfGlbCoords(const GlbCoords& glbCoords) const
+    {
+      const RankCoords rankCoords=
+	glbCoords/locSides;
+      
+      const Rank rank=
+	computeRankSite(rankCoords);
+      
+      const LocCoords locCoords=
+	glbCoords-originGlbCoords(rank);
+      
+      const Parity parity=
+	glbCoordsParity(glbCoords);
+      
+      const SimdLocCoords simdLocCoords=
+	locCoords%simdLocSides;
+      
+      const SimdRankCoords simdRankCoords=
+	locCoords/simdLocSides;
+      
+      const SimdLocEoCoords simdLocEoCoords=
+	simdLocCoords/paritySides;
+      
+      const SimdLocEoSite simdLocEoSite=
+	computeSimdLocEoSite(simdLocEoCoords);
+      
+      const SimdRank simdRank=
+	computeSimdRankSite(simdRankCoords);
+      
+      return {rank,parity,simdLocEoSite,simdRank};
     }
     
     /////////////////////////////////////////////////////////////////
@@ -402,14 +441,27 @@ namespace esnort
       printCoords(LOGGER,nRanksPerDir);
       
       nRanks=(nRanksPerDir(Dir(I))*...);
-      rankCoords=computeRankCoords(Mpi::rank);
-      LOGGER<<"Coordinates of the rank: ";
-      printCoords(LOGGER,rankCoords);
+      forEachInTuple(std::make_tuple(&originGlbCoords,&rankCoords,&originParity),[this](auto* p)
+      {
+	p->allocate(std::make_tuple(nRanks));
+      });
       
-      originGlbCoords=rankCoords*locSides;
+      for(Rank rank=0;rank<nRanks;rank++)
+	{
+	  rankCoords(rank)=computeRankCoords(rank);
+	  originGlbCoords(rank)=rankCoords(rank)*locSides;
+	  originParity(rank)=glbCoordsParity(originGlbCoords(rank));
+	}
+      
+      thisRankCoords=rankCoords(Rank(Mpi::rank));
+      thisRankOriginGlbCoords=originGlbCoords(Rank(Mpi::rank));
+      thisRankOriginParity=originParity(Rank(Mpi::rank));
+      
+      LOGGER<<"Coordinates of the rank: ";
+      printCoords(LOGGER,thisRankCoords);
       
       LOGGER<<"Coordinates of the origin: ";
-      printCoords(LOGGER,originGlbCoords);
+      printCoords(LOGGER,thisRankOriginGlbCoords);
       
       /////////////////////////////////////////////////////////////////
       
