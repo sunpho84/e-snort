@@ -58,7 +58,16 @@ namespace esnort
     
     GlbCoords glbSides;
     
+    GlbCoords originGlbCoords;
+    
     PROVIDE_ASSERT_SITE_COORD_COORDS(Glb,glb,glbVol);
+    
+    /// Computes the coordinates of the passed glbSite
+    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
+    GlbCoords computeGlbCoords(const GlbSite& glbSite) const
+    {
+      return computeCoordsOfSiteInBoxOfSize(glbSite,glbSides);
+    }
     
     /////////////////////////////////////////////////////////////////
     
@@ -82,6 +91,13 @@ namespace esnort
     
     PROVIDE_ASSERT_SITE_COORD_COORDS(Rank,rank,nRanks);
     
+    /// Computes the coordinates of the passed rank
+    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
+    RankCoords computeRankCoords(const RankSite& rank) const
+    {
+      return computeCoordsOfSiteInBoxOfSize(rank,nRanksPerDir);
+    }
+    
     /////////////////////////////////////////////////////////////////
     
     DECLARE_UNTRANSPOSABLE_COMP(SimdRankCoord,int,0,simdRankCoord);
@@ -98,6 +114,15 @@ namespace esnort
     
     PROVIDE_ASSERT_SITE_COORD_COORDS(SimdRank,simdRank,nSimdRanks);
     
+    /// Computes the coordinates of the passed simd rank
+    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
+    SimdRankCoords computeSimdRankCoords(const SimdRankSite& simdRank) const
+    {
+      return computeCoordsOfSiteInBoxOfSize(simdRank,nSimdRanksPerDir);
+    }
+    
+    StackTens<OfComps<SimdRank>,SimdRankCoords> simdRankCoords;
+    
     /////////////////////////////////////////////////////////////////
     
     DECLARE_UNTRANSPOSABLE_COMP(LocCoord,int,0,locCoord);
@@ -113,6 +138,22 @@ namespace esnort
     LocSite locVol;
     
     PROVIDE_ASSERT_SITE_COORD_COORDS(Loc,loc,locVol);
+    
+    /// Computes the coordinates of the passed locSite
+    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
+    LocCoords computeLocCoords(const LocSite& locSite) const
+    {
+      return computeCoordsOfSiteInBoxOfSize(locSite,locSides);
+    }
+    
+    // /// Computes the coordinates of the passed locSite
+    // GlbCoords computeGlbCoords(const LocSite& locSite) const
+    // {
+    //   return originGlbCoords+computeLocCoords(locSite);
+    // }
+    
+    /// Local origin of the simd rank
+    StackTens<OfComps<SimdRank>,LocCoords> simdRankLocOrigins;
     
     /////////////////////////////////////////////////////////////////
     
@@ -138,12 +179,24 @@ namespace esnort
     
     ParityCoords paritySides;
     
+    StackTens<OfComps<Parity>,ParityCoords> parityCoords;
+    
     /// Assert that a parity is in the allowed range
     constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
     void assertIsParity(const Parity& parity) const
     {
       assertIsInRange("parity",parity,2);
     }
+    
+    /// Compute the parity of global coords
+    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
+    Parity glbCoordsParity(const GlbCoords& glbCoords) const
+    {
+      return (glbCoords(Dir(I))+...)%2;
+    }
+    
+    /// Parity split direction
+    Dir parityDir;
     
     /////////////////////////////////////////////////////////////////
     
@@ -181,6 +234,48 @@ namespace esnort
     void assertIsSimdLocEoSite(const SimdLocEoSite& simdLocEoSite) const
     {
       assertIsInRange("simdLocEoSite",simdLocEoSite,simdLocEoVol);
+    }
+    
+    /// Computes the coordinates of the passed simdLocEoSite
+    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
+    SimdLocEoCoords computeSimdLocEoCoords(const SimdLocEoSite& simdLocEoSite) const
+    {
+      return computeCoordsOfSiteInBoxOfSize(simdLocEoSite,simdLocEoSides);
+    }
+    
+    /////////////////////////////////////////////////////////////////
+    
+    // /// Components needed to identify a local site within a e/o simd representation
+    // using SimdEoRepOfLocSite=OfComps<Parity,SimdLocEoSite,SimdRank>;
+    
+    /// Computes the coordinate of the site, adding to the global
+    /// origin the simdRank origin and adding the local simd eo
+    /// coords inflated along the parity direction, and adjusting
+    /// the resulting parity
+    GlbCoords computeGlbCoordsOfsimdEoRepOfLocSite(const Parity& parity,
+						   const SimdLocEoSite& simdLocEoSite,
+						   const SimdRank& simdRank) const
+    {
+      const SimdLocEoCoords simdLocEoCoords=
+	computeSimdLocEoCoords(simdLocEoSite);
+      
+      const SimdLocCoords simdLocCoords=
+	simdLocEoCoords*paritySides;
+      
+      const LocCoords simdRankLocOrigin=
+	simdRankLocOrigins(simdRank);
+      
+      const GlbCoords glbCoords=
+	originGlbCoords+simdRankLocOrigin+simdLocCoords;
+      
+      /// Computes the parity of the resulting coordinate
+      const Parity glbParity=
+	glbCoordsParity(glbCoords);
+      
+      const Parity neededParity=
+	(glbParity+parity)%2;
+      
+      return glbCoords+parityCoords(neededParity);
     }
     
     /////////////////////////////////////////////////////////////////
@@ -229,7 +324,8 @@ namespace esnort
 	     const Dir& parityDir) :
       glbSides(glbSides),
       nRanksPerDir(nRanksPerDir),
-      nSimdRanksPerDir(nSimdRanksPerDir)
+      nSimdRanksPerDir(nSimdRanksPerDir),
+      parityDir(parityDir)
     {
       // Set the global and rank grills
       
@@ -239,7 +335,22 @@ namespace esnort
       
       // Set the sides of the parity grill and initializes it
       
-      paritySides=1+versor<ParityCoord>(parityDir);
+      parityCoords(parity(0))=0;
+      parityCoords(parity(1))=versor<ParityCoord>(parityDir);
+      
+      paritySides=1+parityCoords(parity(1));
+      
+      LOGGER<<"Parity dir: "<<parityDir;
+      
+      LOGGER<<"Parity sides: ";
+      printCoords(LOGGER,paritySides);
+      
+      COMP_LOOP(Parity,parity,
+		{
+		  auto l=LOGGER;
+		  l<<"parity "<<parity<<" coords: ";
+		  printCoords(l,parityCoords(parity));
+		});
       
       assertIsPartitionable(locSides,"local",paritySides,"parity");
       
@@ -259,9 +370,21 @@ namespace esnort
       
       /////////////////////////////////////////////////////////////////
       
+      locEoSides=locSides/paritySides;
+      LOGGER<<"Local e/o sides: ";
+      printCoords(LOGGER,locEoSides);
+      
+      assertIsPartitionable(locSides,"local",paritySides,"parity");
+      
+      locEoVol=locVol/2;
+      
+      /////////////////////////////////////////////////////////////////
+      
       // Set the simd local grill
       
       simdLocSides=locSides/nSimdRanksPerDir;
+      simdLocVol=locVol/nSimdRanks;
+      
       LOGGER<<"Simd local sides: ";
       printCoords(LOGGER,simdLocSides);
       
@@ -275,15 +398,15 @@ namespace esnort
       
       LOGGER<<"Rank "<<Mpi::rank;
       
-      LOGGER<<"Rank sides: ";
+      LOGGER<<"nRanksPerDir: ";
       printCoords(LOGGER,nRanksPerDir);
       
       nRanks=(nRanksPerDir(Dir(I))*...);
-      rankCoords=computeCoordsOfSiteInBoxOfSize(Mpi::rank,nRanksPerDir);
+      rankCoords=computeRankCoords(Mpi::rank);
       LOGGER<<"Coordinates of the rank: ";
       printCoords(LOGGER,rankCoords);
       
-      const GlbCoords originGlbCoords=rankCoords*locSides;
+      originGlbCoords=rankCoords*locSides;
       
       LOGGER<<"Coordinates of the origin: ";
       printCoords(LOGGER,originGlbCoords);
@@ -305,17 +428,45 @@ namespace esnort
       
       glbIsNotSimdPartitioned=glbIsNotPartitioned and (nRanksPerDir==1);
       
+      COMP_LOOP(SimdRank,simdRank,
+		{
+		  simdRankCoords(simdRank)=computeSimdRankCoords(simdRank);
+		  simdRankLocOrigins(simdRank)=simdRankCoords(simdRank)*simdLocSides;
+		});
+      
+      LOGGER<<"SimdRanksLocOrigin: ";
+      COMP_LOOP(SimdRank,simdRank,
+		{
+		  auto l=LOGGER;
+		  l<<"simdRank "<<simdRank<<": ";
+      		  printCoords(l,simdRankLocOrigins(simdRank));
+		});
+      
+      LOGGER<<"SimdRankCoords: ";
+      COMP_LOOP(SimdRank,simdRank,
+		{
+		  auto l=LOGGER;
+		  l<<"simdRank "<<simdRank<<": ";
+      		  printCoords(l,simdRankCoords(simdRank));
+		});
+      
       /////////////////////////////////////////////////////////////////
       
       // Set the simd local e/o grill
       
       simdLocEoSides=simdLocSides/paritySides;
+      simdLocEoVol=simdLocVol/2;
       LOGGER<<"Simd e/o local sides: ";
       printCoords(LOGGER,simdLocEoSides);
       
-      assertIsPartitionable(locSides,"local",nSimdRanksPerDir,"simdRank");
+      assertIsPartitionable(simdLocSides,"simdLocal",paritySides,"simdRank");
       
       /////////////////////////////////////////////////////////////////
+      
+      // DynamicTens<SimdEoRepOfLocSite,GlbCoords,ExecSpace::HOST> glbCoordsOfParSimdLocEoSimdRank(simdLocEoVol);
+      
+      
+      
       
       // // Set the parity and even/odd of the local sites, and the local site of a given parity and locale e/o site
       

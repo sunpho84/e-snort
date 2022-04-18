@@ -31,7 +31,6 @@
 
 #include <expr/operations/dagger.hpp>
 
-#include <grill/grill.hpp>
 #include <grill/grillade.hpp>
 
 #include <ios/file.hpp>
