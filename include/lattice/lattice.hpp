@@ -1,14 +1,14 @@
-#ifndef _GRILLADE_HPP
-#define _GRILLADE_HPP
+#ifndef _LATTICE_HPP
+#define _LATTICE_HPP
 
 #ifdef HAVE_CONFIG_H
 # include <config.hpp>
 #endif
 
-/// \file grill/grillade.hpp
+/// \file lattice/lattice.hpp
 
 #include <expr/comps/compLoops.hpp>
-#include <grill/universe.hpp>
+#include <lattice/universe.hpp>
 #include <metaprogramming/forEachInTuple.hpp>
 #include <resources/mathOperations.hpp>
 
@@ -65,7 +65,7 @@ namespace grill
   
   template <int NDims,
 	    int...I>
-  struct Universe<NDims,std::integer_sequence<int,I...>>::Grillade
+  struct Universe<NDims,std::integer_sequence<int,I...>>::Lattice
   {
     DECLARE_UNTRANSPOSABLE_COMP(GlbCoord,int,0,glbCoord);
     
@@ -370,29 +370,29 @@ namespace grill
 		{
 		  if(not isPartitionable(dir))
 		    CRASH<<
-		      "in dir "<<dir<<" the "<<dividendName<<" grill side "<<dividend(dir)<<
-		      " cannot be divided by the "<<divisorName<<" grill side "<<divisor(dir);
+		      "in dir "<<dir<<" the "<<dividendName<<" lattice side "<<dividend(dir)<<
+		      " cannot be divided by the "<<divisorName<<" lattice side "<<divisor(dir);
 		});
 #endif
     };
     
-    /// Initialize a grillade
-    Grillade(const GlbCoords& glbSides,
-	     const RankCoords& nRanksPerDir,
-	     const SimdRankCoords& nSimdRanksPerDir,
-	     const Dir& parityDir) :
+    /// Initialize a lattice
+    Lattice(const GlbCoords& glbSides,
+	    const RankCoords& nRanksPerDir,
+	    const SimdRankCoords& nSimdRanksPerDir,
+	    const Dir& parityDir) :
       glbSides(glbSides),
       nRanksPerDir(nRanksPerDir),
       nSimdRanksPerDir(nSimdRanksPerDir),
       parityDir(parityDir)
     {
-      // Set the global and rank grills
+      // Set the global and rank lattices
       
       glbVol=(glbSides(Dir(I))*...);
       
       /////////////////////////////////////////////////////////////////
       
-      // Set the sides of the parity grill and initializes it
+      // Set the sides of the parity lattice and initializes it
       
       parityCoords(parity(0))=0;
       parityCoords(parity(1))=versor<ParityCoord>(parityDir);
@@ -417,7 +417,7 @@ namespace grill
       
       /////////////////////////////////////////////////////////////////
       
-      // Set the local grill
+      // Set the local lattice
       
       locSides=glbSides/nRanksPerDir;
       LOGGER<<"Local sides: ";
@@ -441,7 +441,7 @@ namespace grill
       
       /////////////////////////////////////////////////////////////////
       
-      // Set the simd local grill
+      // Set the simd local lattice
       
       simdLocSides=locSides/nSimdRanksPerDir;
       simdLocVol=locVol/nSimdRanks;
@@ -487,7 +487,7 @@ namespace grill
       
       /////////////////////////////////////////////////////////////////
       
-      // Set the simd grill
+      // Set the simd lattice
       
       const int nSimdRanksCheck=(nSimdRanksPerDir(Dir(I))*...);
       if(nSimdRanksCheck!=nSimdRanks)
@@ -528,7 +528,7 @@ namespace grill
       
       /////////////////////////////////////////////////////////////////
       
-      // Set the simd local e/o grill
+      // Set the simd local e/o lattice
       
       simdLocEoSides=simdLocSides/paritySides;
       simdLocEoVol=simdLocVol/2;

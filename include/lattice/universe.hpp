@@ -122,16 +122,10 @@ namespace grill
     ///
     /// Forward implementation
     template <typename GT,       // Type of coordinate values
-	      bool Hashing>         // Store or not tables
+	      bool Hashing>      // Store or not tables
     struct HashableTableProvider;
     
-    template <typename SiteIntType,
-	      int NSites,
-	      bool Hashing,
-	      const char* Name>
-    struct Grill;
-    
-    struct Grillade;
+    struct Lattice;
   };
 }
 

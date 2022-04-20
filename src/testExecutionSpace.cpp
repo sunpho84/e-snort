@@ -175,23 +175,23 @@ void testGrill()
   using U=Universe<4>;
   using Dir=U::Dir;
   
-  using Grillade=U::Grillade;
+  using Lattice=U::Lattice;
   //using GlbGrill=U::GlbGrill;
   
-  using Parity=Grillade::Parity;
-  using SimdLocEoSite=Grillade::SimdLocEoSite;
-  using SimdRank=Grillade::SimdRank;
+  using Parity=Lattice::Parity;
+  using SimdLocEoSite=Lattice::SimdLocEoSite;
+  using SimdRank=Lattice::SimdRank;
   
-  using GlbCoords=Grillade::GlbCoords;
-  // using LocCoords=Grillade::LocCoords;
-  using RankCoords=Grillade::RankCoords;
-  using SimdRankCoords=Grillade::SimdRankCoords;
+  using GlbCoords=Lattice::GlbCoords;
+  // using LocCoords=Lattice::LocCoords;
+  using RankCoords=Lattice::RankCoords;
+  using SimdRankCoords=Lattice::SimdRankCoords;
   
   GlbCoords glbSides(6,6,6,12);
   RankCoords rankSides(2,1,1,1);
   SimdRankCoords simdRankSides(1,1,2,4);
   
-  U::Grillade grillade(glbSides,rankSides,simdRankSides,1);
+  U::Lattice lattice(glbSides,rankSides,simdRankSides,1);
   
   [[maybe_unused]]
   auto printCoords=[](auto& l,const auto& c)
@@ -199,19 +199,19 @@ void testGrill()
     l<<"("<<c(Dir(0))<<","<<c(Dir(1))<<","<<c(Dir(2))<<","<<c(Dir(3))<<")";
   };
   
-  static_assert(not std::is_same_v<U::Grillade::GlbCoord,U::Grillade::LocCoord>,"");
+  static_assert(not std::is_same_v<U::Lattice::GlbCoord,U::Lattice::LocCoord>,"");
   
   LOGGER<<"Now doing the computeGlbCoordsOfsimdEoRepOfLocSite test";
-  loopOnAllComps<CompsList<Parity,SimdLocEoSite,SimdRank>>(std::make_tuple(grillade.simdLocEoVol),
+  loopOnAllComps<CompsList<Parity,SimdLocEoSite,SimdRank>>(std::make_tuple(lattice.simdLocEoVol),
 							   [&printCoords,
-							    &grillade](const Parity& parity,
+							    &lattice](const Parity& parity,
 								       const SimdLocEoSite& simdLocEoSite,
 								       const SimdRank& simdRank)
   {
     const GlbCoords glbCoords=
-      grillade.computeGlbCoordsOfSimdEoRepOfLocSite(parity,simdLocEoSite,simdRank);
+      lattice.computeGlbCoordsOfSimdEoRepOfLocSite(parity,simdLocEoSite,simdRank);
     
-    const auto [rankP,parityP,simdLocEoSiteP,simdRankP]=grillade.computeSimdEoRepOfLocSiteOfGlbCoords(glbCoords);
+    const auto [rankP,parityP,simdLocEoSiteP,simdRankP]=lattice.computeSimdEoRepOfLocSiteOfGlbCoords(glbCoords);
     
     auto l=LOGGER;
     l<<"parity "<<parity<<" simdLocEoSite "<<simdLocEoSite<<" simdRank "<<simdRank<<" glbCoords: ";
@@ -222,10 +222,10 @@ void testGrill()
   
   int nNonLoc=0,nLoc=0;
   LOGGER<<"Now doing the neigh test";
-  loopOnAllComps<CompsList<Parity,SimdLocEoSite>>(std::make_tuple(grillade.simdLocEoVol),
+  loopOnAllComps<CompsList<Parity,SimdLocEoSite>>(std::make_tuple(lattice.simdLocEoVol),
 						  [&nLoc,&nNonLoc,
 						   &printCoords,
-						   &grillade](const Parity& parity,
+						   &lattice](const Parity& parity,
 							      const SimdLocEoSite& simdLocEoSite)
 						  {
     for(Ori ori=0;ori<2;ori++)
@@ -237,11 +237,11 @@ void testGrill()
  	    for(SimdRank simdRank=0;simdRank<SimdRank::sizeAtCompileTime;simdRank++)
 	      {
 		const GlbCoords glbCoords=
-		  grillade.computeGlbCoordsOfSimdEoRepOfLocSite(parity,simdLocEoSite,simdRank);
+		  lattice.computeGlbCoordsOfSimdEoRepOfLocSite(parity,simdLocEoSite,simdRank);
 		
-		GlbCoords neighCoords=grillade.shiftedCoords(glbCoords,ori,dir);
+		GlbCoords neighCoords=lattice.shiftedCoords(glbCoords,ori,dir);
 		
-		const auto [rankP,parityP,simdLocEoSiteP,simdRankP]=grillade.computeSimdEoRepOfLocSiteOfGlbCoords(neighCoords);
+		const auto [rankP,parityP,simdLocEoSiteP,simdRankP]=lattice.computeSimdEoRepOfLocSiteOfGlbCoords(neighCoords);
 		
 		auto l=LOGGER;
 		l<<"   ";
