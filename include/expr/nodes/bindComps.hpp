@@ -18,7 +18,7 @@
 #include <tuples/tupleFilter.hpp>
 #include <tuples/tupleHasType.hpp>
 
-namespace esnort
+namespace grill
 {
   PROVIDE_DETECTABLE_AS(CompsBinder);
   

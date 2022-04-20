@@ -13,7 +13,7 @@
 #include <ios/logger.hpp>
 #include <resources/device.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Assign two expressions using device
   template <typename Lhs,

@@ -56,7 +56,7 @@
 #define UNPRIORITIZE_DEFAULT_VERSION_ARGS_CHECK				\
   static_assert(sizeof...(DummyTypes)==0,"Dummy parameters actually catched!")
 
-namespace esnort
+namespace grill
 {
   /// Helper struct used to identify explicitly the universal constructor, so to avoid overloading copy and move constructors
   struct UniversalConstructorDeprioritize;

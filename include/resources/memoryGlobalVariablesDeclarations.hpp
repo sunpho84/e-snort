@@ -9,7 +9,7 @@
 
 #include <metaprogramming/globalVariableProvider.hpp>
 
-namespace esnort::memory
+namespace grill::memory
 {
   DEFINE_OR_DECLARE_GLOBAL_VARIABLE(bool,useCache,("true"));
 }

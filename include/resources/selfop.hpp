@@ -13,7 +13,7 @@
 ///
 /// \brief Provides a number of self-assignment operator
 
-namespace esnort
+namespace grill
 {
   template <typename T>
   struct SelfOp

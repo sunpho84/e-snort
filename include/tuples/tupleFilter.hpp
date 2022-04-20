@@ -9,7 +9,7 @@
 
 #include <tuple>
 
-namespace esnort
+namespace grill
 {
   /// Filter a tuple on the basis of a predicate on the type
   ///

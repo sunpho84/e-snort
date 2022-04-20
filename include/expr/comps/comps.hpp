@@ -17,7 +17,7 @@
 #include <tuples/tupleHasType.hpp>
 #include <tuples/tupleReplaceType.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Collection of components
   template <typename...Tc>
@@ -97,7 +97,7 @@ namespace esnort
   {
     static constexpr int nComps=1+sizeof...(Tail);
     
-    using LastComp=esnort::LastComp<CompsList<Head,Tail...>>;
+    using LastComp=grill::LastComp<CompsList<Head,Tail...>>;
     
     static constexpr int _lastCompSizeProvider()
     {

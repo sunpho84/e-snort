@@ -14,7 +14,7 @@
 #include <resources/threadsHiddenVariablesDeclarations.hpp>
 #include <metaprogramming/inline.hpp>
 
-namespace esnort::threads
+namespace grill::threads
 {
   void initialize();
   

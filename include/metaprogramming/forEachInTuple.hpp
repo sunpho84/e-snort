@@ -13,7 +13,7 @@
 
 #include <metaprogramming/inline.hpp>
 
-namespace esnort
+namespace grill
 {
   namespace resources
   {

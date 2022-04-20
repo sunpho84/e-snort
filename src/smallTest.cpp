@@ -2,9 +2,9 @@
 # include <config.hpp>
 #endif
 
-#include <esnort.hpp>
+#include <grill.hpp>
 
-using namespace esnort;
+using namespace grill;
 
 
 DECLARE_TRANSPOSABLE_COMP(Spin,int,4,spin);
@@ -26,7 +26,7 @@ void testSimdifiedAssign()
 
 int main(int narg,char**arg)
 {
-  esnort::runProgram(narg,arg,[](int narg,char** arg){testSimdifiedAssign();});
+  grill::runProgram(narg,arg,[](int narg,char** arg){testSimdifiedAssign();});
   
   return 0;
 }

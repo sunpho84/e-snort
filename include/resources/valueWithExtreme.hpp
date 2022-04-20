@@ -12,7 +12,7 @@
 #include <resources/refProxy.hpp>
 #include <resources/selfop.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Possible extreme types
   enum class Extreme{MINIMUM,MAXIMUM};

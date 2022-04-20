@@ -11,7 +11,7 @@
 #include <resources/threads.hpp>
 #include <metaprogramming/globalVariableProvider.hpp>
 
-namespace esnort::Logger
+namespace grill::Logger
 {
   /// Access to the logger as if it was a file
   DEFINE_OR_DECLARE_GLOBAL_VARIABLE(File,logFile,{"/dev/stdout","w"});

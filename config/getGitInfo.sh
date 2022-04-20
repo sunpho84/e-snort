@@ -5,7 +5,7 @@ then
     cat "$1/lib/resources/gitInfo.cpp"
 else
     
-    echo 'namespace esnort::git'
+    echo 'namespace grill::git'
     echo '{'
     echo
     

@@ -16,7 +16,7 @@
 #include <debug/minimalCrash.hpp>
 #include <metaprogramming/nonConstMethod.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Machine clock type
   using Clock=

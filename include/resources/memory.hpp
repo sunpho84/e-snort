@@ -11,7 +11,7 @@
 
 #include <resources/device.hpp>
 
-namespace esnort::memory
+namespace grill::memory
 {
   namespace internal
   {

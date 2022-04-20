@@ -9,7 +9,7 @@
 
 #include <tuple>
 
-namespace esnort
+namespace grill
 {
   /// Type of the tuple obtained catting all passed tuples
   template <typename...TP>

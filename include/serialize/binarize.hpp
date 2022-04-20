@@ -18,7 +18,7 @@
 #include <metaprogramming/hasMember.hpp>
 #include <metaprogramming/templateEnabler.hpp>
 
-namespace esnort
+namespace grill
 {
   PROVIDE_HAS_MEMBER(binarize);
   PROVIDE_HAS_MEMBER(deBinarize);

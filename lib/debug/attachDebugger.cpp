@@ -10,11 +10,11 @@
 #include <ios/logger.hpp>
 #include <resources/Mpi.hpp>
 
-namespace esnort
+namespace grill
 {
   void possiblyWaitToAttachDebugger()
   {
-    if(esnort::waitToAttachDebugger)
+    if(grill::waitToAttachDebugger)
       {
 	/// Flag used to trap
 	volatile int flag=0;

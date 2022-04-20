@@ -13,7 +13,7 @@
 #include <tensor/tensorRef.hpp>
 #include <tensor/variableExecSpaceChanger.hpp>
 
-namespace esnort
+namespace grill
 {
 #define THIS					\
   DynamicVariable<T,ES>

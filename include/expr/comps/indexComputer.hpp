@@ -16,7 +16,7 @@
 #include <tuples/tupleSubset.hpp>
 #include <tuples/uniqueTuple.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Dispatch the internal index calculation
   ///

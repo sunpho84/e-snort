@@ -7,7 +7,7 @@
 
 /// \file gitInfo.hpp
 
-namespace esnort::git
+namespace grill::git
 {
   extern const char* hash;
   

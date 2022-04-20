@@ -13,7 +13,7 @@
 
 #include <metaprogramming/inline.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Class which does something when created and something else when destroyed
   ///

@@ -1,4 +1,4 @@
-AC_INIT([e-snort],[1.0],[fr.sanfilippo@gmail.com])
+AC_INIT([grill],[1.0],[fr.sanfilippo@gmail.com])
 
 #include all config flags
 config_flags="$*"

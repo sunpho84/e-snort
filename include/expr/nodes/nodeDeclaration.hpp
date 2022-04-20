@@ -11,7 +11,7 @@
 
 #include <metaprogramming/detectableAs.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Base type representing a node
   template <typename T>

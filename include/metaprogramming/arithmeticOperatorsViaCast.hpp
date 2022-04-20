@@ -10,7 +10,7 @@
 #include <metaprogramming/crtp.hpp>
 #include <metaprogramming/inline.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Provides the arithmetic operators via cast
   template <typename CastToExec,

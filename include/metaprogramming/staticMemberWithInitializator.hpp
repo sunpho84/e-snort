@@ -9,7 +9,7 @@
 ///
 /// \brief Provides a static member with an initalizator
 
-namespace esnort
+namespace grill
 {
   /// Provides a static member with an initalizator
   ///

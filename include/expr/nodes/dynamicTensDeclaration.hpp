@@ -10,7 +10,7 @@
 #include <expr/assign/executionSpace.hpp>
 #include <metaprogramming/detectableAs.hpp>
 
-namespace esnort
+namespace grill
 {
   PROVIDE_DETECTABLE_AS(DynamicTens);
   

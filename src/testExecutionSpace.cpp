@@ -9,9 +9,9 @@
 #include <unistd.h>
 #include <iostream>
 
-#include <esnort.hpp>
+#include <grill.hpp>
 
-using namespace esnort;
+using namespace grill;
 
 /////////////////////////////////////////////////////////////////
 
@@ -391,7 +391,7 @@ int in_main(int narg,char** arg)
   // {
   //   DynamicTens<CompsList<ComplId,SpaceTime,SpinRow>,double,ExecSpace::HOST> a(SpaceTime{10});
   //   StackTens<CompsList<SpinRow>,double> b;
-  //   using t=esnort::ExprRefOrVal<esnort::DynamicTens<std::tuple<esnort::ComplId, SpaceTime, Spin<esnort::RwCl::ROW, 0> >, double, esnort::ExecSpace::HOST>&>;
+  //   using t=grill::ExprRefOrVal<grill::DynamicTens<std::tuple<grill::ComplId, SpaceTime, Spin<grill::RwCl::ROW, 0> >, double, grill::ExecSpace::HOST>&>;
     
 
   //   auto ca=conj(a);
@@ -474,7 +474,7 @@ int in_main(int narg,char** arg)
 //   s.sizeAtCompileTimeAssertingNotDynamic();
   
 // #if not COMPILING_FOR_DEVICE
-//   static_assert(StackedVariable<int>::execSpace==esnort::ExecSpace::HOST,"We are issuing A on the host");
+//   static_assert(StackedVariable<int>::execSpace==grill::ExecSpace::HOST,"We are issuing A on the host");
 // #endif
   
   // ASM_BOOKMARK_BEGIN("TEST_ASSIGN");
@@ -508,7 +508,7 @@ int in_main(int narg,char** arg)
 
 int main(int narg,char** arg)
 {
-  esnort::runProgram(narg,arg,in_main);
+  grill::runProgram(narg,arg,in_main);
   
   return 0;
 }

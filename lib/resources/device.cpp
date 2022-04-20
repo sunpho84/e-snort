@@ -12,7 +12,7 @@
 
 #include <resources/device.hpp>
 
-namespace esnort::device
+namespace grill::device
 {
 #if ENABLE_DEVICE_CODE
   

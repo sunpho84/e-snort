@@ -13,7 +13,7 @@
 #include <debug/minimalCrash.hpp>
 #include <metaprogramming/staticMemberWithInitializator.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Single Instance enforcer class
   ///

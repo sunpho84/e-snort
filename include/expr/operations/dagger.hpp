@@ -11,7 +11,7 @@
 #include <expr/nodes/node.hpp>
 #include <expr/nodes/transp.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Take the dagger of an expression
   template <typename _E,

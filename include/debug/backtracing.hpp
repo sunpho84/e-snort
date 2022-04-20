@@ -15,7 +15,7 @@
 
 #include <debug/demangle.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Decompose the backtrace symbol
   struct BackTraceSymbol

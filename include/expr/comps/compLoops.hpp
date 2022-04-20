@@ -11,7 +11,7 @@
 #include <metaprogramming/inline.hpp>
 #include <metaprogramming/unrolledFor.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Loop over a component
   template <typename T,

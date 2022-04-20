@@ -14,7 +14,7 @@
 #include <ios/logger.hpp>
 #include <metaprogramming/inline.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Struct to hold info on arithmetic types
   

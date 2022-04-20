@@ -9,7 +9,7 @@
 
 #include <metaprogramming/hiddenVariableProvider.hpp>
 
-namespace esnort::threads
+namespace grill::threads
 {
   DEFINE_OR_DECLARE_HIDDEN_VARIABLE_WITH_CONST_ACCESSOR(int,nThreads,(1));
 }

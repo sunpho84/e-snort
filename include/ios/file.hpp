@@ -10,7 +10,7 @@
 #include <debug/minimalCrash.hpp>
 #include <metaprogramming/inline.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Returns whether the given path exists
   INLINE_FUNCTION

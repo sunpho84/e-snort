@@ -7,7 +7,7 @@
 
 /// \file signalTrap.hpp
 
-namespace esnort
+namespace grill
 {
   /// Called when signal received
   void signalHandler(int sig);

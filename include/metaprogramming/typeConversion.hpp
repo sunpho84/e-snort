@@ -16,7 +16,7 @@
 #include <metaprogramming/templateEnabler.hpp>
 
 
-namespace esnort
+namespace grill
 {
   namespace internal
   {

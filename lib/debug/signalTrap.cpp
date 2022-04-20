@@ -10,7 +10,7 @@
 #include <debug/backtracing.hpp>
 #include <debug/minimalCrash.hpp>
 
-namespace esnort
+namespace grill
 {
   void signalHandler(int sig)
   {

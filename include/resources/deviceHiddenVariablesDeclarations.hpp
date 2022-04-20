@@ -9,7 +9,7 @@
 
 #include <metaprogramming/hiddenVariableProvider.hpp>
 
-namespace esnort::device
+namespace grill::device
 {
   DEFINE_OR_DECLARE_HIDDEN_VARIABLE_WITH_CONST_ACCESSOR(int,nDevices,(0));
 }

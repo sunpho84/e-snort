@@ -23,7 +23,7 @@
     device::crashOnError(__LINE__,__FILE__,__PRETTY_FUNCTION__,ARGS)
 #endif
 
-namespace esnort::device
+namespace grill::device
 {
 #if ENABLE_DEVICE_CODE
   template <typename F,

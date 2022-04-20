@@ -9,7 +9,7 @@
 
 #include <tuple>
 
-namespace esnort
+namespace grill
 {
   /// Predicate returning whether the type is present in the list
   ///

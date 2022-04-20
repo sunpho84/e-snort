@@ -13,7 +13,7 @@
 #include <cstring>
 #include <errno.h>
 
-namespace esnort
+namespace grill
 {
   /// Wraps the actual crasher through the old-style C variadic function
   ///

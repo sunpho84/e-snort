@@ -10,7 +10,7 @@
 #include <metaprogramming/constnessChanger.hpp>
 #include <metaprogramming/nonConstMethod.hpp>
 
-namespace esnort
+namespace grill
 {
   namespace internal
   {

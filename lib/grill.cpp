@@ -2,7 +2,7 @@
 # include "config.hpp"
 #endif
 
-/// \file esnort.cpp
+/// \file grill.cpp
 ///
 /// \brief Implements the parts of code which require dedicated compilation units
 
@@ -37,7 +37,7 @@
 //   ""
 #endif
 
-namespace esnort
+namespace grill
 {
   
 // #ifdef USE_THREADS

@@ -9,7 +9,7 @@
 
 #include <expr/comps/compRwCl.hpp>
 
-namespace esnort
+namespace grill
 {
   namespace compFeat
   {

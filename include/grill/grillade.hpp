@@ -12,7 +12,7 @@
 #include <metaprogramming/forEachInTuple.hpp>
 #include <resources/mathOperations.hpp>
 
-namespace esnort
+namespace grill
 {
     /// Assert that a site is in the allowed range
 #define PROVIDE_ASSERT_IS_SITE(NAME,name,MAX)				\

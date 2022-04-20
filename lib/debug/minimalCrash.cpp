@@ -9,7 +9,7 @@
 #include <debug/crash.hpp>
 #include <ios/logger.hpp>
 
-namespace esnort
+namespace grill
 {
   void minimalCrash(const char* path,
 		    const int line,

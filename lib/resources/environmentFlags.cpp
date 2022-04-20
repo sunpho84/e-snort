@@ -13,7 +13,7 @@
 #include <metaprogramming/forEachInTuple.hpp>
 #include <resources/memory.hpp>
 
-namespace esnort::envFlags
+namespace grill::envFlags
 {
   void readAll()
   {

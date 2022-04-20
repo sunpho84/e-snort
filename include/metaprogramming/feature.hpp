@@ -12,7 +12,7 @@
 #include <metaprogramming/nonConstMethod.hpp>
 #include <resources/device.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Define a feature
 #define DEFINE_FEATURE(FEATURE_NAME)					\

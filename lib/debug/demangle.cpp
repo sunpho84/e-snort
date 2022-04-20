@@ -10,7 +10,7 @@
 
 #include <debug/demangle.hpp>
 
-namespace esnort
+namespace grill
 {
   std::string demangle(const std::string& what)
   {

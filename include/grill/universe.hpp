@@ -10,7 +10,7 @@
 #include <expr/comps/comps.hpp>
 #include <expr/nodes/stackTens.hpp>
 
-namespace esnort
+namespace grill
 {
   DECLARE_UNTRANSPOSABLE_COMP(Ori,int,2,ori);
   

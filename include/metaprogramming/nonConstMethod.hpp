@@ -9,7 +9,7 @@
 
 #include <metaprogramming/inline.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Returns true if T is a const lvalue reference
   template <typename T>
@@ -54,7 +54,7 @@ namespace esnort
   /// A const method NAME must be already present Example
   ///
   /// \code
-  // class esnort
+  // class grill
   /// {
   ///   double e{0};
   ///

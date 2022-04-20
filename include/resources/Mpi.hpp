@@ -29,7 +29,7 @@
 # define MPI_CRASH_ON_ERROR(ARGS...)					\
     Mpi::crashOnError(__LINE__,__FILE__,__PRETTY_FUNCTION__,ARGS)
   
-namespace esnort::Mpi
+namespace grill::Mpi
 {
   void initialize();
   

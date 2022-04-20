@@ -3,7 +3,7 @@
 
 #include <metaprogramming/inline.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Returns a lambda function to perform assignment
   template <typename Lhs,

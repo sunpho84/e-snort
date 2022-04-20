@@ -16,7 +16,7 @@
 #include <resources/memory.hpp>
 #include <resources/SIMD.hpp>
 
-namespace esnort
+namespace grill
 {
   PROVIDE_DETECTABLE_AS(BaseTens);
   

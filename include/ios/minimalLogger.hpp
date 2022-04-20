@@ -16,7 +16,7 @@
 
 #include <ios/file.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Wraps the actual logger through the old-style C variadic function
   ///

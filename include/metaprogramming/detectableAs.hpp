@@ -11,7 +11,7 @@
 
 #include <type_traits>
 
-namespace esnort
+namespace grill
 {
 #define PROVIDE_DETECTABLE_AS(NAME)			\
   struct DetectableAs ## NAME				\

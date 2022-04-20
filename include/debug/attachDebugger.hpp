@@ -9,7 +9,7 @@
 
 #include <debug/attachDebuggerGlobalVariablesDeclarations.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Implements the trap to debug
   void possiblyWaitToAttachDebugger();

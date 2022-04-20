@@ -10,7 +10,7 @@
 
 #include <resources/Mpi.hpp>
 
-namespace esnort::Mpi
+namespace grill::Mpi
 {
   int crashOnError(const int line,
 		   const char *file,

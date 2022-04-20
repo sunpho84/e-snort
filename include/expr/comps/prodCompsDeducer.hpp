@@ -10,7 +10,7 @@
 #include <expr/comps/comps.hpp>
 #include <tuples/uniqueTupleFromTuple.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Product component deducer
   ///

@@ -9,7 +9,7 @@
 
 #include <metaprogramming/inline.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Modulo operator, based on remainder operator %
   ///

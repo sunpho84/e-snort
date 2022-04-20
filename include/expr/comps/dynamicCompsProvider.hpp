@@ -13,7 +13,7 @@
 #include <tuples/tupleDiscriminate.hpp>
 #include <tuples/tupleSubset.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Provides the dynamic or static components
   template <typename C>

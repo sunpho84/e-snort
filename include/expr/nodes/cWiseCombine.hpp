@@ -16,7 +16,7 @@
 #include <metaprogramming/arithmeticTraits.hpp>
 #include <tuples/uniqueTupleFromTuple.hpp>
 
-namespace esnort
+namespace grill
 {
   PROVIDE_DETECTABLE_AS(CWiseCombiner);
   

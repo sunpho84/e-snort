@@ -14,7 +14,7 @@
 #include <expr/nodes/node.hpp>
 #include <expr/comps/indexComputer.hpp>
 
-namespace esnort
+namespace grill
 {
   PROVIDE_DETECTABLE_AS(StackTens);
   
@@ -146,7 +146,7 @@ namespace esnort
     // {
     //   loopOnAllComps<Comps>({},[this,f](const auto&...c) CONSTEXPR_INLINE_ATTRIBUTE
     //   {
-    // 	this->storage[esnort::index({},c...)]=
+    // 	this->storage[grill::index({},c...)]=
     // 	  f(c...);
     //   });
     // }

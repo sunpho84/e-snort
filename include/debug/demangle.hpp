@@ -11,7 +11,7 @@
 
 #include <string>
 
-namespace esnort
+namespace grill
 {
   /// Demangle a string
   ///

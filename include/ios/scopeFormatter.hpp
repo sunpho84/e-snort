@@ -9,7 +9,7 @@
 ///
 /// \brief Implements a number of scope-changer
 
-namespace esnort
+namespace grill
 {
   /// Mark the stream to be more indented
 #define SCOPE_INDENT()						\

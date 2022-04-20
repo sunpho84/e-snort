@@ -13,7 +13,7 @@
 #include <expr/nodes/baseTens.hpp>
 #include <expr/nodes/node.hpp>
 
-namespace esnort
+namespace grill
 {
   PROVIDE_DETECTABLE_AS(TensRef);
   

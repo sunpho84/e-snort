@@ -42,7 +42,7 @@ constexpr bool haveAvx512Instructions=
 #endif
 	    ;
 
-namespace esnort
+namespace grill
 {
   // using m512d=SIMDVector<double,8>;
   // using m512=SIMDVector<float,16>;

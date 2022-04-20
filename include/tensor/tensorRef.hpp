@@ -10,7 +10,7 @@
 #include <expr/node.hpp>
 #include <ios/logger.hpp>
 
-namespace esnort
+namespace grill
 {
   template <typename T,
 	    ExecSpace ES,

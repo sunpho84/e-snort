@@ -12,7 +12,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace esnort
+namespace grill
 {
   /// Provides a SFINAE to be used in template par list
   ///

@@ -13,7 +13,7 @@
 #include <metaprogramming/nonConstMethod.hpp>
 #include <metaprogramming/typeConversion.hpp>
 
-namespace esnort
+namespace grill
 {
   /// A component
   template <typename _C,

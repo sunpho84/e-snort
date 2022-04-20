@@ -8,7 +8,7 @@
 #include <metaprogramming/crtp.hpp>
 #include <tensor/tensorRef.hpp>
 
-namespace esnort
+namespace grill
 {
   template <typename T,
 	    ExecSpace ES>

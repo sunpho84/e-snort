@@ -9,7 +9,7 @@
 #include <debug/backtracing.hpp>
 #include <ios/logger.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Gets the backtracing symbols list
   std::vector<BackTraceSymbol> getBackTraceList()

@@ -9,7 +9,7 @@
 
 #include <expr/comps/comps.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Classifies the components, determining which one are visible or traced
   ///

@@ -12,7 +12,7 @@
 #include <debug/minimalCrash.hpp>
 #include <metaprogramming/inline.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Execution space possibilities
   enum class ExecSpace{HOST,DEVICE,UNDEFINED};

@@ -9,7 +9,7 @@
 
 #include <metaprogramming/globalVariableProvider.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Wait to attach debugger
   DEFINE_OR_DECLARE_GLOBAL_VARIABLE(bool,waitToAttachDebugger,{true});

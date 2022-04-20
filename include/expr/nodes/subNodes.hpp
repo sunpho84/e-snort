@@ -13,7 +13,7 @@
 ///
 /// \brief Type to hold subnodes
 
-namespace esnort
+namespace grill
 {
   /// Holds the subnodes
   template <typename..._E>

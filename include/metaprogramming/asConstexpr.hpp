@@ -9,7 +9,7 @@
 
 #include <type_traits>
 
-namespace esnort
+namespace grill
 {
   /// Returns I wrapped in a std::integral_constant
   template <auto I>

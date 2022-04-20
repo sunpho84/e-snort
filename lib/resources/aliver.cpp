@@ -19,7 +19,7 @@
 #include <resources/Mpi.hpp>
 #include <resources/threads.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Prints the banner
   void printBanner()

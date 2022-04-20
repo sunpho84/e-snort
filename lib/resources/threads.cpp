@@ -14,7 +14,7 @@
 
 #include <ios/logger.hpp>
 
-namespace esnort::threads
+namespace grill::threads
 {
 #if ENABLE_THREADS
   const char* translateProcBindingToString(const omp_proc_bind_t& binding)

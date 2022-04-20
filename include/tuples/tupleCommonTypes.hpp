@@ -10,7 +10,7 @@
 #include <tuples/tupleFilter.hpp>
 #include <tuples/tupleHasType.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Returns a tuple containing all types common to the two tuples
   template <typename TupleToSearch,

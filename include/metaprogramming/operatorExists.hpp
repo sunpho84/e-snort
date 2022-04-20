@@ -7,7 +7,7 @@
 
 /// \file operatorExists.hpp
 
-namespace esnort
+namespace grill
 {
   /// Check that the binary operator exists
 #define DEFINE_BINARY_OPERATOR_IMPLEMENTATION_CHECK(CHECK_NAME,         \

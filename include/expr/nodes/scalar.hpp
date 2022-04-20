@@ -11,7 +11,7 @@
 #include <expr/comps/dynamicCompsProvider.hpp>
 #include <expr/nodes/nodeDeclaration.hpp>
 
-namespace esnort
+namespace grill
 {
   PROVIDE_DETECTABLE_AS(Scalar);
   

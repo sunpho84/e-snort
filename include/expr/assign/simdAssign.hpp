@@ -13,7 +13,7 @@
 #include <expr/comps/compLoops.hpp>
 #include <ios/logger.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Assign two expressions using SIMD
   template <typename Lhs,

@@ -1,6 +1,6 @@
 include $(top_srcdir)/config/baseMakefile.am
 
-LDADD=$(top_builddir)/lib/libesnort.a
+LDADD=$(top_builddir)/lib/libgrill.a
 
 AM_CPPFLAGS= \
 	-I$(top_srcdir)/include

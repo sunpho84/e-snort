@@ -9,7 +9,7 @@
 
 #include <metaprogramming/hiddenVariableProvider.hpp>
 
-namespace esnort::Mpi
+namespace grill::Mpi
 {
   DEFINE_OR_DECLARE_HIDDEN_VARIABLE_WITH_CONST_ACCESSOR(bool,inited,{false});
   

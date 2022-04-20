@@ -1,11 +1,11 @@
-#ifndef _ESNORT_HPP
-#define _ESNORT_HPP
+#ifndef _GRILL_HPP
+#define _GRILL_HPP
 
 #ifdef HAVE_CONFIG_H
 # include <config.hpp>
 #endif
 
-/// \file esnort.hpp
+/// \file grill.hpp
 
 #include <debug/backtracing.hpp>
 #include <debug/attachDebugger.hpp>
@@ -52,7 +52,7 @@
 #include <tuples/uniqueTupleFromTuple.hpp>
 
 /// Global namespace
-namespace esnort
+namespace grill
 {
 }
 

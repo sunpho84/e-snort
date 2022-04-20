@@ -8,7 +8,7 @@
 
 #include <cstdarg>
 
-namespace esnort
+namespace grill
 {
   namespace Logger
   {

@@ -9,7 +9,7 @@
 
 #include <tensor/dynamicVariable.hpp>
 
-namespace esnort
+namespace grill
 {
 #define THIS					\
     StackedVariable<T>

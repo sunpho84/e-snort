@@ -7,7 +7,7 @@
 
 #include <type_traits>
 
-namespace esnort
+namespace grill
 {
   namespace details
   {

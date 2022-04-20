@@ -10,7 +10,7 @@
 #include <ios/logger.hpp>
 #include <metaprogramming/singleInstance.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Initialize
   void initialize(int narg,char** arg);

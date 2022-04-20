@@ -10,7 +10,7 @@
 #include <metaprogramming/call.hpp>
 #include <resources/device.hpp>
 
-namespace esnort
+namespace grill
 {
   template <typename TP,
 	    typename F,
@@ -21,7 +21,7 @@ namespace esnort
   {
     [[maybe_unused]]
     auto l=
-      {esnort::internal::call(f,((std::tuple_element_t<Is,TP>*)nullptr))...,0};
+      {grill::internal::call(f,((std::tuple_element_t<Is,TP>*)nullptr))...,0};
   }
   
 #define EXEC_FOR_ALL_TUPLE_TYPES(T,TP,CORE...)			\
@@ -44,7 +44,7 @@ namespace esnort
   {
     [[maybe_unused]]
     auto l=
-      {esnort::internal::call(f,std::integral_constant<int,Is>())...,0};
+      {grill::internal::call(f,std::integral_constant<int,Is>())...,0};
   }
   
 #define EXEC_FOR_ALL_TUPLE_IDS(I,TP,CORE...)			\

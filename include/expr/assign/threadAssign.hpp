@@ -14,7 +14,7 @@
 #include <ios/logger.hpp>
 #include <metaprogramming/inline.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Assign two expressions using device
   template <typename Lhs,

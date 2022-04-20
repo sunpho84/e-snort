@@ -9,7 +9,7 @@
 ///
 /// \brief Functions needed to read environment variables
 
-namespace esnort::envFlags
+namespace grill::envFlags
 {
   void readAll();
 }

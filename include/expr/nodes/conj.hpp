@@ -12,7 +12,7 @@
 #include <expr/nodes/node.hpp>
 #include <expr/nodes/subNodes.hpp>
 
-namespace esnort
+namespace grill
 {
   DECLARE_UNTRANSPOSABLE_COMP(ComplId,int,2,reIm);
   

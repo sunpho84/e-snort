@@ -11,7 +11,7 @@
 
 #include <type_traits>
 
-namespace esnort
+namespace grill
 {
   /// Define a member detecter named hasMember_TAG
   ///

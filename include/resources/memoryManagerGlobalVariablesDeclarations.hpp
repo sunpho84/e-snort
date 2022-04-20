@@ -11,7 +11,7 @@
 #include <metaprogramming/globalVariableProvider.hpp>
 #include <resources/memoryManager.hpp>
 
-namespace esnort::memory
+namespace grill::memory
 {
   DEFINE_OR_DECLARE_GLOBAL_VARIABLE(MemoryManager<ExecSpace::HOST>,hostManager,("host"));
 #if ENABLE_DEVICE_CODE

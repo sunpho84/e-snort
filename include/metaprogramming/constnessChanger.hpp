@@ -11,7 +11,7 @@
 
 #include <metaprogramming/templateEnabler.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Returns the argument as a constant
   template <typename T>

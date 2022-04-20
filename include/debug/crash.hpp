@@ -11,11 +11,11 @@
 
 #include <errno.h>
 
-namespace esnort
+namespace grill
 {
   /// Initialize the crasher
 #define CRASH							\
-  logger()<<esnort::Crasher(__FILE__,__LINE__,__PRETTY_FUNCTION__)
+  logger()<<grill::Crasher(__FILE__,__LINE__,__PRETTY_FUNCTION__)
   
   /// Keep all the information to crash
   class Crasher

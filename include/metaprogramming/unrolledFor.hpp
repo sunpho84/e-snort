@@ -12,7 +12,7 @@
 #include <metaprogramming/call.hpp>
 #include <metaprogramming/inline.hpp>
 
-namespace esnort
+namespace grill
 {
   namespace internal
   {

@@ -7,7 +7,7 @@
 
 /// \file crtp.hpp
 
-namespace esnort
+namespace grill
 {
 #define DE_CRTPFY(TYPE,PTR)			\
   (*static_cast<TYPE*>(PTR))

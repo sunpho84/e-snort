@@ -7,7 +7,7 @@
 ///
 /// See https://www.growingwiththeweb.com/2015/05/colours-in-gnome-terminal.html
 
-namespace esnort
+namespace grill
 {
   /// First part of the string which change color
   [[ maybe_unused ]]

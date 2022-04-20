@@ -9,7 +9,7 @@
 ///
 /// \brief Implements a tensor comp row or column type
 
-namespace esnort
+namespace grill
 {
   /// Row or column
   enum class RwCl{ROW,CLN};

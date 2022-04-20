@@ -7,7 +7,7 @@
 #include <expr/assign/executionSpace.hpp>
 #include <resources/memory.hpp>
 
-namespace esnort::memory
+namespace grill::memory
 {
   void initialize()
   {

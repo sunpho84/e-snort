@@ -13,7 +13,7 @@
 
 #include <metaprogramming/inline.hpp>
 
-namespace esnort::internal
+namespace grill::internal
 {
   /// Wraps the function to be called
 #define PROVIDE_CALL(NAME,ATTRIB)			\

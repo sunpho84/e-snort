@@ -11,7 +11,7 @@
 #include <grill/universe.hpp>
 #include <resources/mathOperations.hpp>
 
-namespace esnort
+namespace grill
 {
   /// Hashable properties of a \c Grill
   ///

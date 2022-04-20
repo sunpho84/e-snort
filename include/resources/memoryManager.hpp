@@ -18,7 +18,7 @@
 #include <resources/memoryGlobalVariablesDeclarations.hpp>
 #include <resources/valueWithExtreme.hpp>
 
-namespace esnort
+namespace grill
 {
 #define MEMORY_LOGGER				\
   VERBOSE_LOGGER(3)

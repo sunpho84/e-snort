@@ -35,7 +35,7 @@
 #include <resources/scopeDoer.hpp>
 #include <resources/threads.hpp>
 
-namespace esnort
+namespace grill
 {
   DEFINE_BINARY_OPERATOR_IMPLEMENTATION_CHECK(canPrint,CanPrint,<<);
   

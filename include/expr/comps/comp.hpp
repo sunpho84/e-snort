@@ -12,7 +12,7 @@
 #include <expr/comps/transposableComp.hpp>
 #include <metaprogramming/detectableAs.hpp>
 
-namespace esnort
+namespace grill
 {
   PROVIDE_DETECTABLE_AS(Comp);
   
