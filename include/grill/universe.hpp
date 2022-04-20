@@ -12,6 +12,8 @@
 
 namespace esnort
 {
+  DECLARE_UNTRANSPOSABLE_COMP(Ori,int,2,ori);
+  
   /// Assert that a quantity is in the given range
   template <typename T>
   static constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
@@ -22,8 +24,6 @@ namespace esnort
 	CRASH<<name<<" value "<<val<<" not valid, maximal value: "<<max;
 #endif
   }
-  
-  DECLARE_UNTRANSPOSABLE_COMP(Ori,int,2,ori);
   
   /// Assert that ori is an orientation
   constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
