@@ -10,6 +10,7 @@
 #include <expr/comps/compLoops.hpp>
 #include <grill/universe.hpp>
 #include <metaprogramming/forEachInTuple.hpp>
+#include <resources/mathOperations.hpp>
 
 namespace esnort
 {
@@ -79,6 +80,23 @@ namespace esnort
     PROVIDE_ASSERT_SITE_COORD_COORDS(Glb,glb,glbVol);
     
     PROVIDE_COORDS_OF_SITE_COMPUTER(Glb,glb,glbSides);
+    
+    /// Returns the coordinates shifted in the asked direction
+    ///
+    /// Periodic boundary conditions are always assumed
+    GlbCoords shiftedCoords(const GlbCoords& in,
+			    const Ori& ori,
+			    const Dir& dir,
+			    const int amount=1)
+      const
+    {
+      GlbCoords out=in;
+      
+      out(dir)=safeModulo(GlbCoord(in(dir)+moveOffset[ori]*amount),glbSides(dir));
+      
+      return
+	out;
+    }
     
     /////////////////////////////////////////////////////////////////
     
@@ -346,7 +364,8 @@ namespace esnort
     {
       const DirTens<bool> isPartitionable=
 	(dividend%divisor==0);
-      
+
+#ifndef __CUDA_ARCH__
       COMP_LOOP(Dir,dir,
 		{
 		  if(not isPartitionable(dir))
@@ -354,6 +373,7 @@ namespace esnort
 		      "in dir "<<dir<<" the "<<dividendName<<" grill side "<<dividend(dir)<<
 		      " cannot be divided by the "<<divisorName<<" grill side "<<divisor(dir);
 		});
+#endif
     };
     
     /// Initialize a grillade
@@ -384,12 +404,14 @@ namespace esnort
       LOGGER<<"Parity sides: ";
       printCoords(LOGGER,paritySides);
       
+#ifndef __CUDA_ARCH__
       COMP_LOOP(Parity,parity,
 		{
 		  auto l=LOGGER;
 		  l<<"parity "<<parity<<" coords: ";
 		  printCoords(l,parityCoords(parity));
 		});
+#endif
       
       assertIsPartitionable(locSides,"local",paritySides,"parity");
       
@@ -486,6 +508,7 @@ namespace esnort
 		  simdRankLocOrigins(simdRank)=simdRankCoords(simdRank)*simdLocSides;
 		});
       
+#ifndef __CUDA_ARCH__
       LOGGER<<"SimdRanksLocOrigin: ";
       COMP_LOOP(SimdRank,simdRank,
 		{
@@ -501,6 +524,7 @@ namespace esnort
 		  l<<"simdRank "<<simdRank<<": ";
       		  printCoords(l,simdRankCoords(simdRank));
 		});
+#endif
       
       /////////////////////////////////////////////////////////////////
       
