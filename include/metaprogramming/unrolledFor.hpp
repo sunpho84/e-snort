@@ -25,12 +25,7 @@ namespace esnort
     INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
     void unrolledForInternal(std::integer_sequence<int,Is...>,F&& f)
     {
-      /// Dummy initialized list, discarded at compile time
-      ///
-      /// The attribute avoids compiler warning.
-      [[ maybe_unused ]]
-      auto list=
-	{call(std::forward<F>(f),Begin+Is)...,0};
+      (f(Begin+Is),...);
     }
   }
   

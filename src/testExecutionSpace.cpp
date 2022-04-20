@@ -175,41 +175,154 @@ void testGrill()
   using U=Universe<4>;
   using Dir=U::Dir;
   
-  using GlbGrill=U::Grill<GlbCoord,GlbSite,true>;
+  using Grillade=U::Grillade;
+  //using GlbGrill=U::GlbGrill;
   
-  U::DirTens<GlbCoord> sides(3,3,3,3);
-  U::DirTens<bool> wrapping(1,1,1,1);
+  using Parity=Grillade::Parity;
+  using SimdLocEoSite=Grillade::SimdLocEoSite;
+  using SimdRank=Grillade::SimdRank;
   
-  GlbGrill glbGrill(sides,wrapping);
+  using GlbCoords=Grillade::GlbCoords;
+  // using LocCoords=Grillade::LocCoords;
+  using RankCoords=Grillade::RankCoords;
+  using SimdRankCoords=Grillade::SimdRankCoords;
   
-  glbGrill.forAllSites([&glbGrill](const GlbSite& site)
+  GlbCoords glbSides(6,6,6,12);
+  RankCoords rankSides(2,1,1,1);
+  SimdRankCoords simdRankSides(1,1,2,4);
+  
+  U::Grillade grillade(glbSides,rankSides,simdRankSides,1);
+  
+  [[maybe_unused]]
+  auto printCoords=[](auto& l,const auto& c)
   {
-    loopOnAllComps<CompsList<Ori,Dir>>({},[&glbGrill](const GlbSite& site,const Ori& ori,const Dir& dir)
-    {
-      const auto coords=glbGrill.coordsOfPoint(site);
-      const GlbSite neigh=glbGrill.neighOfPoint(site,ori,dir);
-      const auto neighCoords=glbGrill.coordsOfPoint(neigh);
-      
-      auto printCoords=[](auto& l,const auto c)
-      {
-	l<<"("<<c(Dir(0))<<","<<c(Dir(1))<<","<<c(Dir(2))<<","<<c(Dir(3))<<")";
-      };
-      
-      auto l=LOGGER;
-      l<<"Site "<<site;
-      printCoords(l,coords);
-      l<<"ori "<<ori<<" dir "<<dir<<" neigh "<<neigh<<" ";
-      printCoords(l,neighCoords);
-    },site);
+    l<<"("<<c(Dir(0))<<","<<c(Dir(1))<<","<<c(Dir(2))<<","<<c(Dir(3))<<")";
+  };
+  
+  static_assert(not std::is_same_v<U::Grillade::GlbCoord,U::Grillade::LocCoord>,"");
+  
+  LOGGER<<"Now doing the computeGlbCoordsOfsimdEoRepOfLocSite test";
+  loopOnAllComps<CompsList<Parity,SimdLocEoSite,SimdRank>>(std::make_tuple(grillade.simdLocEoVol),
+							   [&printCoords,
+							    &grillade](const Parity& parity,
+								       const SimdLocEoSite& simdLocEoSite,
+								       const SimdRank& simdRank)
+  {
+    const GlbCoords glbCoords=
+      grillade.computeGlbCoordsOfSimdEoRepOfLocSite(parity,simdLocEoSite,simdRank);
     
-    compLoop<Dir>([&glbGrill](const Dir& dir)
-    {
-      LOGGER<<"Dir: "<<dir<<" surf size: "<<glbGrill.surfSize(dir);
-    });
+    const auto [rankP,parityP,simdLocEoSiteP,simdRankP]=grillade.computeSimdEoRepOfLocSiteOfGlbCoords(glbCoords);
+    
+    auto l=LOGGER;
+    l<<"parity "<<parity<<" simdLocEoSite "<<simdLocEoSite<<" simdRank "<<simdRank<<" glbCoords: ";
+    printCoords(l,glbCoords);
+    l<<" rank "<<rankP<<" parity "<<parityP<<" simdLocEoSite "<<simdLocEoSiteP<<" simdRank "<<simdRankP<<" "<<(0!=rankP or parity!=parityP or simdLocEoSite!=simdLocEoSiteP or simdRank!=simdRankP);
+  });
+  LOGGER<<"Finished";
+  
+  int nNonLoc=0,nLoc=0;
+  LOGGER<<"Now doing the neigh test";
+  loopOnAllComps<CompsList<Parity,SimdLocEoSite>>(std::make_tuple(grillade.simdLocEoVol),
+						  [&nLoc,&nNonLoc,
+						   &printCoords,
+						   &grillade](const Parity& parity,
+							      const SimdLocEoSite& simdLocEoSite)
+						  {
+    for(Ori ori=0;ori<2;ori++)
+      {
+	for(Dir dir=0;dir<4;dir++)
+	  {
+	    bool isLoc=true;
+	    
+ 	    for(SimdRank simdRank=0;simdRank<SimdRank::sizeAtCompileTime;simdRank++)
+	      {
+		const GlbCoords glbCoords=
+		  grillade.computeGlbCoordsOfSimdEoRepOfLocSite(parity,simdLocEoSite,simdRank);
+		
+		GlbCoords neighCoords=grillade.shiftedCoords(glbCoords,ori,dir);
+		
+		const auto [rankP,parityP,simdLocEoSiteP,simdRankP]=grillade.computeSimdEoRepOfLocSiteOfGlbCoords(neighCoords);
+		
+		auto l=LOGGER;
+		l<<"   ";
+		l<<"parity "<<parity<<" simdLocEoSite "<<simdLocEoSite<<" simdRank "<<simdRank<<" glbCoords: ";
+		printCoords(l,glbCoords);
+		l<<" ori "<<ori<<" dir "<<dir<<" neighCoords: ";
+		printCoords(l,neighCoords);
+		
+		l<<" rank "<<rankP<<" parity "<<parityP<<" simdLocEoSite "<<simdLocEoSiteP<<" simdRank "<<simdRankP;
+		if(Mpi::rank!=rankP)
+		  {
+		    isLoc=false;
+		    l<<" (rank) ";
+		  }
+		if(simdRank!=simdRankP)
+		  {
+		    isLoc=false;
+		    l<<" (simdRank) ";
+		  }
+	      }
+	    LOGGER<<"isLoc: "<<isLoc;
+	    LOGGER<<"";
+	    
+	    if(not isLoc)
+	      nNonLoc++;
+	    else
+	      nLoc++;
+	  }
+      }
   });
   
-  LOGGER<<"Surf volume: "<<glbGrill.surfVol();
-  LOGGER<<"Bulk volume: "<<glbGrill.bulkVol();
+  LOGGER<<"Summary, loc: "<<nLoc<<" nonLoc: "<<nNonLoc;
+  
+  // GlbGrill glbGrill(sides,wrapping);
+  
+  // U::DirTens<bool> wrapping(1,1,0,1);
+  // {
+  //   auto l=LOGGER;
+  //   l<<"wrapping: ";
+  //   printCoords(l,glbGrill._wrapping);
+  // }
+  
+  // glbGrill.forAllSites([&glbGrill,&printCoords](const GlbSite& site)
+  // {
+  //   loopOnAllComps<CompsList<Ori,Dir>>({},[printCoords,&glbGrill](const GlbSite& site,const Ori& ori,const Dir& dir)
+  //   {
+  //     const auto coords=glbGrill.coordsOfSite(site);
+  //     const GlbSite neigh=glbGrill.neighOfSite(site,ori,dir);
+      
+  //     auto l=LOGGER;
+  //     l<<"Site "<<site;
+  //     printCoords(l,coords);
+  //     l<<" ori "<<ori<<" dir "<<dir<<" neigh "<<neigh<<" ";
+  //     if(glbGrill.siteIsOnHalo(neigh))
+  // 	{
+  // 	  l<<"on halo, wraps to: ";
+  // 	  const GlbSite wrapSite=glbGrill.surfSiteOfHaloSite(neigh-glbGrill.vol());
+  // 	  l<<wrapSite<<" ";
+  // 	  const GlbCoords wrapCoords=glbGrill.coordsOfSite(wrapSite);
+  // 	  printCoords(l,wrapCoords);
+  // 	}
+  //     else
+  // 	{
+  // 	  const GlbCoords neighCoords=glbGrill.coordsOfSite(neigh);
+  // 	  printCoords(l,neighCoords);
+  // 	}
+  //   },site);
+  // });
+  
+  // compLoop<Dir>([&glbGrill](const Dir& dir)
+  // {
+  //   LOGGER<<"Dir: "<<dir<<" surf size: "<<glbGrill.surfSize(dir);
+  // });
+  
+  // LOGGER<<"Volume:            "<<glbGrill.vol();
+  // LOGGER<<"Surf volume:       "<<glbGrill.surfVol();
+  // LOGGER<<"Bulk volume:       "<<glbGrill.bulkVol();
+  // LOGGER<<"Total halo volume: "<<glbGrill.totHaloVol();
+  // for(Ori ori=0;ori<2;ori++)
+  //   for(Dir dir=0;dir<4;dir++)
+  //     LOGGER<<" halo offset("<<ori<<","<<dir<<"): "<<glbGrill.haloOffset(ori,dir);
 }
 
 int in_main(int narg,char** arg)
