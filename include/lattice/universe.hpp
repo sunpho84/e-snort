@@ -5,7 +5,7 @@
 # include <config.hpp>
 #endif
 
-/// \file grill/universe.hpp
+/// \file lattice/universe.hpp
 
 #include <expr/comps/comps.hpp>
 #include <expr/nodes/stackTens.hpp>
@@ -117,15 +117,6 @@ namespace grill
       
       return out;
     }
-    
-    /// Hashable properties of a \c Grill
-    ///
-    /// Forward implementation
-    template <typename GT,       // Type of coordinate values
-	      bool Hashing>      // Store or not tables
-    struct HashableTableProvider;
-    
-    struct Lattice;
   };
 }
 

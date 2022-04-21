@@ -31,7 +31,9 @@
 
 #include <expr/operations/dagger.hpp>
 
+#include <lattice/field.hpp>
 #include <lattice/lattice.hpp>
+#include <lattice/universe.hpp>
 
 #include <ios/file.hpp>
 #include <ios/logger.hpp>

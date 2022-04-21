@@ -52,7 +52,7 @@ namespace grill
     constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB			\
     NAME ## Coords compute ## NAME ## Coords(const NAME ## Site& name ## Site) const \
     {									\
-      return computeCoordsOfSiteInBoxOfSides(name ## Site,SIDES);	\
+      return U::computeCoordsOfSiteInBoxOfSides(name ## Site,SIDES);	\
     }									\
 									\
     /*! Computes the global site given the global coordinates */	\
@@ -60,13 +60,25 @@ namespace grill
     NAME ## Site compute ## NAME ## Site(const NAME ## Coords& name ## Coords) const \
     {									\
       return								\
-	computeSiteOfCoordsInBoxOfSides<NAME ## Site>(name ## Coords,SIDES); \
+	U::template computeSiteOfCoordsInBoxOfSides<NAME ## Site>(name ## Coords,SIDES); \
     }
   
+  template <typename U>
+  struct Lattice;
+
   template <int NDims,
 	    int...I>
-  struct Universe<NDims,std::integer_sequence<int,I...>>::Lattice
+  struct Lattice<Universe<NDims,std::integer_sequence<int,I...>>>
   {
+    using U=
+      Universe<NDims,std::integer_sequence<int,I...>>;
+    
+    using Dir=
+      typename U::Dir;
+    
+    template <typename T>
+    using DirTens=typename U::template DirTens<T>;
+    
     DECLARE_UNTRANSPOSABLE_COMP(GlbCoord,int,0,glbCoord);
     
     using GlbCoords=DirTens<GlbCoord>;
@@ -395,7 +407,7 @@ namespace grill
       // Set the sides of the parity lattice and initializes it
       
       parityCoords(parity(0))=0;
-      parityCoords(parity(1))=versor<ParityCoord>(parityDir);
+      parityCoords(parity(1))=U::template versor<ParityCoord>(parityDir);
       
       paritySides=1+parityCoords(parity(1));
       

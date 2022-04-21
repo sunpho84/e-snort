@@ -167,17 +167,17 @@ namespace Tests
   }
 }
 
-DECLARE_UNTRANSPOSABLE_COMP(GlbCoord,int,0,glbCoord);
-DECLARE_UNTRANSPOSABLE_COMP(GlbSite,int64_t,0,glbSite);
+// DECLARE_UNTRANSPOSABLE_COMP(GlbCoord,int,0,glbCoord);
+// DECLARE_UNTRANSPOSABLE_COMP(GlbSite,int64_t,0,glbSite);
 
 void testGrill()
 {
-  using U=Universe<4>;
-  using Dir=U::Dir;
+  using U4D=Universe<4>;
+  using Dir=U4D::Dir;
   
-  using Lattice=U::Lattice;
+  using Lattice=Lattice<U4D>;
   //using GlbGrill=U::GlbGrill;
-  
+
   using Parity=Lattice::Parity;
   using SimdLocEoSite=Lattice::SimdLocEoSite;
   using SimdRank=Lattice::SimdRank;
@@ -191,7 +191,13 @@ void testGrill()
   RankCoords rankSides(2,1,1,1);
   SimdRankCoords simdRankSides(1,1,2,4);
   
-  U::Lattice lattice(glbSides,rankSides,simdRankSides,1);
+  Lattice lattice(glbSides,rankSides,simdRankSides,1);
+  
+  using F=Field<OfComps<Spin>,double,Lattice,LatticeCoverage::EVEN_ODD,FieldLayout::SIMD,ExecSpace::HOST>;
+  
+  auto d=F::Comps{};
+  
+  F f(lattice);
   
   [[maybe_unused]]
   auto printCoords=[](auto& l,const auto& c)
@@ -199,7 +205,7 @@ void testGrill()
     l<<"("<<c(Dir(0))<<","<<c(Dir(1))<<","<<c(Dir(2))<<","<<c(Dir(3))<<")";
   };
   
-  static_assert(not std::is_same_v<U::Lattice::GlbCoord,U::Lattice::LocCoord>,"");
+  static_assert(not std::is_same_v<Lattice::GlbCoord,Lattice::LocCoord>,"");
   
   LOGGER<<"Now doing the computeGlbCoordsOfsimdEoRepOfLocSite test";
   loopOnAllComps<CompsList<Parity,SimdLocEoSite,SimdRank>>(std::make_tuple(lattice.simdLocEoVol),
@@ -324,6 +330,7 @@ void testGrill()
   //   for(Dir dir=0;dir<4;dir++)
   //     LOGGER<<" halo offset("<<ori<<","<<dir<<"): "<<glbGrill.haloOffset(ori,dir);
 }
+
 
 int in_main(int narg,char** arg)
 {
