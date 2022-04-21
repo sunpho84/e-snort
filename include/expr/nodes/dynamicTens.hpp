@@ -243,7 +243,7 @@ namespace grill
       CRASH<<"Cannot take the reference of a non allocated tensor";	\
 									\
     return TensRef<CompsList<C...>,ATTRIB F,ES>(t.storage,t.nElements,t.getDynamicSizes()); \
-    }
+  }
   
   PROVIDE_GET_REF(const);
   

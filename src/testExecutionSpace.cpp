@@ -199,6 +199,8 @@ void testGrill()
   
   F f(lattice);
   
+  f=0;
+  
   [[maybe_unused]]
   auto printCoords=[](auto& l,const auto& c)
   {

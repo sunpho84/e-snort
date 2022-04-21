@@ -24,10 +24,10 @@ namespace grill
 	    typename F,
 	    ExecSpace ES>
   struct TensRef;
-
+  
 #define THIS					\
   TensRef<CompsList<C...>,_Fund,ES>
-
+  
 #define BASE					\
   BaseTens<THIS,CompsList<C...>,_Fund,ES>
   
