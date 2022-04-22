@@ -127,8 +127,8 @@ namespace grill::device
 	    ExecSpace Src>
   void memcpy(void* dst,const void* src,size_t count)
   {
-    static_assert(Dest!=ExecSpace::UNDEFINED,"Cannot copy to undefined execution space");
-    static_assert(Src!=ExecSpace::UNDEFINED,"Cannot copy from undefined execution space");
+    static_assert(Dest!=ExecSpace::HOST_DEVICE,"Cannot copy to undefined execution space");
+    static_assert(Src!=ExecSpace::HOST_DEVICE,"Cannot copy from undefined execution space");
     
 #if ENABLE_DEVICE_CODE
     if constexpr(Dest==ExecSpace::DEVICE)

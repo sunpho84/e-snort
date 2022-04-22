@@ -54,8 +54,7 @@ namespace grill
   namespace internal
   {
 #define CASE(SIZE_PER_REAL,REG_SIZE,SUFF,ELSE)				\
-    if constexpr(((NReals*SIZE_PER_REAL)%REG_SIZE ==0) and		\
-		 (REG_SIZE>=(NReals*SIZE_PER_REAL)))			\
+    if constexpr((NReals*SIZE_PER_REAL)%REG_SIZE ==0)			\
       return __m ## REG_SIZE ## SUFF{};					\
     else								\
       ELSE								\
