@@ -27,7 +27,7 @@ namespace grill
   using Size=int64_t;
   
   /// Minimal alignment
-#define DEFAULT_ALIGNMENT 16
+#define DEFAULT_ALIGNMENT 32
   
   /// Memory manager
   template <ExecSpace ES>
