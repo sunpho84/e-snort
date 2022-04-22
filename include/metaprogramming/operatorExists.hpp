@@ -21,7 +21,7 @@ namespace grill
     /*! Path followed when the operator is implemented */               \
     template <typename U,                                               \
               typename V>                                               \
-      static auto test(U*)->decltype(std::declval<U>()                  \
+    static auto test(U*)->decltype((*std::declval<U*>())		\
                                      OPERATOR                           \
                                      std::declval<V>());                \
                                                                         \

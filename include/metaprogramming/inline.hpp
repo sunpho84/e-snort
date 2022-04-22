@@ -5,7 +5,7 @@
 # include "config.hpp"
 #endif
 
-/// \file inline.hpp
+/// \file metaprogramming/inline.hpp
 ///
 /// \brief Provides attribute to inline functions
 

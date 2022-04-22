@@ -139,6 +139,12 @@ namespace grill
   
   PROVIDE_PRINTER(__m256d);
   
+  INLINE_FUNCTION
+  auto assign(__m256d& lhs,const double& rhs)
+  {
+    return lhs=_mm256_set1_pd(rhs);
+  }
+  
   /// Avx float vector
   template<>
   struct ArithmeticTypeTraits<__m256>
@@ -147,6 +153,12 @@ namespace grill
     PROVIDE_SUMASSIGN_THE_PROD(,__m256,out=_mm256_fmadd_ps(f1,f2,out));
     PROVIDE_SUBASSIGN_THE_PROD(,__m256,out=_mm256_fnmadd_ps(f1,f2,out));
   };
+  
+  INLINE_FUNCTION
+  auto assign(__m256& lhs,const float& rhs)
+  {
+    return lhs=_mm256_set1_ps(rhs);
+  }
   
   PROVIDE_PRINTER(__m256);
   
@@ -234,6 +246,19 @@ namespace grill
   auto subAssignTheProd(T1& a,const T2& f1,const T3& f2)
   {
     return a-=f1*f2;
+  }
+  
+  DEFINE_BINARY_OPERATOR_IMPLEMENTATION_CHECK(canAssign,CanAssign,=);
+  
+    /// Assign two elements
+  template <typename T1,
+	    typename T2,
+	    ENABLE_THIS_TEMPLATE_IF(canAssign<T1,T2>)>
+  constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
+  auto assign(T1& lhs,
+	      const T2& rhs)
+  {
+    return lhs=rhs;
   }
 }
 
