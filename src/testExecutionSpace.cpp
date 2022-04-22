@@ -193,13 +193,27 @@ void testGrill()
   
   Lattice lattice(glbSides,rankSides,simdRankSides,1);
   
-  using F=Field<OfComps<Spin>,double,Lattice,LatticeCoverage::EVEN_ODD,FieldLayout::SIMD,ExecSpace::HOST>;
+  using F=Field<OfComps<Spin>,double,Lattice,LatticeCoverage::EVEN_ODD,FieldLayout::SIMDIFIABLE,ExecSpace::HOST>;
   
-  auto d=F::Comps{};
+  F f(lattice),g(lattice);
   
-  F f(lattice);
+  // using FF=decltype(ff);
+  // auto FC=FF::Comps{};
   
-  f=0;
+  // auto e=ff(Parity(0),SimdLocEoSite(0),SpinRow(0),NonSimdifiedComp<int, 2>(0));
+  // loopOnAllComps<F::Comps>(f.getDynamicSizes(),[&f,&g](const auto...c){
+  //   f(c...)=1;
+  //   g(c...)=1;
+  // });
+f=1;
+g=1;
+  // ASM_BOOKMARK_BEGIN("feq0");
+  // f=g+f;
+  // ASM_BOOKMARK_END("feq0");
+  
+#if ENABLE_SIMD
+  LOGGER<<"Is one: "<<f(Parity(0),SimdLocEoSite(0),SpinRow(0),SimdRank(0));
+#endif
   
   [[maybe_unused]]
   auto printCoords=[](auto& l,const auto& c)
