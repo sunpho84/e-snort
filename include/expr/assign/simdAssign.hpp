@@ -24,7 +24,10 @@ namespace grill
   {
     LOGGER_LV3_NOTIFY("Using simd assign");
     
-    lhs.simdify()=rhs.simdify();
+    if constexpr(tupleHasType<typename Rhs::Comps,typename Lhs::SimdifyingComp>)
+      lhs.simdify()=rhs.simdify();
+    else
+      lhs.simdify()=rhs;
   }
 }
 
