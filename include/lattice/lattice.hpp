@@ -66,12 +66,11 @@ namespace grill
   template <typename U>
   struct Lattice;
 
-  template <int NDims,
-	    int...I>
-  struct Lattice<Universe<NDims,std::integer_sequence<int,I...>>>
+  template <int NDims>
+  struct Lattice<Universe<NDims>>
   {
     using U=
-      Universe<NDims,std::integer_sequence<int,I...>>;
+      Universe<NDims>;
     
     using Dir=
       typename U::Dir;
@@ -231,7 +230,11 @@ namespace grill
     constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
     Parity glbCoordsParity(const GlbCoords& glbCoords) const
     {
-      return (glbCoords(Dir(I))+...)%2;
+      GlbCoord sum=0;
+      for(Dir dir=0;dir<NDims;dir++)
+	sum+=glbCoords(dir);
+      
+      return sum%2;
     }
     
     /// Parity split direction
@@ -400,7 +403,9 @@ namespace grill
     {
       // Set the global and rank lattices
       
-      glbVol=(glbSides(Dir(I))*...);
+      glbVol=1;
+      for(Dir dir=0;dir<NDims;dir++)
+	glbVol*=glbSides(dir);
       
       /////////////////////////////////////////////////////////////////
       
@@ -437,7 +442,9 @@ namespace grill
       
       assertIsPartitionable(glbSides,"global",nRanksPerDir,"rank");
       
-      locVol=(locSides(Dir(I))*...);
+      locVol=1;
+      for(Dir dir=0;dir<NDims;dir++)
+	locVol*=locSides(dir);
       
       glbIsNotPartitioned=(nRanksPerDir==1);
       
@@ -474,7 +481,9 @@ namespace grill
       LOGGER<<"nRanksPerDir: ";
       printCoords(LOGGER,nRanksPerDir);
       
-      nRanks=(nRanksPerDir(Dir(I))*...);
+      nRanks=1;
+      for(Dir dir=0;dir<NDims;dir++)
+	nRanks*=nRanksPerDir(dir);
       forEachInTuple(std::make_tuple(&originGlbCoords,&rankCoords,&originParity),[this](auto* p)
       {
 	p->allocate(std::make_tuple(nRanks));
@@ -501,7 +510,9 @@ namespace grill
       
       // Set the simd lattice
       
-      const int nSimdRanksCheck=(nSimdRanksPerDir(Dir(I))*...);
+      int nSimdRanksCheck=1;
+      for(Dir dir=0;dir<NDims;dir++)
+	nSimdRanksCheck*=nSimdRanksPerDir(dir);
       if(nSimdRanksCheck!=nSimdRanks)
 	{
 	  std::ostringstream os;

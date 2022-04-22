@@ -15,7 +15,7 @@ namespace grill
   enum class LatticeCoverage{EVEN,ODD,EVEN_ODD};
   
   /// Layout to be used for organizing internal data
-  enum class FieldLayout{SERIAL,SIMD,GPU};
+  enum class FieldLayout{SERIAL,SIMDIFIABLE,SIMDIFIED,GPU};
   
   /// Field, forward declaration
   template <typename TP,
@@ -23,7 +23,8 @@ namespace grill
 	    typename L,
 	    LatticeCoverage LC,
 	    FieldLayout FL,
-	    ExecSpace ES>
+	    ExecSpace ES,
+	    bool IsRef=false>
   struct Field;
 }
 

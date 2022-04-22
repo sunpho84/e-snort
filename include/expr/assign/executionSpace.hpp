@@ -15,7 +15,7 @@
 namespace grill
 {
   /// Execution space possibilities
-  enum class ExecSpace{HOST,DEVICE,UNDEFINED};
+  enum class ExecSpace : int{HOST_DEVICE,HOST,DEVICE};
   
   /// Check that we are accessing device vector only on device code
   template <ExecSpace ES>
@@ -51,8 +51,9 @@ namespace grill
 	case ExecSpace::DEVICE:
 	  return "device";
 	  break;
-	default:
-	  return "unspecified";
+	case ExecSpace::HOST_DEVICE:
+	  return "hostDevice";
+	  break;
 	}
     }
   }
@@ -78,8 +79,8 @@ namespace grill
 	case ExecSpace::DEVICE:
 	  return ExecSpace::HOST;
 	  break;
-	case ExecSpace::UNDEFINED:
-	  return ExecSpace::UNDEFINED;
+	case ExecSpace::HOST_DEVICE:
+	  return ExecSpace::HOST_DEVICE;
 	  break;
 	}
     }
@@ -94,19 +95,22 @@ namespace grill
   template <ExecSpace...Es>
   constexpr ExecSpace commonExecSpace()
   {
-    constexpr ExecSpace u=ExecSpace::UNDEFINED,h=ExecSpace::HOST,d=ExecSpace::DEVICE;
-    constexpr bool atLeastOneHost=((Es==h) or...);
-    constexpr bool atLeastOneDevice=((Es==d) or...);
+    constexpr int res=((int)Es|...);
     
-    static_assert(not (atLeastOneDevice and atLeastOneHost),"Cannot define common execution spaces among a mixture of host and device execution spaces");
+    static_assert(res!=3,"Cannot mix pure host and pure device exec spaces");
     
-    if constexpr(atLeastOneHost)
-      return h;
-    else
-      if constexpr(atLeastOneDevice)
-	return d;
-      else
-	return u;
+    switch(res)
+      {
+      case 0:
+	return ExecSpace::HOST_DEVICE;
+	break;
+      case 1:
+	return ExecSpace::HOST;
+	break;
+      case 2:
+	return ExecSpace::DEVICE;
+	break;
+      }
   }
 }
 

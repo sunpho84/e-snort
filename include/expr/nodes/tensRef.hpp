@@ -45,7 +45,7 @@ namespace grill
 #undef BASE
 #undef THIS
     
-    /// Importing assignment operator from Node
+    /// Importing assignment operator from BaseTens
     using Base::operator=;
     
     /// Copy assign: we still assign the content

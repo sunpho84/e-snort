@@ -64,7 +64,7 @@ namespace grill
     static constexpr ExecSpace execSpace=
       commonExecSpace<std::remove_reference_t<_E>::execSpace...>();
     
-    static_assert(execSpace!=ExecSpace::UNDEFINED,"Cannot define product in undefined exec space");
+    static_assert(execSpace!=ExecSpace::HOST_DEVICE,"Cannot define product in undefined exec space");
     
     /// Detect complex product
     static constexpr bool isComplProd=

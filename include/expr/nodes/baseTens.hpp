@@ -39,6 +39,8 @@ namespace grill
     DetectableAsBaseTens,
     Node<T>
   {
+    static_assert(ES!=ExecSpace::HOST_DEVICE,"Exec space must be a specific one");
+    
     // /// Assign from another dynamic tensor
     // template <typename OtherT,
     // 	      typename OtherF,

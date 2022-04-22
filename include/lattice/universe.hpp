@@ -36,13 +36,8 @@ namespace grill
   constexpr int moveOffset[2]=
     {-1,+1};
   
-  template <int NDims,
-	    typename I=std::make_integer_sequence<int,NDims>>
-  struct Universe;
-  
-  template <int NDims,
-	    int...I>
-  struct Universe<NDims,std::integer_sequence<int,I...>>
+  template <int NDims>
+  struct Universe
   {
     DECLARE_TRANSPOSABLE_COMP(Dir,int,NDims,dir);
     

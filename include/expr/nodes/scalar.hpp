@@ -37,7 +37,7 @@ namespace grill
     
     /// Executes where allocated
     static constexpr auto execSpace=
-      ExecSpace::HOST;
+      ExecSpace::HOST_DEVICE;
     
         /// Returns the dynamic sizes
     INLINE_FUNCTION HOST_DEVICE_ATTRIB

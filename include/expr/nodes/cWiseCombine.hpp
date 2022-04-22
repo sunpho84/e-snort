@@ -73,7 +73,7 @@ namespace grill
     static constexpr ExecSpace execSpace=
       commonExecSpace<std::remove_reference_t<_E>::execSpace...>();
     
-    static_assert(execSpace!=ExecSpace::UNDEFINED,"Cannot define cowfficient wise combination in undefined exec space");
+    static_assert(execSpace!=ExecSpace::HOST_DEVICE,"Cannot define coefficient wise combination in undefined exec space");
     
     /// List of dynamic comps
     using DynamicComps=
@@ -120,9 +120,6 @@ namespace grill
     /// Type of the combining function
     using Comb=_Comb;
     
-    /// Combining function
-    Comb combine;
-    
     /// \todo improve
     
     /// Components on which simdifying
@@ -134,7 +131,7 @@ namespace grill
     auto simdify() ATTRIB					\
     {								\
       return							\
-	combine(SUBNODE(Is).simdify()...);			\
+	Comb::compute(SUBNODE(Is).simdify()...);		\
     }
     
     PROVIDE_SIMDIFY(const);
@@ -149,7 +146,7 @@ namespace grill
     auto getRef() ATTRIB					\
     {								\
       return							\
-	combine(SUBNODE(Is).getRef()...);				\
+	Comb::compute(SUBNODE(Is).getRef()...);			\
     }
     
     PROVIDE_GET_REF(const);
@@ -173,7 +170,7 @@ namespace grill
     Fund eval(const Cs&...cs) const
     {
       return
-	combine(std::apply(SUBNODE(Is),getCompsForAddend<Is>(cs...))...);
+	Comb::compute(std::apply(SUBNODE(Is),getCompsForAddend<Is>(cs...))...);
     }
     
     /// Construct
@@ -181,11 +178,9 @@ namespace grill
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
     CWiseCombiner(const DynamicComps& dynamicSizes,
 		   UNIVERSAL_CONSTRUCTOR_IDENTIFIER,
-		   Comb combine,
 		   T&&...addends) :
       SubNodes<_E...>(addends...),
-      dynamicSizes(dynamicSizes),
-      combine(combine)
+      dynamicSizes(dynamicSizes)
     {
     }
   };
@@ -194,7 +189,7 @@ namespace grill
 	    typename..._E,
 	    ENABLE_THIS_TEMPLATE_IF(isNode<_E> and...)>
   INLINE_FUNCTION HOST_DEVICE_ATTRIB
-  auto cWiseCombine(Comb combine,_E&&...e)
+  auto cWiseCombine(_E&&...e)
   {
     /// Computes the result components
     using Comps=
@@ -202,24 +197,34 @@ namespace grill
     
     /// Determine the fundamental type of the result
     using Fund=
-      decltype(combine(typename std::decay_t<_E>::Fund{}...));
+      decltype(Comb::compute(typename std::decay_t<_E>::Fund{}...));
     
     /// Resulting type
     using Res=
       CWiseCombiner<std::tuple<decltype(e)...>,
-		     Comps,
-		     Fund,
-		     Comb>;
+		    Comps,
+		    Fund,
+		    Comb>;
     
     /// Resulting dynamic components
     const auto dc=
       dynamicCompsCombiner<typename Res::DynamicComps>(std::make_tuple(e.getDynamicSizes()...));
     
     return
-      Res(dc,UNIVERSAL_CONSTRUCTOR_CALL,combine,std::forward<_E>(e)...);
+      Res(dc,UNIVERSAL_CONSTRUCTOR_CALL,std::forward<_E>(e)...);
   }
   
-#define CATCH_OPERATOR(OP)						\
+#define CATCH_OPERATOR(OP,NAMED_OP)					\
+  struct NAMED_OP							\
+  {									\
+    template <typename...Args>						\
+    constexpr INLINE_FUNCTION						\
+    static auto HOST_DEVICE_ATTRIB compute(const Args&...s)		\
+    {									\
+      return (s OP ...);						\
+    }									\
+  };  									\
+  									\
   /*! Catch the OP operator */						\
   template <typename E1,						\
 	    typename E2,						\
@@ -228,33 +233,28 @@ namespace grill
   auto operator OP(E1&& e1,						\
 		   E2&& e2)						\
   {									\
-    auto combine=							\
-      [](const auto&...s) CONSTEXPR_INLINE_ATTRIBUTE			\
-      {									\
-	return (s OP ...);						\
-      };								\
 									\
     return								\
-      cWiseCombine(combine,std::forward<E1>(e1),std::forward<E2>(e2));	\
+      cWiseCombine<NAMED_OP>(std::forward<E1>(e1),std::forward<E2>(e2)); \
   }
   
-  CATCH_OPERATOR(+);
+  CATCH_OPERATOR(+,plus);
   
-  CATCH_OPERATOR(-);
+  CATCH_OPERATOR(-,minus);
   
-  CATCH_OPERATOR(/);
+  CATCH_OPERATOR(/,divide);
   
-  CATCH_OPERATOR(%);
+  CATCH_OPERATOR(%,modulo);
   
-  CATCH_OPERATOR(==);
+  CATCH_OPERATOR(==,compare);
   
-  CATCH_OPERATOR(!=);
+  CATCH_OPERATOR(!=,differ);
   
-  CATCH_OPERATOR(and);
+  CATCH_OPERATOR(and,andOp);
   
-  CATCH_OPERATOR(or);
+  CATCH_OPERATOR(or,orOp);
   
-  CATCH_OPERATOR(xor);
+  CATCH_OPERATOR(xor,xorOp);
   
 #undef CATCH_OPERATOR
 }
