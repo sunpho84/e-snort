@@ -187,11 +187,33 @@ void testGrill()
   using RankCoords=Lattice::RankCoords;
   using SimdRankCoords=Lattice::SimdRankCoords;
   
-  GlbCoords glbSides(6,6,6,12);
-  RankCoords rankSides(2,1,1,1);
-  SimdRankCoords simdRankSides(1,1,2,4);
+  const GlbCoords glbSides(96,3,3,3);
+  const RankCoords rankSides(2,1,1,1);
+  const SimdRankCoords simdRankSides(8,1,1,1);
+  const Dir parityDir=0;
   
-  Lattice lattice(glbSides,rankSides,simdRankSides,1);
+  Lattice lattice(glbSides,rankSides,simdRankSides,parityDir);
+  
+  LOGGER<<"Local surface: "<<lattice.locSurf;
+  LOGGER<<"Local surface per ori dir: ";
+    for(Dir dir=0;dir<4;dir++)
+      LOGGER<<" dir: "<<dir<<" "<<lattice.locSurfPerDir(dir);
+  
+  /////////////////////////////////////////////////////////////////
+  
+  
+  for(Parity parity=0;parity<2;parity++)
+    {
+      LOGGER<<"Parity: "<<parity;
+      
+      LOGGER<<"Local e/o surface: "<<lattice.locEoSurf(parity);
+      LOGGER<<"Local e/o surface per ori dir: ";
+      for(Ori ori=0;ori<2;ori++)
+	for(Dir dir=0;dir<4;dir++)
+	  LOGGER<<" ori: "<<ori<<" dir: "<<dir<<" "<<lattice.locEoSurfPerDir(parity,ori,dir);
+    }
+  
+  /////////////////////////////////////////////////////////////////
   
   using F=Field<OfComps<Spin>,double,Lattice,LatticeCoverage::EVEN_ODD,FieldLayout::SIMDIFIABLE,ExecSpace::HOST>;
   
@@ -242,7 +264,7 @@ g=1;
   });
   LOGGER<<"Finished";
   
-  int nNonLoc=0,nLoc=0;
+  StackTens<OfComps<Parity,Ori,Dir>,int> nNonLoc=0,nLoc=0;
   LOGGER<<"Now doing the neigh test";
   loopOnAllComps<CompsList<Parity,SimdLocEoSite>>(std::make_tuple(lattice.simdLocEoVol),
 						  [&nLoc,&nNonLoc,
@@ -288,16 +310,53 @@ g=1;
 	    LOGGER<<"";
 	    
 	    if(not isLoc)
-	      nNonLoc++;
+	      nNonLoc(parity,ori,dir)++;
 	    else
-	      nLoc++;
+	      nLoc(parity,ori,dir)++;
 	  }
       }
   });
   
-  LOGGER<<"Summary, loc: "<<nLoc<<" nonLoc: "<<nNonLoc;
+  LOGGER<<"Summary";
+  loopOnAllComps<CompsList<Parity,Ori,Dir>>({},
+					    [&nLoc,&nNonLoc](const Parity& parity,const Ori& ori,const Dir& dir)
+					     {
+					       LOGGER<<" parity:"<<parity<<" ori: "<<ori<<" dir: "<<dir<<" loc: "<<nLoc(parity,ori,dir)<<" nonLoc: "<<nNonLoc(parity,ori,dir);
+					     });
   
-  // GlbGrill glbGrill(sides,wrapping);
+  /////////////////////////////////////////////////////////////////
+  
+  LOGGER<<"Now doing the backward dir 0 test";
+  
+  loopOnAllComps<CompsList<Parity,SimdLocEoSite>>(std::make_tuple(lattice.simdLocEoVol),
+						  [&printCoords,
+						   &lattice](const Parity& parity,
+							     const SimdLocEoSite& simdLocEoSite)
+						  {
+						    const SimdRank simdRank=0;
+						    const Dir dir=0;
+						    const Ori ori=0;
+						    const GlbCoords glbCoords=
+						      lattice.computeGlbCoordsOfSimdEoRepOfLocSite(parity,simdLocEoSite,simdRank);
+						    
+						    if(glbCoords(Dir(0))==0)
+						      {
+							GlbCoords neighCoords=lattice.shiftedCoords(glbCoords,ori,dir);
+							
+							const auto [rankP,parityP,simdLocEoSiteP,simdRankP]=lattice.computeSimdEoRepOfLocSiteOfGlbCoords(neighCoords);
+							
+							auto l=LOGGER;
+							l<<"   ";
+							l<<"parity "<<parity<<" simdLocEoSite "<<simdLocEoSite<<" simdRank "<<simdRank<<" glbCoords: ";
+							printCoords(l,glbCoords);
+							l<<" ori "<<ori<<" dir "<<dir<<" neighCoords: ";
+							printCoords(l,neighCoords);
+							
+							l<<" rank "<<rankP<<" parity "<<parityP<<" simdLocEoSite "<<simdLocEoSiteP<<" simdRank "<<simdRankP;
+						      }
+						  });
+						  
+						  // GlbGrill glbGrill(sides,wrapping);
   
   // U::DirTens<bool> wrapping(1,1,0,1);
   // {

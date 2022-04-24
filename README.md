@@ -232,15 +232,19 @@ DONE
 - Fma
 - Trace from nissa
 - Algebric sum in place of sum
+- Scalar simdify
+- Grill
+- Fields
+- More rigorous lhs vs rhs assignment comps requirement
 
 TODO
 ---
-- Spawning expr assignment in the different case, how will we deal with \*=, -= etc? Do they have any usage, or should we divert to the =a*b case?
+- Halos
 
 - Neighbors
-- Scalar should simdify
 - Reducer from nissa
-- Grid from...?
-- Fields
 - MPI io
+
 - Random generator
+- Spawning expr assignment in the different case, how will we deal with \*=, -= etc? Do they have any usage, or should we divert to the =a*b case?
+- Autotuner

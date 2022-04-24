@@ -203,6 +203,14 @@ namespace grill
     
     /////////////////////////////////////////////////////////////////
     
+    /// Surface sizes
+    DirTens<LocSite> locSurfPerDir;
+    
+    /// Volume of the surface
+    LocSite locSurf;
+    
+    /////////////////////////////////////////////////////////////////
+    
     DECLARE_UNTRANSPOSABLE_COMP(SimdLocCoord,int,0,simdLocCoord);
     
     using SimdLocCoords=DirTens<SimdLocCoord>;
@@ -277,6 +285,14 @@ namespace grill
     {
       assertIsInRange("locEoSite",locEoSite,locEoVol);
     }
+    
+    /////////////////////////////////////////////////////////////////
+    
+    /// Surface e/o sizes
+    StackTens<OfComps<Parity,Ori,Dir>,LocEoSite> locEoSurfPerDir;
+    
+    /// Volume of the e/o surface
+    StackTens<OfComps<Parity>,LocEoSite> locEoSurf;
     
     /////////////////////////////////////////////////////////////////
     
@@ -469,6 +485,24 @@ namespace grill
       
       /////////////////////////////////////////////////////////////////
       
+      // Set the local surface
+      
+      locSurf=0;
+      COMP_LOOP(Dir,dir,
+		{
+		  locSurfPerDir(dir)=
+		    (nRanksPerDir(dir)>1)?
+		    (locVol/locSides(dir)):
+		    0;
+		  
+		  locSurf+=locSurfPerDir(dir);
+		});
+      locSurf*=2;
+      
+      /////////////////////////////////////////////////////////////////
+      
+      // Set the local e/o sides
+      
       locEoSides=locSides/paritySides;
       LOGGER<<"Local e/o sides: ";
       printCoords(LOGGER,locEoSides);
@@ -476,6 +510,19 @@ namespace grill
       assertIsPartitionable(locSides,"local",paritySides,"parity");
       
       locEoVol=locVol/2;
+      
+      /////////////////////////////////////////////////////////////////
+      
+      // Set the local e/o surface
+      
+      locEoSurf=locSurf/2;
+      
+      locEoSurfPerDir=locSurfPerDir/2;
+      if(locSurfPerDir(parityDir)%2)
+	{
+	  locEoSurfPerDir(BW,thisRankOriginParity,parityDir)++;
+	  locEoSurfPerDir(FW,oppositeParity(thisRankOriginParity),parityDir)++;
+	}
       
       /////////////////////////////////////////////////////////////////
       

@@ -53,7 +53,6 @@ void testGrill()
   
   F f(lattice),g(lattice),h(lattice);
   
-    
   // using FF=decltype(ff);
   // auto FC=FF::Comps{};
   
