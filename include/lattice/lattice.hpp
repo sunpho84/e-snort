@@ -63,29 +63,39 @@ namespace grill
 	U::template computeSiteOfCoordsInBoxOfSides<NAME ## Site>(name ## Coords,SIDES); \
     }
   
+  /// Declare lattice
   template <typename U>
   struct Lattice;
-
+  
+  /// Lattice
   template <int NDims>
   struct Lattice<Universe<NDims>>
   {
+    /// Corresponding universe
     using U=
       Universe<NDims>;
     
+    /// Directions in the space
     using Dir=
       typename U::Dir;
     
-    template <typename T>
-    using DirTens=typename U::template DirTens<T>;
+    /// A tensor with component direction
+    template <typename F>
+    using DirTens=typename U::template DirTens<F>;
     
+    /// Global coordinate
     DECLARE_UNTRANSPOSABLE_COMP(GlbCoord,int,0,glbCoord);
     
+    /// Global coordinates
     using GlbCoords=DirTens<GlbCoord>;
     
+    /// Global site
     DECLARE_UNTRANSPOSABLE_COMP(GlbSite,int64_t,0,glbSite);
     
+    /// Global volume
     GlbSite glbVol;
     
+    /// Global sides
     GlbCoords glbSides;
     
     PROVIDE_ASSERT_SITE_COORD_COORDS(Glb,glb,glbVol);
@@ -111,10 +121,13 @@ namespace grill
     
     /////////////////////////////////////////////////////////////////
     
+    /// Rank Coordinate
     DECLARE_UNTRANSPOSABLE_COMP(RankCoord,int,0,rankCoord);
     
+    /// Rank coordinates
     using RankCoords=DirTens<RankCoord>;
     
+    /// Rank
     DECLARE_UNTRANSPOSABLE_COMP(Rank,int,0,rank);
     
     using RankSite=Rank;

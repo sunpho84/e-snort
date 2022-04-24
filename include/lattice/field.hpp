@@ -224,6 +224,7 @@ namespace grill
       static_assert(IsRef,"Can initialize as reference only if declared as a reference");
     }
     
+    /// Copy constructor
     INLINE_FUNCTION HOST_DEVICE_ATTRIB
     Field(const Field& oth) :
       lattice(oth.lattice),
