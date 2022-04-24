@@ -14,6 +14,10 @@ namespace grill
 {
   DECLARE_UNTRANSPOSABLE_COMP(Ori,int,2,ori);
   
+#define BW Ori(0)
+  
+#define FW Ori(1)
+  
   /// Assert that a quantity is in the given range
   template <typename T>
   static constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB

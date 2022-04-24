@@ -22,15 +22,14 @@ namespace grill
     return std::make_tuple(std::get<Tout>(in)...);
   }
   
-  /// Get the list elements from a tuple
+  /// Fill a tuple with the elements from another tuple
   template <typename...Tout,
 	    typename...Tin>
   INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
   void tupleFillWithSubset(std::tuple<Tout...>& out,
 			   const std::tuple<Tin...>& in)
   {
-    [[maybe_unused]]
-    auto e={internal::call([&out,&in]() INLINE_ATTRIBUTE {std::get<Tout>(out)=std::get<Tout>(in);})...,0};
+    out=tupleGetMany<Tout...>(in);
   }
   
   /// Get the list elements of the passed tuple
