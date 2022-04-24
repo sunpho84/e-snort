@@ -223,6 +223,12 @@ namespace grill
     
     DECLARE_UNTRANSPOSABLE_COMP(Parity,int,2,parity);
     
+    /// Opposite parity
+    constexpr INLINE_FUNCTION Parity oppositeParity(const Parity& parity)
+    {
+      return 1-parity();
+    }
+    
     ParityCoords paritySides;
     
     DynamicTens<OfComps<Rank>,Parity,ExecSpace::HOST> originParity;
