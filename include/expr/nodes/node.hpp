@@ -168,9 +168,15 @@ namespace grill
     constexpr INLINE_FUNCTION						\
     decltype(auto) operator()(const C&...cs) ATTRIB			\
     {									\
+      using Comps=typename T::Comps;					\
+									\
+      using SubsComps=std::tuple<C...>;					\
+									\
+      static_assert(tupleHaveTypes<Comps,SubsComps>);			\
+									\
       /*! Leftover components */					\
       using ResidualComps=						\
-	TupleFilterAllTypes<typename T::Comps,std::tuple<C...>>;	\
+	TupleFilterAllTypes<Comps,SubsComps>;				\
       									\
       ATTRIB auto& t=DE_CRTPFY(ATTRIB T,this);				\
       									\
