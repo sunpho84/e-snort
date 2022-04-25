@@ -192,6 +192,12 @@ namespace grill
     
     PROVIDE_COORDS_OF_SITE_COMPUTER(Loc,loc,locSides);
     
+    /// Returns the side in the bulk considering the wrapping
+    LocCoords bulkSides;
+    
+    /// Total volume in the bulk
+    LocSite bulkVol;
+    
     // /// Computes the coordinates of the passed locSite
     // GlbCoords computeGlbCoords(const LocSite& locSite) const
     // {
@@ -485,9 +491,25 @@ namespace grill
       
       /////////////////////////////////////////////////////////////////
       
+      bulkVol=1;
+      COMP_LOOP(Dir,dir,
+		{
+		  bulkSides(dir)=
+		    (nRanksPerDir(dir)==1)?
+		    locSides(dir):
+		    ((locSides(dir)>2)?
+		     (locSides(dir)-2):
+		     0);
+		  
+		  bulkVol*=bulkSides(dir);
+		});
+      
+      locSurf=locVol-bulkVol;
+      
+      /////////////////////////////////////////////////////////////////
+      
       // Set the local surface
       
-      locSurf=0;
       COMP_LOOP(Dir,dir,
 		{
 		  locSurfPerDir(dir)=
@@ -497,7 +519,6 @@ namespace grill
 		  
 		  locSurf+=locSurfPerDir(dir);
 		});
-      locSurf*=2;
       
       /////////////////////////////////////////////////////////////////
       
