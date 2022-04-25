@@ -231,6 +231,20 @@ namespace grill
     
     /////////////////////////////////////////////////////////////////
     
+    /// Returns the side in the simd bulk considering the wrapping
+    SimdLocCoords simdBulkSides;
+    
+    /// Total volume in the bulk
+    SimdLocSite simdBulkVol;
+    
+    /// Surface sizes
+    DirTens<SimdLocSite> simdLocSurfPerDir;
+    
+    /// Volume of the simd surface
+    SimdLocSite simdLocSurf;
+    
+    /////////////////////////////////////////////////////////////////
+    
     DECLARE_UNTRANSPOSABLE_COMP(ParityCoord,int,0,parityCoord);
     
     using ParityCoords=DirTens<ParityCoord>;
@@ -320,6 +334,14 @@ namespace grill
     }
     
     PROVIDE_COORDS_OF_SITE_COMPUTER(SimdLocEo,simdLocEo,simdLocEoSides);
+    
+    /////////////////////////////////////////////////////////////////
+    
+    /// Simd surface e/o sizes
+    StackTens<OfComps<Parity,Ori,Dir>,SimdLocEoSite> simdLocEoSurfPerDir;
+    
+    /// Volume of the simd e/o surface
+    StackTens<OfComps<Parity>,SimdLocEoSite> simdLocEoSurf;
     
     /////////////////////////////////////////////////////////////////
     
@@ -432,6 +454,122 @@ namespace grill
 #endif
     };
     
+    /// Set lattice sides and volume
+    template <typename C,
+	      typename V,
+	      typename G,
+	      typename R>
+    void setSidesAndVol(const char* tag,DirTens<C>& sides,V& vol,const DirTens<G>& dividendSides,const DirTens<R>& nPerDir)
+      
+    {
+      sides=dividendSides/nPerDir;
+      LOGGER<<tag<<" sides: ";
+      printCoords(LOGGER,sides);
+      
+      assertIsPartitionable(dividendSides,"dividend",nPerDir,"divisor");
+      
+      vol=1;
+      for(Dir dir=0;dir<NDims;dir++)
+	vol*=sides(dir);
+    }
+    
+    /// Sets the bulk
+    template <typename S,
+	      typename R,
+	      typename C>
+    static void setBulk(const char* tag,DirTens<C>& bulkSides,S& bulkVol,const DirTens<R>& nPerDir,const DirTens<C>& sides)
+    {
+      bulkSides=sides;
+      
+      bulkVol=1;
+      
+      COMP_LOOP(Dir,dir,
+		{
+		  auto& b=bulkSides(dir);
+		  
+		  if(nPerDir(dir)>1)
+		    b-=2;
+		  
+		  if(b<0)
+		    b=0;
+		  
+		  bulkVol*=b;
+		});
+      
+      LOGGER<<tag<<" bulk sides: ";
+      printCoords(LOGGER,bulkSides);
+      
+      LOGGER<<tag<<" bulk vol: "<<bulkVol;
+    }
+    
+    /// Set the surfaces
+    template <typename S,
+	      typename R,
+	      typename C>
+    static void setSurfaces(const char* tag,S& surf,DirTens<S>& surfPerDir,const S& vol,const S& bulk,const DirTens<R>& nPerDir,const DirTens<C>& sides)
+    {
+      surf=vol-bulk;
+      
+      LOGGER<<tag<<" Surf: "<<surf;
+      
+      COMP_LOOP(Dir,dir,
+		{
+		  surfPerDir(dir)=
+		    (nPerDir(dir)>1)?
+		    (vol/sides(dir)):
+		    0;
+		});
+      
+      LOGGER<<tag<<" Surf per dir: ";
+      printCoords(LOGGER,surfPerDir);
+    }
+    
+    /// Sets the e/o volume
+    template <typename Es,
+	      typename S,
+	      typename Ev,
+	      typename V>
+    void setEoSidesAndVol(const char* tag,DirTens<Es>& eoSides,Ev& eoVol,const DirTens<S>& sides,const V& vol)
+    {
+      // Set the e/o sides
+      
+      eoSides=sides/paritySides;
+      LOGGER<<tag<<" e/o sides: ";
+      printCoords(LOGGER,eoSides);
+      
+      assertIsPartitionable(sides,tag,paritySides,"parity");
+      
+      eoVol=vol/2;
+    }
+    
+    /// Set the e/o surface
+    template <typename Es,
+	      typename Esd,
+	      typename S,
+	      typename Sd>
+    void setEoSurfaces(const char* tag,Es& eoSurf,Esd& eoSurfPerDir,const S& surf,const Sd& surfPerDir)
+    {
+      eoSurf=surf/2;
+      
+      eoSurfPerDir=surfPerDir/2;
+      if(surfPerDir(parityDir)%2)
+	{
+	  eoSurfPerDir(BW,thisRankOriginParity,parityDir)++;
+	  eoSurfPerDir(FW,oppositeParity(thisRankOriginParity),parityDir)++;
+	}
+      
+      for(Parity parity=0;parity<2;parity++)
+	{
+	  LOGGER<<"Parity: "<<parity;
+	  
+	  LOGGER<<tag<<" e/o surface: "<<eoSurf(parity);
+	  LOGGER<<tag<<" e/o surface per ori dir: ";
+	  for(Ori ori=0;ori<2;ori++)
+	    for(Dir dir=0;dir<4;dir++)
+	      LOGGER<<" ori: "<<ori<<" dir: "<<dir<<" "<<eoSurfPerDir(parity,ori,dir);
+	}
+    }
+    
     /// Initialize a lattice
     Lattice(const GlbCoords& glbSides,
 	    const RankCoords& nRanksPerDir,
@@ -442,122 +580,17 @@ namespace grill
       nSimdRanksPerDir(nSimdRanksPerDir),
       parityDir(parityDir)
     {
+      DirTens<SimdRank> nGlbSimdRanks=nRanksPerDir*nSimdRanksPerDir;
+      
       // Set the global and rank lattices
       
       glbVol=1;
       for(Dir dir=0;dir<NDims;dir++)
 	glbVol*=glbSides(dir);
       
-      /////////////////////////////////////////////////////////////////
-      
-      // Set the sides of the parity lattice and initializes it
-      
-      parityCoords(parity(0))=0;
-      parityCoords(parity(1))=U::template versor<ParityCoord>(parityDir);
-      
-      paritySides=1+parityCoords(parity(1));
-      
-      LOGGER<<"Parity dir: "<<parityDir;
-      
-      LOGGER<<"Parity sides: ";
-      printCoords(LOGGER,paritySides);
-      
-#ifndef __CUDA_ARCH__
-      COMP_LOOP(Parity,parity,
-		{
-		  auto l=LOGGER;
-		  l<<"parity "<<parity<<" coords: ";
-		  printCoords(l,parityCoords(parity));
-		});
-#endif
-      
-      assertIsPartitionable(locSides,"local",paritySides,"parity");
-      
-      /////////////////////////////////////////////////////////////////
-      
-      // Set the local lattice
-      
-      locSides=glbSides/nRanksPerDir;
-      LOGGER<<"Local sides: ";
-      printCoords(LOGGER,locSides);
-      
-      assertIsPartitionable(glbSides,"global",nRanksPerDir,"rank");
-      
-      locVol=1;
-      for(Dir dir=0;dir<NDims;dir++)
-	locVol*=locSides(dir);
-      
       glbIsNotPartitioned=(nRanksPerDir==1);
       
-      /////////////////////////////////////////////////////////////////
-      
-      bulkVol=1;
-      COMP_LOOP(Dir,dir,
-		{
-		  bulkSides(dir)=
-		    (nRanksPerDir(dir)==1)?
-		    locSides(dir):
-		    ((locSides(dir)>2)?
-		     (locSides(dir)-2):
-		     0);
-		  
-		  bulkVol*=bulkSides(dir);
-		});
-      
-      locSurf=locVol-bulkVol;
-      
-      /////////////////////////////////////////////////////////////////
-      
-      // Set the local surface
-      
-      COMP_LOOP(Dir,dir,
-		{
-		  locSurfPerDir(dir)=
-		    (nRanksPerDir(dir)>1)?
-		    (locVol/locSides(dir)):
-		    0;
-		  
-		  locSurf+=locSurfPerDir(dir);
-		});
-      
-      /////////////////////////////////////////////////////////////////
-      
-      // Set the local e/o sides
-      
-      locEoSides=locSides/paritySides;
-      LOGGER<<"Local e/o sides: ";
-      printCoords(LOGGER,locEoSides);
-      
-      assertIsPartitionable(locSides,"local",paritySides,"parity");
-      
-      locEoVol=locVol/2;
-      
-      /////////////////////////////////////////////////////////////////
-      
-      // Set the local e/o surface
-      
-      locEoSurf=locSurf/2;
-      
-      locEoSurfPerDir=locSurfPerDir/2;
-      if(locSurfPerDir(parityDir)%2)
-	{
-	  locEoSurfPerDir(BW,thisRankOriginParity,parityDir)++;
-	  locEoSurfPerDir(FW,oppositeParity(thisRankOriginParity),parityDir)++;
-	}
-      
-      /////////////////////////////////////////////////////////////////
-      
-      // Set the simd local lattice
-      
-      simdLocSides=locSides/nSimdRanksPerDir;
-      simdLocVol=locVol/nSimdRanks;
-      
-      LOGGER<<"Simd local sides: ";
-      printCoords(LOGGER,simdLocSides);
-      
-      assertIsPartitionable(locSides,"local",nSimdRanksPerDir,"simdRank");
-      
-      glbIsNotSimdPartitioned=glbIsNotPartitioned and (nRanksPerDir==1);
+      glbIsNotSimdPartitioned=glbIsNotPartitioned and (nSimdRanksPerDir==1);
       
       /////////////////////////////////////////////////////////////////
       
@@ -595,8 +628,6 @@ namespace grill
       
       /////////////////////////////////////////////////////////////////
       
-      // Set the simd lattice
-      
       int nSimdRanksCheck=1;
       for(Dir dir=0;dir<NDims;dir++)
 	nSimdRanksCheck*=nSimdRanksPerDir(dir);
@@ -609,8 +640,6 @@ namespace grill
 	  
 	  CRASH<<os.str();
 	}
-      
-      glbIsNotSimdPartitioned=glbIsNotPartitioned and (nRanksPerDir==1);
       
       COMP_LOOP(SimdRank,simdRank,
 		{
@@ -638,14 +667,52 @@ namespace grill
       
       /////////////////////////////////////////////////////////////////
       
-      // Set the simd local e/o lattice
+      // Set the sides of the parity lattice and initializes it
       
-      simdLocEoSides=simdLocSides/paritySides;
-      simdLocEoVol=simdLocVol/2;
-      LOGGER<<"Simd e/o local sides: ";
-      printCoords(LOGGER,simdLocEoSides);
+      parityCoords(parity(0))=0;
+      parityCoords(parity(1))=U::template versor<ParityCoord>(parityDir);
       
-      assertIsPartitionable(simdLocSides,"simdLocal",paritySides,"simdRank");
+      paritySides=1+parityCoords(parity(1));
+      
+      LOGGER<<"Parity dir: "<<parityDir;
+      
+      LOGGER<<"Parity sides: ";
+      printCoords(LOGGER,paritySides);
+      
+#ifndef __CUDA_ARCH__
+      COMP_LOOP(Parity,parity,
+		{
+		  auto l=LOGGER;
+		  l<<"parity "<<parity<<" coords: ";
+		  printCoords(l,parityCoords(parity));
+		});
+#endif
+      
+      assertIsPartitionable(locSides,"local",paritySides,"parity");
+      
+      /////////////////////////////////////////////////////////////////
+      
+      setSidesAndVol("Local",locSides,locVol,glbSides,nRanksPerDir);
+      
+      setBulk("Local",bulkSides,bulkVol,nRanksPerDir,locSides);
+      
+      setSurfaces("Local",locSurf,locSurfPerDir,locVol,bulkVol,nRanksPerDir,locSides);
+      
+      setEoSidesAndVol("Local",locEoSides,locEoVol,locSides,locVol);
+      
+      setEoSurfaces("Local",locEoSurf,locEoSurfPerDir,locSurf,locSurfPerDir);
+      
+      /////////////////////////////////////////////////////////////////
+      
+      setSidesAndVol("Simd",simdLocSides,simdLocVol,locSides,nSimdRanksPerDir);
+      
+      setBulk("Simd",simdBulkSides,simdBulkVol,nGlbSimdRanks,simdLocSides);
+      
+      setSurfaces("Simd",simdLocSurf,simdLocSurfPerDir,simdLocVol,simdBulkVol,nGlbSimdRanks,simdLocSides);
+      
+      setEoSidesAndVol("Simd",simdLocEoSides,simdLocEoVol,simdLocSides,simdLocVol);
+      
+      setEoSurfaces("Simd",simdLocEoSurf,simdLocEoSurfPerDir,simdLocSurf,simdLocSurfPerDir);
       
       /////////////////////////////////////////////////////////////////
       

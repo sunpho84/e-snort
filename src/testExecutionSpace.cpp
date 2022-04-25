@@ -187,31 +187,12 @@ void testGrill()
   using RankCoords=Lattice::RankCoords;
   using SimdRankCoords=Lattice::SimdRankCoords;
   
-  const GlbCoords glbSides(96,3,3,3);
+  const GlbCoords glbSides(6,6,6,12);
   const RankCoords rankSides(2,1,1,1);
-  const SimdRankCoords simdRankSides(8,1,1,1);
-  const Dir parityDir=0;
+  const SimdRankCoords simdRankSides(1,1,2,4);
+  const Dir parityDir=1;
   
   Lattice lattice(glbSides,rankSides,simdRankSides,parityDir);
-  
-  LOGGER<<"Local surface: "<<lattice.locSurf;
-  LOGGER<<"Local surface per ori dir: ";
-    for(Dir dir=0;dir<4;dir++)
-      LOGGER<<" dir: "<<dir<<" "<<lattice.locSurfPerDir(dir);
-  
-  /////////////////////////////////////////////////////////////////
-  
-  
-  for(Parity parity=0;parity<2;parity++)
-    {
-      LOGGER<<"Parity: "<<parity;
-      
-      LOGGER<<"Local e/o surface: "<<lattice.locEoSurf(parity);
-      LOGGER<<"Local e/o surface per ori dir: ";
-      for(Ori ori=0;ori<2;ori++)
-	for(Dir dir=0;dir<4;dir++)
-	  LOGGER<<" ori: "<<ori<<" dir: "<<dir<<" "<<lattice.locEoSurfPerDir(parity,ori,dir);
-    }
   
   /////////////////////////////////////////////////////////////////
   
