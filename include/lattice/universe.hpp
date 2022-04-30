@@ -12,21 +12,28 @@
 
 namespace grill
 {
-  DECLARE_UNTRANSPOSABLE_COMP(Ori,int,2,ori);
-  
-#define BW Ori(0)
-  
-#define FW Ori(1)
-  
   /// Assert that a quantity is in the given range
   template <typename T>
-  static constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
+  constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
   void assertIsInRange(const char* name,const T& val,const T& max)
   {
 #ifdef ENABLE_GRILL_DEBUG
       if(val<0 or val>=max)
 	CRASH<<name<<" value "<<val<<" not valid, maximal value: "<<max;
 #endif
+  }
+  
+  DECLARE_UNTRANSPOSABLE_COMP(Ori,int,2,ori);
+  
+#define BW Ori(0)
+  
+#define FW Ori(1)
+  
+  /// Opposite orientation
+  constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
+  Ori oppositeOri(const Ori& ori)
+  {
+    return 1-ori();
   }
   
   /// Assert that ori is an orientation
