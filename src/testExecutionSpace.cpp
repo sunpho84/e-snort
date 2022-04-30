@@ -179,20 +179,61 @@ void testGrill()
   //using GlbGrill=U::GlbGrill;
 
   using Parity=Lattice::Parity;
+  using LocEoSite=Lattice::LocEoSite;
   using SimdLocEoSite=Lattice::SimdLocEoSite;
   using SimdRank=Lattice::SimdRank;
   
+  using GlbCoord=Lattice::GlbCoord;
   using GlbCoords=Lattice::GlbCoords;
   // using LocCoords=Lattice::LocCoords;
   using RankCoords=Lattice::RankCoords;
   using SimdRankCoords=Lattice::SimdRankCoords;
   
   const GlbCoords glbSides(6,6,6,12);
-  const RankCoords rankSides(2,1,1,1);
+  const RankCoords rankSides(Mpi::nRanks,1,1,1);
   const SimdRankCoords simdRankSides(1,1,2,4);
   const Dir parityDir=1;
   
   Lattice lattice(glbSides,rankSides,simdRankSides,parityDir);
+
+  {
+    using F=Field<OfComps<Dir>,double,Lattice,LatticeCoverage::EVEN_ODD,FieldLayout::SERIAL,ExecSpace::HOST>;
+    
+    F f(lattice,true);
+    
+    loopOnAllComps<CompsList<Parity,LocEoSite>>(std::make_tuple(lattice.loc.eoVol),[&f,&lattice](const Parity& parity,const LocEoSite& locEoSite)
+    {
+      f(parity,locEoSite)=lattice.glbCoordsOfLoceo(parity,locEoSite);
+    });
+    
+    loopOnAllComps<CompsList<Parity,LocEoSite>>(std::make_tuple(lattice.loc.eoHalo),[&f,&lattice](const Parity& parity,const LocEoSite& haloEoSite)
+    {
+      const LocEoSite i=haloEoSite+lattice.loc.eoVol;
+      f(parity,i)=-1;
+    });
+    
+    f.updateHalo();
+    
+    loopOnAllComps<CompsList<Ori,Dir,Parity,LocEoSite>>(std::make_tuple(lattice.loc.eoVol),[&f,&lattice](const Ori& ori,const Dir& dir,const Parity& parity,const LocEoSite& locEoSite)
+    {
+      LOGGER<<"Coordinates of site par "<<parity<<" loceo "<<locEoSite;
+      for(Dir dir=0;dir<4;dir++)
+	LOGGER<<" "<<f(parity,locEoSite,dir);
+      
+      const LocEoSite neigh=lattice.loc.neighbours(parity,ori,dir,locEoSite);
+      
+      const bool isNonLoc=neigh>=lattice.loc.eoVol;
+      
+      const GlbCoords neighCoords=
+	(lattice.glbSides+lattice.glbCoordsOfLoceo(parity,locEoSite)+moveOffset[ori]*U4D::template versor<GlbCoord>(dir))%lattice.glbSides;
+      
+      LOGGER<<" ori "<<ori<<" dir "<<dir<<" parity "<<parity<<" locEoSite "<<locEoSite<<" neigh "<<neigh<<" isNonLoc: "<<isNonLoc<<" expected, obtained:";
+      for(Dir mu=0;mu<4;mu++)
+	LOGGER<<" "<<neighCoords(mu)<<" "<<f(parity,neigh,mu);
+    });
+    
+    //grill::Node<grill::CompsBinder<std::tuple<grill::Lattice<grill::Universe<4> >::Parity, grill::Lattice<grill::Universe<4> >::SubLattice<grill::Lattice<grill::Universe<4> >::SubLatticeType::LOC>::EoSite>, std::tuple<grill::TensRef<std::tuple<grill::Lattice<grill::Universe<4> >::Parity, grill::Lattice<grill::Universe<4> >::SubLattice<grill::Lattice<grill::Universe<4> >::SubLatticeType::LOC>::EoSite, grill::NonSimdifiedComp<int, 1> >,double, grill::ExecSpace::HOST>&&>, std::tuple<grill::NonSimdifiedComp<int, 1> >,double> > [1];
+  }
   
   /////////////////////////////////////////////////////////////////
   
@@ -226,32 +267,69 @@ g=1;
   
   static_assert(not std::is_same_v<Lattice::GlbCoord,Lattice::LocCoord>,"");
   
-  LOGGER<<"Now doing the computeGlbCoordsOfsimdEoRepOfLocSite test";
-  loopOnAllComps<CompsList<Parity,SimdLocEoSite,SimdRank>>(std::make_tuple(lattice.simdLocEoVol),
-							   [&printCoords,
-							    &lattice](const Parity& parity,
-								       const SimdLocEoSite& simdLocEoSite,
-								       const SimdRank& simdRank)
-  {
-    const GlbCoords glbCoords=
-      lattice.computeGlbCoordsOfSimdEoRepOfLocSite(parity,simdLocEoSite,simdRank);
+  // LOGGER<<"Now doing the computeGlbCoordsOfsimdEoRepOfLocSite test";
+  // loopOnAllComps<CompsList<Parity,SimdLocEoSite,SimdRank>>(std::make_tuple(lattice.simdLoc.eoVol),
+  // 							   [&printCoords,
+  // 							    &lattice](const Parity& parity,
+  // 								       const SimdLocEoSite& simdLocEoSite,
+  // 								       const SimdRank& simdRank)
+  // {
+  //   const GlbCoords glbCoords=
+  //     lattice.computeGlbCoordsOfSimdEoRepOfLocSite(parity,simdLocEoSite,simdRank);
     
-    const auto [rankP,parityP,simdLocEoSiteP,simdRankP]=lattice.computeSimdEoRepOfGlbCoords(glbCoords);
+  //   const auto [rankP,parityP,simdLocEoSiteP,simdRankP]=lattice.computeSimdEoRepOfGlbCoords(glbCoords);
     
-    auto l=LOGGER;
-    l<<"parity "<<parity<<" simdLocEoSite "<<simdLocEoSite<<" simdRank "<<simdRank<<" glbCoords: ";
-    printCoords(l,glbCoords);
-    l<<" rank "<<rankP<<" parity "<<parityP<<" simdLocEoSite "<<simdLocEoSiteP<<" simdRank "<<simdRankP<<" "<<(0!=rankP or parity!=parityP or simdLocEoSite!=simdLocEoSiteP or simdRank!=simdRankP);
-  });
-  LOGGER<<"Finished";
+  //   auto l=LOGGER;
+  //   l<<"parity "<<parity<<" simdLocEoSite "<<simdLocEoSite<<" simdRank "<<simdRank<<" glbCoords: ";
+  //   printCoords(l,glbCoords);
+  //   l<<" rank "<<rankP<<" parity "<<parityP<<" simdLocEoSite "<<simdLocEoSiteP<<" simdRank "<<simdRankP<<" "<<(0!=rankP or parity!=parityP or simdLocEoSite!=simdLocEoSiteP or simdRank!=simdRankP);
+  // });
+  // LOGGER<<"Finished";
+  
+  LOGGER<<"Testing loc neigh";
+  loopOnAllComps<CompsList<Parity,LocEoSite>>(std::make_tuple(lattice.loc.eoVol),
+						  [&lattice](const Parity& parity,
+							     const LocEoSite& locEoSite)
+						  {
+						    LOGGER<<"Parity "<<parity<<" locEoSite "<<locEoSite;
+						    
+						    const Parity oppoParity=lattice.oppositeParity(parity);
+						    
+						    for(Ori ori=0;ori<2;ori++)
+						      for(Dir dir=0;dir<4;dir++)
+							{
+							  LocEoSite n=lattice.loc.neighbours(parity,locEoSite,ori,dir);
+							  auto l=LOGGER;
+							  l<<" par "<<parity<<" ori "<<ori<<" dir "<<dir<<" neigh "<<n;
+							  if(n>=lattice.loc.eoVol)
+							    {
+							      n-=lattice.loc.eoVol;
+							      l<<" (in halo: "<<n;
+							      
+							      bool found=false;
+							      for(Ori ori2=0;ori2<2;ori2++)
+								for(Dir dir2=0;dir2<4;dir2++)
+								  {
+								    n-=lattice.loc.eoHaloPerDir(oppoParity,ori2,dir2);
+								    if(n<0 and not found)
+								      {
+									found=true;
+									l<<" ori "<<ori2<<" dir "<<dir2;
+								      }
+								  }
+							      l<<" halo) ";
+							    }
+							}
+						  });
+  
   
   StackTens<OfComps<Parity,Ori,Dir>,int> nNonLoc=0,nLoc=0;
   LOGGER<<"Now doing the neigh test";
-  loopOnAllComps<CompsList<Parity,SimdLocEoSite>>(std::make_tuple(lattice.simdLocEoVol),
+  loopOnAllComps<CompsList<Parity,SimdLocEoSite>>(std::make_tuple(lattice.simdLoc.eoVol),
 						  [&nLoc,&nNonLoc,
 						   &printCoords,
 						   &lattice](const Parity& parity,
-							      const SimdLocEoSite& simdLocEoSite)
+							     const SimdLocEoSite& simdLocEoSite)
 						  {
     for(Ori ori=0;ori<2;ori++)
       {
@@ -309,7 +387,7 @@ g=1;
   
   LOGGER<<"Now doing the backward dir 0 test";
   
-  loopOnAllComps<CompsList<Parity,SimdLocEoSite>>(std::make_tuple(lattice.simdLocEoVol),
+  loopOnAllComps<CompsList<Parity,SimdLocEoSite>>(std::make_tuple(lattice.simdLoc.eoVol),
 						  [&printCoords,
 						   &lattice](const Parity& parity,
 							     const SimdLocEoSite& simdLocEoSite)

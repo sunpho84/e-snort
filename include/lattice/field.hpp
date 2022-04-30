@@ -7,6 +7,8 @@
 
 /// \file grill/field.hpp
 
+#include <mpi.h>
+
 #include <expr/assign/executionSpace.hpp>
 #include <expr/comps/comps.hpp>
 #include <expr/nodes/tensRef.hpp>
@@ -105,20 +107,28 @@ namespace grill
     
     /// Returns the size needed to allocate
     INLINE_FUNCTION HOST_DEVICE_ATTRIB
-    decltype(auto) getLocSize() const
+    decltype(auto) getInitVol(const bool flagVol) const
     {
+      auto res=[flagVol](const auto& vol,const auto& halo)->std::decay_t<decltype(vol)>
+      {
+	if(flagVol)
+	  return vol+halo;
+	else
+	  return vol;
+      };
+      
       if constexpr(FL==FieldLayout::SIMDIFIABLE or
 		   FL==FieldLayout::SIMDIFIED)
-	return (lattice->simdLocEoVol);
+	return res(lattice->simdLoc.eoVol,lattice->simdLoc.eoHalo);
       else
-	return (lattice->locEoVol);
+	return res(lattice->loc.eoVol,lattice->loc.eoHalo);
     }
     
     /// Returns the dynamic sizes
     INLINE_FUNCTION HOST_DEVICE_ATTRIB
     auto getDynamicSizes() const
     {
-      return std::make_tuple(getLocSize());
+      return std::make_tuple(getInitVol(haloFlag));
     }
     
 #define PROVIDE_EVAL(ATTRIB)					\
@@ -145,7 +155,7 @@ namespace grill
   auto getRef() ATTRIB							\
   {									\
     return Field<CompsList<C...>,ATTRIB _Fund,L,LC,FL,ES,true>		\
-      (*lattice,withHalo,data.storage,data.nElements,data.getDynamicSizes()); \
+      (*lattice,haloFlag,data.storage,data.nElements,data.getDynamicSizes()); \
   }
   
   PROVIDE_GET_REF(const);
@@ -157,11 +167,21 @@ namespace grill
 #undef PROVIDE_GET_REF
     
 #define PROVIDE_SIMDIFY(ATTRIB)						\
-  INLINE_FUNCTION							\
+    INLINE_FUNCTION							\
   auto simdify() ATTRIB							\
     {									\
-      return Field<CompsList<C...>,ATTRIB _Fund,L,LC,FieldLayout::SIMDIFIED,ES,true> \
-	(*lattice,withHalo,(ATTRIB void*)data.storage,data.nElements,data.getDynamicSizes()); \
+      if constexpr(FL==FieldLayout::SIMDIFIABLE)			\
+	return Field<CompsList<C...>,ATTRIB _Fund,L,LC,FieldLayout::SIMDIFIED,ES,true> \
+	  (*lattice,haloFlag,(ATTRIB void*)data.storage,data.nElements,data.getDynamicSizes()); \
+      else								\
+	{								\
+	  using Traits=CompsListSimdifiableTraits<CompsList<C...>,_Fund>; \
+	  								\
+	  using SimdFund=typename Traits::SimdFund;			\
+	  								\
+	  return Field<typename Traits::Comps,ATTRIB SimdFund,L,LC,FieldLayout::SERIAL,ES,true> \
+	    (*lattice,haloFlag,(ATTRIB void*)data.storage,data.nElements,data.getDynamicSizes()); \
+	}								\
     }
   
   PROVIDE_SIMDIFY(const);
@@ -195,31 +215,95 @@ namespace grill
     Data data;
     
     /// Determine whether the halos are allocated
-    const bool withHalo;
+    const bool haloFlag;
+    
+    void updateHalo()
+    {
+      if(not haloFlag)
+	CRASH<<"Trying to synchronize the halo but they are not allocated";
+      
+      LOGGER<<"Updating the halo";
+      
+      using LocEoSite=typename L::Loc::EoSite;
+      using Parity=typename L::Parity;
+      using Dir=typename L::U::Dir;
+      
+      MPI_Request requests[4*NDims];
+      
+      if constexpr(FL==FieldLayout::SERIAL)
+	{
+	  if constexpr(LC==LatticeCoverage::EVEN_ODD)
+	    {
+	      const LocEoSite& locEoHalo=lattice->loc.eoHalo;
+	      
+	      DynamicTens<OfComps<Parity,LocEoSite,C...>,Fund,ES> bufferOut(locEoHalo);
+	      DynamicTens<OfComps<Parity,LocEoSite,C...>,Fund,ES> bufferIn(locEoHalo);
+	      
+	      int iRequest=0;
+	      for(typename L::Parity parity=0;parity<2;parity++)
+		{
+		  loopOnAllComps<CompsList<LocEoSite>>(std::make_tuple(locEoHalo),
+						       [&bufferOut,parity,this](const LocEoSite& siteRemappingId)
+						       {
+							 const auto& r=lattice->eoHaloSiteOfEoSurfSite(parity,siteRemappingId);
+							 bufferOut(parity,r.second)=data(parity,r.first);
+						       });
+		  
+		  for(Ori ori=0;ori<2;ori++)
+		    for(Dir dir=0;dir<NDims;dir++)
+		      if(lattice->nRanksPerDir(dir)>1)
+			{
+			  const LocEoSite& sendOffset=lattice->loc.eoHaloOffsets(parity,ori,dir);
+			  const LocEoSite& recvOffset=lattice->loc.eoHaloOffsets(parity,oppositeOri(ori),dir);
+			  const LocEoSite& nSites=lattice->loc.eoHaloPerDir(ori,parity,dir);
+			  
+			  void* sendbuf=&bufferOut(parity,sendOffset,C(0)...);
+			  int sendcount=nSites*(C::sizeAtCompileTime*...);
+			  void* recvbuf=&bufferIn(parity,recvOffset,C(0)...);
+			  int recvcount=sendcount;
+			  int sendtag=0;
+			  int recvtag=0;
+			  int dest=lattice->rankNeighbours(ori,dir)();
+			  int source=dest;
+			  
+			  MPI_Isend(sendbuf,sendcount,MPI_CHAR,dest,sendtag,MPI_COMM_WORLD,&requests[iRequest++]);
+			  MPI_Irecv(recvbuf,recvcount,MPI_CHAR,source,recvtag,MPI_COMM_WORLD,&requests[iRequest++]);
+			}
+		}
+	      
+	      MPI_Waitall(iRequest,requests,MPI_STATUS_IGNORE);
+	      
+	      for(typename L::Parity parity=0;parity<2;parity++)
+		loopOnAllComps<CompsList<LocEoSite>>(std::make_tuple(locEoHalo),
+					  [this,parity,&bufferIn](const LocEoSite& haloSite)
+					  {
+					    const LocEoSite dest=haloSite+lattice->loc.eoVol;
+					    data(parity,dest)=bufferIn(parity,haloSite);
+					  });
+	    }
+	}
+    }
     
     /// Create a field
     Field(const L& lattice,
-	  const bool& withHalo=false) :
+	  const bool& haloFlag=false) :
       lattice(&lattice),
-      withHalo(withHalo)
+      haloFlag(haloFlag)
     {
       static_assert(not IsRef,"Can allocate only if not a reference");
       
-      if(withHalo)
-	CRASH<<"Not yet implemented";
-      
-      data.allocate(std::make_tuple(getLocSize()));
+      data.allocate(std::make_tuple(getInitVol(haloFlag)));
     }
     
     /// Create a refence to a field
     Field(const L& lattice,
-	  const bool& withHalo,
+	  const bool& haloFlag,
 	  void* storage,
 	  const int64_t& nElements,
 	  const DynamicComps& dynamicSizes) :
       lattice(&lattice),
       data((Fund*)storage,nElements,dynamicSizes),
-      withHalo(withHalo)
+      haloFlag(haloFlag)
     {
       static_assert(IsRef,"Can initialize as reference only if declared as a reference");
     }
@@ -229,7 +313,7 @@ namespace grill
     Field(const Field& oth) :
       lattice(oth.lattice),
       data(oth.data),
-      withHalo(oth.withHalo)
+      haloFlag(oth.haloFlag)
     {
     }
   };
