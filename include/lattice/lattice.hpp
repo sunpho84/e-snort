@@ -75,13 +75,17 @@ namespace grill
     using U=
       Universe<NDims>;
     
+    /// A tensor with component direction
+    template <typename F>
+    using DirTens=typename U::template DirTens<F>;
+    
     /// Directions in the space
     using Dir=
       typename U::Dir;
     
-    /// A tensor with component direction
-    template <typename F>
-    using DirTens=typename U::template DirTens<F>;
+    /// Oriented direction
+    using OriDir=
+      std::tuple<Ori,Dir>;
     
     /// Global coordinate
     DECLARE_UNTRANSPOSABLE_COMP(GlbCoord,int,0,glbCoord);
@@ -115,9 +119,30 @@ namespace grill
       
       out(dir)=safeModulo(GlbCoord(in(dir)+moveOffset[ori]*amount),glbSides(dir));
       
-      return
-	out;
+      return out;
     }
+    
+    /// Check that a coords set is partitionable by another one
+    template <typename Dividend,
+	      typename Divisor>
+    static void assertIsPartitionable(const DirTens<Dividend>& dividend,
+				      const char* dividendName,
+				      const DirTens<Divisor>& divisor,
+				      const char* divisorName)
+    {
+      const DirTens<bool> isPartitionable=
+	(dividend%divisor==0);
+
+#ifndef __CUDA_ARCH__
+      COMP_LOOP(Dir,dir,
+		{
+		  if(not isPartitionable(dir))
+		    CRASH<<
+		      "in dir "<<dir<<" the "<<dividendName<<" lattice side "<<dividend(dir)<<
+		      " cannot be divided by the "<<divisorName<<" lattice side "<<divisor(dir);
+		});
+#endif
+    };
     
     /////////////////////////////////////////////////////////////////
     
@@ -138,6 +163,8 @@ namespace grill
     
     /// Coordinates of the present rank
     RankCoords thisRankCoords;
+    
+    StackTens<OfComps<Ori,Dir>,Rank> rankNeighbours;
     
     Rank nRanks;
     
@@ -176,72 +203,13 @@ namespace grill
     
     /////////////////////////////////////////////////////////////////
     
-    DECLARE_UNTRANSPOSABLE_COMP(LocCoord,int,0,locCoord);
-    
-    using LocCoords=DirTens<LocCoord>;
-    
-    DECLARE_UNTRANSPOSABLE_COMP(LocSite,int64_t,0,locSite);
-    
-    DECLARE_UNTRANSPOSABLE_COMP(HaloSite,int64_t,0,haloSite);
-    
-    LocCoords locSides;
-    
-    LocSite locVol;
-    
-    PROVIDE_ASSERT_SITE_COORD_COORDS(Loc,loc,locVol);
-    
-    PROVIDE_COORDS_OF_SITE_COMPUTER(Loc,loc,locSides);
-    
-    /// Returns the side in the bulk considering the wrapping
-    LocCoords bulkSides;
-    
-    /// Total volume in the bulk
-    LocSite bulkVol;
+    // // DECLARE_UNTRANSPOSABLE_COMP(HaloSite,int64_t,0,haloSite);
     
     // /// Computes the coordinates of the passed locSite
     // GlbCoords computeGlbCoords(const LocSite& locSite) const
     // {
     //   return originGlbCoords+computeLocCoords(locSite);
     // }
-    
-    /// Local origin of the simd rank
-    StackTens<OfComps<SimdRank>,LocCoords> simdRankLocOrigins;
-    
-    /////////////////////////////////////////////////////////////////
-    
-    /// Surface sizes
-    DirTens<LocSite> locSurfPerDir;
-    
-    /// Volume of the surface
-    LocSite locSurf;
-    
-    /////////////////////////////////////////////////////////////////
-    
-    DECLARE_UNTRANSPOSABLE_COMP(SimdLocCoord,int,0,simdLocCoord);
-    
-    using SimdLocCoords=DirTens<SimdLocCoord>;
-    
-    DECLARE_UNTRANSPOSABLE_COMP(SimdLocSite,int64_t,0,simdLocSite);
-    
-    SimdLocCoords simdLocSides;
-    
-    SimdLocSite simdLocVol;
-    
-    PROVIDE_ASSERT_SITE_COORD_COORDS(SimdLoc,simdLoc,simdLocVol);
-    
-    /////////////////////////////////////////////////////////////////
-    
-    /// Returns the side in the simd bulk considering the wrapping
-    SimdLocCoords simdBulkSides;
-    
-    /// Total volume in the bulk
-    SimdLocSite simdBulkVol;
-    
-    /// Surface sizes
-    DirTens<SimdLocSite> simdLocSurfPerDir;
-    
-    /// Volume of the simd surface
-    SimdLocSite simdLocSurf;
     
     /////////////////////////////////////////////////////////////////
     
@@ -251,12 +219,25 @@ namespace grill
     
     DECLARE_UNTRANSPOSABLE_COMP(Parity,int,2,parity);
     
+    /// Compute the parity of coords
+    template <typename C>
+    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
+    static Parity coordsParity(const DirTens<C>& coords)
+    {
+      C sum=0;
+      for(Dir dir=0;dir<NDims;dir++)
+	sum+=coords(dir);
+      
+      return sum%2;
+    }
+    
     /// Opposite parity
-    constexpr INLINE_FUNCTION Parity oppositeParity(const Parity& parity)
+    static constexpr INLINE_FUNCTION Parity oppositeParity(const Parity& parity)
     {
       return 1-parity();
     }
     
+    /// Sides of the parity grid
     ParityCoords paritySides;
     
     DynamicTens<OfComps<Rank>,Parity,ExecSpace::HOST> originParity;
@@ -273,75 +254,500 @@ namespace grill
       assertIsInRange("parity",parity,2);
     }
     
-    /// Compute the parity of global coords
-    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
-    Parity glbCoordsParity(const GlbCoords& glbCoords) const
-    {
-      GlbCoord sum=0;
-      for(Dir dir=0;dir<NDims;dir++)
-	sum+=glbCoords(dir);
-      
-      return sum%2;
-    }
-    
     /// Parity split direction
     Dir parityDir;
     
     /////////////////////////////////////////////////////////////////
     
-    DECLARE_UNTRANSPOSABLE_COMP(LocEoCoord,int,0,locEoCoord);
+    /// Different kind of sublattices
+    enum class SubLatticeType{LOC,SIMD_LOC};
     
-    using LocEoCoords=DirTens<LocEoCoord>;
-    
-    DECLARE_UNTRANSPOSABLE_COMP(LocEoSite,int64_t,0,locEoSite);
-    
-    LocEoCoords locEoSides;
-    
-    LocEoSite locEoVol;
-    
-    /// Assert that a local e/o site is in the allowed range
-    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
-    void assertIsLocEoSite(const LocEoSite& locEoSite) const
+    /// Defines a sublattice
+    template <SubLatticeType SL>
+    struct SubLattice
     {
-      assertIsInRange("locEoSite",locEoSite,locEoVol);
-    }
+      /// Returns the sublattice type tag
+      static constexpr const char* tag()
+      {
+	switch(SL)
+	  {
+	  case SubLatticeType::LOC:
+	    return "loc";
+	    break;
+	  case SubLatticeType::SIMD_LOC:
+	    return "simdLoc";
+	    break;
+	  }
+      }
+      
+      DECLARE_UNTRANSPOSABLE_COMP(Coord,int,0,coord);
+      
+      using Coords=DirTens<Coord>;
+      
+      DECLARE_UNTRANSPOSABLE_COMP(Site,int64_t,0,site);
+      
+      Coords sides;
+      
+      Site vol;
+      
+      /// Set lattice sides and volume
+      template <typename R>
+      void setSidesAndVol(const GlbCoords& dividendSides,const DirTens<R>& nPerDir)
+      {
+	sides=dividendSides/nPerDir;
+	LOGGER<<tag()<<" sides: ";
+	printCoords(LOGGER,sides);
+	
+	assertIsPartitionable(dividendSides,"dividend",nPerDir,"divisor");
+	
+	vol=1;
+	for(Dir dir=0;dir<NDims;dir++)
+	  vol*=sides(dir);
+      }
+      
+      /////////////////////////////////////////////////////////////////
+      
+      /// Returns the side in the bulk considering the wrapping
+      Coords bulkSides;
+      
+      /// Total volume in the bulk
+      Site bulkVol;
+      
+      /// Sets the bulk
+      template <typename R>
+      void setBulk(const DirTens<R>& nPerDir)
+      {
+	bulkSides=sides;
+	
+	bulkVol=1;
+	
+	COMP_LOOP(Dir,dir,
+		  {
+		    auto& b=bulkSides(dir);
+		    
+		    if(nPerDir(dir)>1)
+		      b-=2;
+		    
+		    if(b<0)
+		      b=0;
+		    
+		    bulkVol*=b;
+		  });
+	
+	LOGGER<<tag()<<" bulk sides: ";
+	printCoords(LOGGER,bulkSides);
+	
+	LOGGER<<tag()<<" bulk vol: "<<bulkVol;
+      }
+      
+      /////////////////////////////////////////////////////////////////
+      
+      /// Surface sizes
+      DirTens<Site> surfPerDir;
+      
+      /// Volume of the surface
+      Site surf;
+      
+      /// Set the surfaces
+      template <typename R>
+      void setSurfaces(const DirTens<R>& nPerDir)
+      {
+	surf=vol-bulkVol;
+      
+	LOGGER<<tag()<<" Surf: "<<surf;
+	
+	COMP_LOOP(Dir,dir,
+		  {
+		    surfPerDir(dir)=
+		      (nPerDir(dir)>1)?
+		      (vol/sides(dir)):
+		      0;
+		  });
+	
+	LOGGER<<tag()<<" Surf per dir: ";
+	printCoords(LOGGER,surfPerDir);
+      }
+      
+      /////////////////////////////////////////////////////////////////
+      
+      DECLARE_UNTRANSPOSABLE_COMP(EoCoord,int,0,eoCoord);
+      
+      using EoCoords=DirTens<EoCoord>;
+      
+      DECLARE_UNTRANSPOSABLE_COMP(EoSite,int64_t,0,eoSite);
+      
+      EoCoords eoSides;
+      
+      EoSite eoVol;
+      
+      /// Assert that an e/o site is in the allowed range
+      constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
+      void assertIsEoSite(const EoSite& eoSite) const
+      {
+	assertIsInRange("eoSite",eoSite,eoVol);
+      }
+      
+      PROVIDE_COORDS_OF_SITE_COMPUTER(Eo,eo,eoSides);
+      
+      /// Sets the e/o volume
+      void setEoSidesAndVol(const Lattice& lattice)
+      {
+	// Set the e/o sides
+	
+	eoSides=sides/lattice.paritySides;
+	LOGGER<<tag()<<" e/o sides: ";
+	printCoords(LOGGER,eoSides);
+	
+	assertIsPartitionable(sides,tag(),lattice.paritySides,"parity");
+	
+	eoVol=vol/2;
+      }
+      
+      /////////////////////////////////////////////////////////////////
+      
+      /// Simd surface e/o sizes
+      StackTens<OfComps<Parity,Ori,Dir>,EoSite> eoSurfPerDir;
+      
+      /// Volume of the simd e/o surface
+      EoSite eoSurf;
+      
+      /// Set the e/o surface
+      void setEoSurfaces(const Lattice& lattice)
+      {
+	eoSurf=surf/2;
+	
+	eoSurfPerDir=surfPerDir/2;
+	if(surfPerDir(lattice.parityDir)%2)
+	  {
+	    eoSurfPerDir(BW,lattice.thisRankOriginParity,lattice.parityDir)++;
+	    eoSurfPerDir(FW,oppositeParity(lattice.thisRankOriginParity),lattice.parityDir)++;
+	  }
+	
+	LOGGER<<tag()<<" e/o surface: "<<eoSurf;
+	for(Parity parity=0;parity<2;parity++)
+	  {
+	    LOGGER<<"Parity: "<<parity;
+	    LOGGER<<tag()<<" e/o surface per ori dir: ";
+	    for(Ori ori=0;ori<2;ori++)
+	      for(Dir dir=0;dir<NDims;dir++)
+		LOGGER<<" ori: "<<ori<<" dir: "<<dir<<" "<<eoSurfPerDir(parity,ori,dir);
+	  }
+      }
+      
+      /////////////////////////////////////////////////////////////////
+      
+      /// Halo size for each direction
+      DirTens<Site> haloPerDir;
+      
+      /// Total halo
+      Site halo;
+      
+      /// Offset where the halo for each orientation and direction starts, w.r.t locVol
+      StackTens<OfComps<Ori,Dir>,Site> haloOffsets;
+      
+      /// Initialize the halo
+      template <typename R>
+      void setHalo(const DirTens<R>& nPerDir)
+      {
+	haloPerDir=surfPerDir*(nPerDir!=1);
+	
+	halo=0;
+	for(Dir dir=0;dir<NDims;dir++)
+	  halo+=haloPerDir(dir);
+	halo*=2;
+	
+	/////////////////////////////////////////////////////////////////
+	
+	Site offset=0;
+	
+	for(Ori ori=0;ori<2;ori++)
+	  for(Dir dir=0;dir<NDims;dir++)
+	    {
+	      haloOffsets(ori,dir)=offset;
+	      offset+=haloPerDir(dir);
+	    }
+	
+	if(offset!=halo)
+	  CRASH<<"Not reached the total halo volume, "<<offset<<" while "<<halo<<" expected";
+      }
+      
+    // /// Compute the site of given coords in the given ori,dir halo
+    //   Site haloSiteOfCoords(const Coords& cs,const Ori& ori,const Dir& dir) const
+    //   {
+    // 	/// Returned site
+    // 	Site out=0;
+	
+    // 	COMP_LOOP(Dir,mu,
+    // 		  {
+    // 		    if(mu!=dir)
+    // 		      out=out*sides()(mu)+cs(mu);
+    // 		  });
+	
+    // 	return haloOffset(ori,dir)+out;
+    //   }
+      
+    //   /// Returns the orientation and direction of a point in the halo
+    //   OriDir oriDirOfHaloSite(const Site& haloSite) const
+    //   {
+    // 	assertIsHaloSite(haloSite);
+	
+    // 	const Ori ori=(Ori::Index)(haloSite/(halo()/2));
+	
+    // 	assertIsOri(ori);
+	
+    // 	Dir dir=0;
+	
+    // 	while(dir<NDims-1 and haloOffset(ori,dir+1)<=haloSite)
+    // 	  dir++;
+	
+    // 	assertIsDir(dir);
+	
+    // 	return {ori,dir};
+    //   }
+      
+      
+      /// E/o halo for each direction
+      StackTens<OfComps<Ori,Parity,Dir>,EoSite> eoHaloPerDir;
+      
+      /// Total e/o halo
+      EoSite eoHalo;
+      
+      /// Offset where the e/o halo for each orientation and direction starts, w.r.t eoLocVol
+      StackTens<OfComps<Parity,Ori,Dir>,EoSite> eoHaloOffsets;
+      
+      /// Set the e/o halo
+      void setEoHalo(const Lattice& lattice)
+      {
+	eoHalo=halo/2;
+	
+	eoHaloPerDir=haloPerDir/2;
+	if(haloPerDir(lattice.parityDir)%2)
+	  {
+	    eoHaloPerDir(BW,oppositeParity(lattice.thisRankOriginParity),lattice.parityDir)++;
+	    eoHaloPerDir(FW,lattice.thisRankOriginParity,lattice.parityDir)++;
+	  }
+	
+	for(Parity parity=0;parity<2;parity++)
+	  {
+	    EoSite offset=0;
+	    
+	    for(Ori ori=0;ori<2;ori++)
+	      for(Dir dir=0;dir<NDims;dir++)
+		{
+		  eoHaloOffsets(parity,ori,dir)=offset;
+		  offset+=eoHaloPerDir(ori,parity,dir);
+		}
+	    
+	    if(offset!=eoHalo)
+	      CRASH<<"Not reached the total e/o halo volume, "<<offset<<" while "<<eoHalo<<" expected";
+	  }
+	
+	LOGGER<<tag()<<" e/o halo: "<<eoHalo;
+	for(Parity parity=0;parity<2;parity++)
+	  {
+	    LOGGER<<"Parity: "<<parity;
+	    LOGGER<<tag()<<" e/o halo per ori dir: ";
+	    for(Ori ori=0;ori<2;ori++)
+	      for(Dir dir=0;dir<NDims;dir++)
+		LOGGER<<" ori: "<<ori<<" dir: "<<dir<<" "<<eoHaloPerDir(parity,ori,dir);
+	  }
+      }
+      
+      /////////////////////////////////////////////////////////////////
+      
+      DynamicTens<OfComps<Parity,EoSite,Ori,Dir>,EoSite,ExecSpace::HOST> neighbours;
+      
+      template <typename R>
+      void setNeighbours(const Lattice& lattice,const DirTens<R>& nPerDir)
+      {
+	auto allocateSize=std::make_tuple(eoVol);
+	
+	neighbours.allocate(allocateSize);
+	
+	loopOnAllComps<CompsList<Parity,EoSite>>(allocateSize,[this,&lattice,&nPerDir](const Parity& parity,const EoSite& eoSite)
+	{
+	  /// Parity of neighbors
+	  const Parity oppoParity=
+	    oppositeParity(parity);
+	  
+	  const EoCoords eoCoords=
+	    computeEoCoords(eoSite);
+	  
+	  const Coords coordsWithUnfixedParity=
+	    eoCoords*lattice.paritySides;
+	  
+	  LOGGER<<"Setting neigh of site of parity "<<parity<<" eoSite "<<eoSite<<": ";
+	  
+	  const Parity resultingParity=
+	    (coordsParity(coordsWithUnfixedParity)+lattice.thisRankOriginParity)%2;
+	  
+	  /// Check if parity needs to be adjusted
+	  const Parity neededParity=
+	    (resultingParity+parity)%2;
+	  
+	  const Coords coords=
+	    coordsWithUnfixedParity+lattice.parityCoords(neededParity);
+	  
+	  {
+	    auto l=LOGGER;
+	    l<<" coords: ";
+	    printCoords(l,coords);
+	  }
+	  
+	  for(Ori ori=0;ori<2;ori++)
+	    for(Dir dir=0;dir<NDims;dir++)
+	      {
+		LOGGER<<"  ori "<<ori<<" dir "<<dir;
+		
+		/// Trivial shift of current site coord in the direction dir and orientation ori
+		const Coords triviallyShiftedCoords
+		  ([extDir=dir,ori,&coords,this,&nPerDir](const Dir& dir)
+		  {
+		    Coord c=coords(dir);
+		    
+		    if(extDir==dir)
+		      {
+			c+=moveOffset[ori];
+			if(nPerDir(extDir)==1)
+			  c=safeModulo(c,sides(extDir));
+		      }
+		    
+		    return c;
+		  });
+		
+		const Coord& triviallyShiftedCoord=
+		  triviallyShiftedCoords(dir);
+		
+		{
+		  auto l=LOGGER;
+		  l<<"  triviallyShiftedCoords: ";
+		  printCoords(l,triviallyShiftedCoords);
+		}
+		
+		EoSite& n=neighbours(parity,eoSite,ori,dir);
+		
+		if(triviallyShiftedCoord<0 or triviallyShiftedCoord>=sides(dir))
+		  {
+		    LOGGER<<"  exceeding local sides";
+		    
+		    /// Sets to zero the shifted coordinate in the excess direction
+		    const Coords shiftedCoords
+		      ([extDir=dir,triviallyShiftedCoords](const Dir& dir)
+		      {
+			return (dir==extDir)?Coord(0):triviallyShiftedCoords(dir);
+		      });
+		    
+		    {
+		      auto l=LOGGER;
+		      l<<"  shiftedCoords: ";
+		      printCoords(l,shiftedCoords);
+		    }
+		    
+		    const Coords haloSides
+		      ([this,extDir=dir](const Dir& dir)
+		      {
+			return (dir==extDir)?Coord(1):sides(dir);
+		      });
+		    const EoSite posInEoHalo=
+		      U::template computeSiteOfCoordsInBoxOfSides<Site>(shiftedCoords,haloSides)/2;
+		    
+		    {
+		      auto l=LOGGER;
+		      l<<"  computing neigh in halo of sides: ";
+		      printCoords(l,haloSides);
+		      l<<" result: "<<eoHaloOffsets(oppoParity,ori,dir)+posInEoHalo;
+		    }
+		    
+		    if(posInEoHalo>=eoHaloPerDir(oppoParity,ori,dir))
+		      CRASH<<"Neighbour for site of parity "<<parity<<" in the orientation "<<ori<<" direction "<<dir<<
+			" is "<<posInEoHalo<<" larger than maximal size "<<eoHaloPerDir(oppoParity,ori,dir);
+		    
+		    n=eoVol+
+		      eoHaloOffsets(oppoParity,ori,dir)+
+		      posInEoHalo;
+		  }
+		else
+		  n=computeEoSite(triviallyShiftedCoords/lattice.paritySides);
+	      }
+	});
+      }
+      
+      /////////////////////////////////////////////////////////////////
+      
+      template <typename R>
+      void init(const Lattice& lattice,const DirTens<R>& nPerDir)
+      {
+	setSidesAndVol(lattice.glbSides,nPerDir);
+	
+	setBulk(nPerDir);
+	
+	setSurfaces(nPerDir);
+	
+	setHalo(nPerDir);
+	
+	setEoSidesAndVol(lattice);
+	
+	setEoSurfaces(lattice);
+	
+	setEoHalo(lattice);
+	
+	setNeighbours(lattice,nPerDir);
+      }
+    };
     
     /////////////////////////////////////////////////////////////////
     
-    /// Surface e/o sizes
-    StackTens<OfComps<Parity,Ori,Dir>,LocEoSite> locEoSurfPerDir;
+    using Loc=
+      SubLattice<SubLatticeType::LOC>;
     
-    /// Volume of the e/o surface
-    StackTens<OfComps<Parity>,LocEoSite> locEoSurf;
-    
-    /////////////////////////////////////////////////////////////////
-    
-    DECLARE_UNTRANSPOSABLE_COMP(SimdLocEoCoord,int,0,simdLocEoCoord);
-    
-    using SimdLocEoCoords=DirTens<SimdLocEoCoord>;
-    
-    DECLARE_UNTRANSPOSABLE_COMP(SimdLocEoSite,int64_t,0,simdLocEoSite);
-    
-    SimdLocEoCoords simdLocEoSides;
-    
-    SimdLocEoSite simdLocEoVol;
-    
-    /// Assert that a local e/o site is in the allowed range
-    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
-    void assertIsSimdLocEoSite(const SimdLocEoSite& simdLocEoSite) const
-    {
-      assertIsInRange("simdLocEoSite",simdLocEoSite,simdLocEoVol);
-    }
-    
-    PROVIDE_COORDS_OF_SITE_COMPUTER(SimdLocEo,simdLocEo,simdLocEoSides);
+    using SimdLoc=
+      SubLattice<SubLatticeType::SIMD_LOC>;
     
     /////////////////////////////////////////////////////////////////
     
-    /// Simd surface e/o sizes
-    StackTens<OfComps<Parity,Ori,Dir>,SimdLocEoSite> simdLocEoSurfPerDir;
+    Loc loc;
     
-    /// Volume of the simd e/o surface
-    StackTens<OfComps<Parity>,SimdLocEoSite> simdLocEoSurf;
+    SimdLoc simdLoc;
+    
+    /////////////////////////////////////////////////////////////////
+    
+#define IMPORT_SUBLATTICE_TYPES(SUB)		\
+						\
+    using SUB ## Coord=				\
+      typename SUB::Coord;			\
+						\
+    using SUB ## Coords=			\
+      typename SUB::Coords;			\
+						\
+    using SUB ## EoSite=			\
+      typename SUB::EoSite;			\
+						\
+    using SUB ## Site=				\
+      typename SUB::Site;			\
+						\
+    using SUB ## EoCoords=			\
+      typename SUB::EoCoords
+    
+    IMPORT_SUBLATTICE_TYPES(Loc);
+    
+    IMPORT_SUBLATTICE_TYPES(SimdLoc);
+    
+#undef IMPORT_SUBLATTICE_TYPES
+    
+    /////////////////////////////////////////////////////////////////
+    
+    DynamicTens<OfComps<Parity,LocEoSite>,std::pair<LocEoSite,LocEoSite>,ExecSpace::HOST> eoHaloSiteOfEoSurfSite;
+    
+    /////////////////////////////////////////////////////////////////
+    
+    /// Local origin of the simd rank
+    StackTens<OfComps<SimdRank>,LocCoords> simdRankLocOrigins;
+    
+    // /// Surface e/o sizes
+    // StackTens<OfComps<Parity,Ori,Dir>,LocEoSite> locEoSurfPerDir;
+    
+    // /// Volume of the e/o surface
+    // StackTens<OfComps<Parity>,LocEoSite> locEoSurf;
     
     /////////////////////////////////////////////////////////////////
     
@@ -356,35 +762,62 @@ namespace grill
 						   const SimdLocEoSite& simdLocEoSite,
 						   const SimdRank& simdRank) const
     {
+      /// Computes the local coordinates in the simd e/o lattice
       const SimdLocEoCoords simdLocEoCoords=
-	computeSimdLocEoCoords(simdLocEoSite);
+	simdLoc.computeEoCoords(simdLocEoSite);
       
-      const SimdLocCoords simdLocCoords=
+      /// Coordinates of the site, not having yet fixed the parity
+      const SimdLocCoords simdLocCoordsWithUnfixedParity=
 	simdLocEoCoords*paritySides;
       
+      /// Local coordinates of the simdRank origin
       const LocCoords simdRankLocOrigin=
 	simdRankLocOrigins(simdRank);
       
-      const GlbCoords glbCoords=
-	thisRankOriginGlbCoords+simdRankLocOrigin+simdLocCoords;
+      /// Global coordinates of the site, not having yet fixed the parity
+      const GlbCoords glbCoordsWithUnfixedParity=
+	thisRankOriginGlbCoords+simdRankLocOrigin+simdLocCoordsWithUnfixedParity;
       
-      /// Computes the parity of the resulting coordinate
+      /// Computes the parity of the resulting coordinates
       const Parity glbParity=
-	glbCoordsParity(glbCoords);
+	coordsParity(glbCoordsWithUnfixedParity);
       
+      /// Check if parity needs to be adjusted
       const Parity neededParity=
 	(glbParity+parity)%2;
       
-      return glbCoords+parityCoords(neededParity);
+      return glbCoordsWithUnfixedParity+parityCoords(neededParity);
+    }
+    
+    /// Returns the global coordinates of a given loceo
+    GlbCoords glbCoordsOfLoceo(const Parity& parity,const LocEoSite& locEoSite)
+    {
+      const LocEoCoords locEoCoords=
+	loc.computeEoCoords(locEoSite);
+      
+      const GlbCoords coordsWithUnfixedParity=
+	thisRankOriginGlbCoords+locEoCoords*paritySides;
+      
+      const Parity resultingParity=
+	coordsParity(coordsWithUnfixedParity)%2;
+      
+      /// Check if parity needs to be adjusted
+      const Parity neededParity=
+	(resultingParity+parity)%2;
+      
+      const GlbCoords glbCoords=
+	coordsWithUnfixedParity+parityCoords(neededParity);
+      
+      return glbCoords;
     }
     
     /// Components needed to identify a gloval site within a e/o simd representation
-    using SimdEoRepOfGlbSite=OfComps<Rank,Parity,SimdLocEoSite,SimdRank>;
+    using SimdEoRepOfGlbSite=OfComps<Rank,Parity,typename SimdLoc::EoSite,SimdRank>;
     
     SimdEoRepOfGlbSite computeSimdEoRepOfGlbCoords(const GlbCoords& glbCoords) const
     {
       const RankCoords rankCoords=
-	glbCoords/locSides;
+	glbCoords/loc.sides;
       
       const Rank rank=
 	computeRankSite(rankCoords);
@@ -393,24 +826,64 @@ namespace grill
 	glbCoords-originGlbCoords(rank);
       
       const Parity parity=
-	glbCoordsParity(glbCoords);
+	coordsParity(glbCoords);
       
       const SimdLocCoords simdLocCoords=
-	locCoords%simdLocSides;
+	locCoords%simdLoc.sides;
       
       const SimdRankCoords simdRankCoords=
-	locCoords/simdLocSides;
+	locCoords/simdLoc.sides;
       
       const SimdLocEoCoords simdLocEoCoords=
 	simdLocCoords/paritySides;
       
       const SimdLocEoSite simdLocEoSite=
-	computeSimdLocEoSite(simdLocEoCoords);
+	simdLoc.computeEoSite(simdLocEoCoords);
       
       const SimdRank simdRank=
 	computeSimdRankSite(simdRankCoords);
       
       return {rank,parity,simdLocEoSite,simdRank};
+    }
+    
+    /////////////////////////////////////////////////////////////////
+    
+    /// We loop on orientation, then direction, to scan all sites that
+    /// need to be copied elsewhere
+    void precomputeHaloFiller()
+    {
+      eoHaloSiteOfEoSurfSite.allocate(loc.eoHalo);
+      
+      for(Parity parity=0;parity<2;parity++)
+	{
+	  std::vector<std::pair<LocEoSite,LocEoSite>> list;
+	  
+	  for(LocEoSite eoSite=0;eoSite<loc.eoVol;eoSite++)
+	    for(Ori ori=0;ori<2;ori++)
+	      for(Dir dir=0;dir<NDims;dir++)
+		{
+		  const LocEoSite neighEoSite=
+		    loc.neighbours(parity,eoSite,ori,dir);
+		  
+		  const LocEoSite excess=
+		    (neighEoSite-loc.eoVol);
+		  
+		  if(excess>=0)
+		    {
+		      list.push_back({eoSite,excess});
+		      
+		      LOGGER<<"parity "<<parity<<" eoSite "<<eoSite<<" ori "<<ori<<" dir "<<dir<<" must be copied in "<<excess;
+		    }
+		}
+	  
+	  std::sort(list.begin(),list.end());
+	  
+	  if((int64_t)list.size()!=loc.eoHalo)
+	    CRASH<<"list of sites that must be copied to other ranks e/o halo has size"<<list.size()<<" not agreeing with e/o halo size "<<loc.eoHalo;
+	  
+	  for(int64_t i=0;i<(int64_t)list.size();i++)
+	    eoHaloSiteOfEoSurfSite(parity,LocEoSite(i))=list[i];
+	}
     }
     
     /////////////////////////////////////////////////////////////////
@@ -426,149 +899,11 @@ namespace grill
 		});
     }
     
-    /// Initializes all directions as wrapping
-    static constexpr DirTens<bool> allDirWraps()
-    {
-      return true;
-    }
-    
-    /// Check that a coords set is partitionable by another one
-    template <typename Dividend,
-	      typename Divisor>
-    static void assertIsPartitionable(const DirTens<Dividend>& dividend,
-				      const char* dividendName,
-				      const DirTens<Divisor>& divisor,
-				      const char* divisorName)
-    {
-      const DirTens<bool> isPartitionable=
-	(dividend%divisor==0);
-
-#ifndef __CUDA_ARCH__
-      COMP_LOOP(Dir,dir,
-		{
-		  if(not isPartitionable(dir))
-		    CRASH<<
-		      "in dir "<<dir<<" the "<<dividendName<<" lattice side "<<dividend(dir)<<
-		      " cannot be divided by the "<<divisorName<<" lattice side "<<divisor(dir);
-		});
-#endif
-    };
-    
-    /// Set lattice sides and volume
-    template <typename C,
-	      typename V,
-	      typename G,
-	      typename R>
-    void setSidesAndVol(const char* tag,DirTens<C>& sides,V& vol,const DirTens<G>& dividendSides,const DirTens<R>& nPerDir)
-      
-    {
-      sides=dividendSides/nPerDir;
-      LOGGER<<tag<<" sides: ";
-      printCoords(LOGGER,sides);
-      
-      assertIsPartitionable(dividendSides,"dividend",nPerDir,"divisor");
-      
-      vol=1;
-      for(Dir dir=0;dir<NDims;dir++)
-	vol*=sides(dir);
-    }
-    
-    /// Sets the bulk
-    template <typename S,
-	      typename R,
-	      typename C>
-    static void setBulk(const char* tag,DirTens<C>& bulkSides,S& bulkVol,const DirTens<R>& nPerDir,const DirTens<C>& sides)
-    {
-      bulkSides=sides;
-      
-      bulkVol=1;
-      
-      COMP_LOOP(Dir,dir,
-		{
-		  auto& b=bulkSides(dir);
-		  
-		  if(nPerDir(dir)>1)
-		    b-=2;
-		  
-		  if(b<0)
-		    b=0;
-		  
-		  bulkVol*=b;
-		});
-      
-      LOGGER<<tag<<" bulk sides: ";
-      printCoords(LOGGER,bulkSides);
-      
-      LOGGER<<tag<<" bulk vol: "<<bulkVol;
-    }
-    
-    /// Set the surfaces
-    template <typename S,
-	      typename R,
-	      typename C>
-    static void setSurfaces(const char* tag,S& surf,DirTens<S>& surfPerDir,const S& vol,const S& bulk,const DirTens<R>& nPerDir,const DirTens<C>& sides)
-    {
-      surf=vol-bulk;
-      
-      LOGGER<<tag<<" Surf: "<<surf;
-      
-      COMP_LOOP(Dir,dir,
-		{
-		  surfPerDir(dir)=
-		    (nPerDir(dir)>1)?
-		    (vol/sides(dir)):
-		    0;
-		});
-      
-      LOGGER<<tag<<" Surf per dir: ";
-      printCoords(LOGGER,surfPerDir);
-    }
-    
-    /// Sets the e/o volume
-    template <typename Es,
-	      typename S,
-	      typename Ev,
-	      typename V>
-    void setEoSidesAndVol(const char* tag,DirTens<Es>& eoSides,Ev& eoVol,const DirTens<S>& sides,const V& vol)
-    {
-      // Set the e/o sides
-      
-      eoSides=sides/paritySides;
-      LOGGER<<tag<<" e/o sides: ";
-      printCoords(LOGGER,eoSides);
-      
-      assertIsPartitionable(sides,tag,paritySides,"parity");
-      
-      eoVol=vol/2;
-    }
-    
-    /// Set the e/o surface
-    template <typename Es,
-	      typename Esd,
-	      typename S,
-	      typename Sd>
-    void setEoSurfaces(const char* tag,Es& eoSurf,Esd& eoSurfPerDir,const S& surf,const Sd& surfPerDir)
-    {
-      eoSurf=surf/2;
-      
-      eoSurfPerDir=surfPerDir/2;
-      if(surfPerDir(parityDir)%2)
-	{
-	  eoSurfPerDir(BW,thisRankOriginParity,parityDir)++;
-	  eoSurfPerDir(FW,oppositeParity(thisRankOriginParity),parityDir)++;
-	}
-      
-      for(Parity parity=0;parity<2;parity++)
-	{
-	  LOGGER<<"Parity: "<<parity;
-	  
-	  LOGGER<<tag<<" e/o surface: "<<eoSurf(parity);
-	  LOGGER<<tag<<" e/o surface per ori dir: ";
-	  for(Ori ori=0;ori<2;ori++)
-	    for(Dir dir=0;dir<4;dir++)
-	      LOGGER<<" ori: "<<ori<<" dir: "<<dir<<" "<<eoSurfPerDir(parity,ori,dir);
-	}
-    }
+    // /// Initializes all directions as wrapping
+    // static constexpr DirTens<bool> allDirWraps()
+    // {
+    //   return true;
+    // }
     
     /// Initialize a lattice
     Lattice(const GlbCoords& glbSides,
@@ -584,9 +919,14 @@ namespace grill
       
       // Set the global and rank lattices
       
+      LOGGER<<"glbSides: ";
+      printCoords(LOGGER,glbSides);
+      
       glbVol=1;
       for(Dir dir=0;dir<NDims;dir++)
 	glbVol*=glbSides(dir);
+      
+      LOGGER<<"glbVol: "<<glbVol;
       
       glbIsNotPartitioned=(nRanksPerDir==1);
       
@@ -612,13 +952,28 @@ namespace grill
       for(Rank rank=0;rank<nRanks;rank++)
 	{
 	  rankCoords(rank)=computeRankCoords(rank);
-	  originGlbCoords(rank)=rankCoords(rank)*locSides;
-	  originParity(rank)=glbCoordsParity(originGlbCoords(rank));
+	  originGlbCoords(rank)=rankCoords(rank)*loc.sides;
+	  originParity(rank)=coordsParity(originGlbCoords(rank));
 	}
       
       thisRankCoords=rankCoords(Rank(Mpi::rank));
       thisRankOriginGlbCoords=originGlbCoords(Rank(Mpi::rank));
       thisRankOriginParity=originParity(Rank(Mpi::rank));
+      
+      LOGGER<<"Neighbours rank:";
+      for(Ori ori=0;ori<2;ori++)
+	for(Dir dir=0;dir<NDims;dir++)
+	  {
+	    const RankCoords neighRankCoords=
+	      (thisRankCoords+moveOffset[ori]*U::template versor<RankCoord>(dir)+nRanksPerDir)%nRanksPerDir;
+	    
+	    const Rank neighRank=
+	      U::template computeSiteOfCoordsInBoxOfSides<Rank>(neighRankCoords,nRanksPerDir);
+	    
+	    LOGGER<<" ori "<<ori<<" dir "<<dir<<": "<<neighRank;
+	    
+	    rankNeighbours(ori,dir)=neighRank;
+	  }
       
       LOGGER<<"Coordinates of the rank: ";
       printCoords(LOGGER,thisRankCoords);
@@ -644,7 +999,7 @@ namespace grill
       COMP_LOOP(SimdRank,simdRank,
 		{
 		  simdRankCoords(simdRank)=computeSimdRankCoords(simdRank);
-		  simdRankLocOrigins(simdRank)=simdRankCoords(simdRank)*simdLocSides;
+		  simdRankLocOrigins(simdRank)=simdRankCoords(simdRank)*simdLoc.sides;
 		});
       
 #ifndef __CUDA_ARCH__
@@ -688,31 +1043,15 @@ namespace grill
 		});
 #endif
       
-      assertIsPartitionable(locSides,"local",paritySides,"parity");
+      assertIsPartitionable(loc.sides,"local",paritySides,"parity");
       
       /////////////////////////////////////////////////////////////////
       
-      setSidesAndVol("Local",locSides,locVol,glbSides,nRanksPerDir);
+      loc.init(*this,nRanksPerDir);
       
-      setBulk("Local",bulkSides,bulkVol,nRanksPerDir,locSides);
+      simdLoc.init(*this,nGlbSimdRanks);
       
-      setSurfaces("Local",locSurf,locSurfPerDir,locVol,bulkVol,nRanksPerDir,locSides);
-      
-      setEoSidesAndVol("Local",locEoSides,locEoVol,locSides,locVol);
-      
-      setEoSurfaces("Local",locEoSurf,locEoSurfPerDir,locSurf,locSurfPerDir);
-      
-      /////////////////////////////////////////////////////////////////
-      
-      setSidesAndVol("Simd",simdLocSides,simdLocVol,locSides,nSimdRanksPerDir);
-      
-      setBulk("Simd",simdBulkSides,simdBulkVol,nGlbSimdRanks,simdLocSides);
-      
-      setSurfaces("Simd",simdLocSurf,simdLocSurfPerDir,simdLocVol,simdBulkVol,nGlbSimdRanks,simdLocSides);
-      
-      setEoSidesAndVol("Simd",simdLocEoSides,simdLocEoVol,simdLocSides,simdLocVol);
-      
-      setEoSurfaces("Simd",simdLocEoSurf,simdLocEoSurfPerDir,simdLocSurf,simdLocSurfPerDir);
+      precomputeHaloFiller();
       
       /////////////////////////////////////////////////////////////////
       
