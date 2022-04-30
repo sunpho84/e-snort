@@ -381,7 +381,7 @@ namespace grill
     /// Components needed to identify a gloval site within a e/o simd representation
     using SimdEoRepOfGlbSite=OfComps<Rank,Parity,SimdLocEoSite,SimdRank>;
     
-    SimdEoRepOfGlbSite computeSimdEoRepOfLocSiteOfGlbCoords(const GlbCoords& glbCoords) const
+    SimdEoRepOfGlbSite computeSimdEoRepOfGlbCoords(const GlbCoords& glbCoords) const
     {
       const RankCoords rankCoords=
 	glbCoords/locSides;

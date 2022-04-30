@@ -136,7 +136,8 @@ namespace grill
     }
     
     /// Assign from another expression
-    template <typename Rhs>
+    template <typename Rhs,
+	      ENABLE_THIS_TEMPLATE_IF(not std::is_same_v<T,Rhs>)>
     constexpr INLINE_FUNCTION
     T& operator=(const Node<Rhs>& u)
     {
@@ -152,8 +153,7 @@ namespace grill
       return (*this)=scalar(value);
     }
     
-    /// Define the assignment operator with the same expression type,
-    /// in terms of the templated version
+    /// Define the assignment operator with the same expression type
     constexpr INLINE_FUNCTION
     Node& operator=(const Node& oth)
     {

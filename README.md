@@ -236,12 +236,15 @@ DONE
 - Grill
 - Fields
 - More rigorous lhs vs rhs assignment comps requirement
+- Creates a SubLattice class
+- Halos
+- Neighbors
 
 TODO
 ---
-- Halos
 
-- Neighbors
+- how to pass a generic site comps?
+
 - Reducer from nissa
 - MPI io
 

@@ -236,7 +236,7 @@ g=1;
     const GlbCoords glbCoords=
       lattice.computeGlbCoordsOfSimdEoRepOfLocSite(parity,simdLocEoSite,simdRank);
     
-    const auto [rankP,parityP,simdLocEoSiteP,simdRankP]=lattice.computeSimdEoRepOfLocSiteOfGlbCoords(glbCoords);
+    const auto [rankP,parityP,simdLocEoSiteP,simdRankP]=lattice.computeSimdEoRepOfGlbCoords(glbCoords);
     
     auto l=LOGGER;
     l<<"parity "<<parity<<" simdLocEoSite "<<simdLocEoSite<<" simdRank "<<simdRank<<" glbCoords: ";
@@ -266,7 +266,7 @@ g=1;
 		
 		GlbCoords neighCoords=lattice.shiftedCoords(glbCoords,ori,dir);
 		
-		const auto [rankP,parityP,simdLocEoSiteP,simdRankP]=lattice.computeSimdEoRepOfLocSiteOfGlbCoords(neighCoords);
+		const auto [rankP,parityP,simdLocEoSiteP,simdRankP]=lattice.computeSimdEoRepOfGlbCoords(neighCoords);
 		
 		auto l=LOGGER;
 		l<<"   ";
@@ -324,7 +324,7 @@ g=1;
 						      {
 							GlbCoords neighCoords=lattice.shiftedCoords(glbCoords,ori,dir);
 							
-							const auto [rankP,parityP,simdLocEoSiteP,simdRankP]=lattice.computeSimdEoRepOfLocSiteOfGlbCoords(neighCoords);
+							const auto [rankP,parityP,simdLocEoSiteP,simdRankP]=lattice.computeSimdEoRepOfGlbCoords(neighCoords);
 							
 							auto l=LOGGER;
 							l<<"   ";

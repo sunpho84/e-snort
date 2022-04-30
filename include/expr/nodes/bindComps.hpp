@@ -92,6 +92,13 @@ namespace grill
     /// Import assignment operator
     using Base::operator=;
     
+    This& operator=(const This& oth)
+    {
+      *static_cast<Base*>(this)=*static_cast<const Base*>(&oth);
+      
+      return *this;
+    }
+    
     /// Bound components
     using BoundComps=
       CompsList<Bc...>;
