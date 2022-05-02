@@ -21,11 +21,11 @@ namespace grill
   /// Dispatch the internal index calculation
   ///
   /// This works when the passed components are already well ordered
-  template <typename DynamicComps,
+  template <typename...D,
 	    typename...C,
 	    typename...Index>
   HOST_DEVICE_ATTRIB INLINE_FUNCTION
-  auto index(const DynamicComps& dynamicSizes,
+  auto index(const CompsList<D...>& dynamicSizes,
 	     const BaseComp<C,Index>&...comps)
   {
     /// Returned type

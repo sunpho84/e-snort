@@ -242,7 +242,7 @@ DONE
 
 TODO
 ---
-
+- when simdifying should not we reduce nelements? bindcomps is not doing it
 - how to pass a generic site comps?
 
 - Reducer from nissa
