@@ -7,13 +7,12 @@
 
 /// \file grill/field.hpp
 
-#include <mpi.h>
-
 #include <expr/assign/executionSpace.hpp>
 #include <expr/comps/comps.hpp>
 #include <expr/nodes/tensRef.hpp>
 #include <lattice/fieldCompsProvider.hpp>
 #include <lattice/lattice.hpp>
+#include <resources/Mpi.hpp>
 
 namespace grill
 {
@@ -222,7 +221,7 @@ namespace grill
       if(not haloFlag)
 	CRASH<<"Trying to synchronize the halo but they are not allocated";
       
-      LOGGER<<"Updating the halo";
+      // LOGGER<<"Updating the halo. Output buffer is pre-set to -6, Input buffer is preset to -7. Halo is preset to -8";
       
       using LocEoSite=typename L::Loc::EoSite;
       using Parity=typename L::Parity;
@@ -239,6 +238,11 @@ namespace grill
 	      DynamicTens<OfComps<Parity,LocEoSite,C...>,Fund,ES> bufferOut(locEoHalo);
 	      DynamicTens<OfComps<Parity,LocEoSite,C...>,Fund,ES> bufferIn(locEoHalo);
 	      
+	      // bufferIn=-7;
+	      // bufferOut=-6;
+	      
+	      // ALLOW_ALL_RANKS_TO_PRINT_FOR_THIS_SCOPE;
+	      
 	      int iRequest=0;
 	      for(typename L::Parity parity=0;parity<2;parity++)
 		{
@@ -246,7 +250,12 @@ namespace grill
 						       [&bufferOut,parity,this](const LocEoSite& siteRemappingId)
 						       {
 							 const auto& r=lattice->eoHaloSiteOfEoSurfSite(parity,siteRemappingId);
+							 // const auto source=r.first;
+							 // const auto dest=r.second;
+							 // const _Fund& p=bufferOut(parity,dest,C(0)...);
+							 // LOGGER<<"Filling buffer, parity "<<parity<<" dest "<<dest<<" with source "<<source<<" before: "<<p;
 							 bufferOut(parity,r.second)=data(parity,r.first);
+							 // LOGGER<<" "<<p;
 						       });
 		  
 		  for(Ori ori=0;ori<2;ori++)
@@ -266,6 +275,8 @@ namespace grill
 			  int dest=lattice->rankNeighbours(ori,dir)();
 			  int source=dest;
 			  
+			  // LOGGER<<"Rank "<<Mpi::rank<<" parity "<<parity<<" ori "<<ori<<" dir "<<dir<<" sending to rank "<<dest<<" with tag "<<sendtag<<" receiving from "<<source<<" with tag "<<recvtag<<" sending data "<<((_Fund*)sendbuf-bufferOut.storage)<<" receiving into "<<((_Fund*)recvbuf-bufferIn.storage)<<" nbytes: "<<sendcount;
+			  
 			  MPI_Isend(sendbuf,sendcount,MPI_CHAR,dest,sendtag,MPI_COMM_WORLD,&requests[iRequest++]);
 			  MPI_Irecv(recvbuf,recvcount,MPI_CHAR,source,recvtag,MPI_COMM_WORLD,&requests[iRequest++]);
 			}
@@ -278,7 +289,19 @@ namespace grill
 					  [this,parity,&bufferIn](const LocEoSite& haloSite)
 					  {
 					    const LocEoSite dest=haloSite+lattice->loc.eoVol;
+					    // const _Fund& p=data(parity,dest,C(0)...);
+					    // LOGGER<<"Filling halo, parity "<<parity<<" site "<<dest<<" before: "<<p;
 					    data(parity,dest)=bufferIn(parity,haloSite);
+					    // LOGGER<<" "<<p;
+					    
+					    // LOGGER<<"Retry";
+					    // auto lhs=data(parity,dest).simdify();
+					    //auto rhs=scalar(2);
+					    
+					    // const auto& q=lhs(grill::NonSimdifiedComp<int, 1>(0));
+					    // LOGGER<<" once simdify points to "<<&q;
+					    // lhs=2;
+					    // LOGGER<<" After reassigning: "<<p;
 					  });
 	    }
 	}

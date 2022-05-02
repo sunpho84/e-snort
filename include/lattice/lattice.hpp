@@ -588,16 +588,16 @@ namespace grill
 	  const Coords coords=
 	    coordsWithUnfixedParity+lattice.parityCoords(neededParity);
 	  
-	  {
-	    auto l=LOGGER;
-	    l<<" coords: ";
-	    printCoords(l,coords);
-	  }
+	  // {
+	  //   auto l=LOGGER;
+	  //   l<<" coords: ";
+	  //   printCoords(l,coords);
+	  // }
 	  
 	  for(Ori ori=0;ori<2;ori++)
 	    for(Dir dir=0;dir<NDims;dir++)
 	      {
-		LOGGER<<"  ori "<<ori<<" dir "<<dir;
+		// LOGGER<<"  ori "<<ori<<" dir "<<dir;
 		
 		/// Trivial shift of current site coord in the direction dir and orientation ori
 		const Coords triviallyShiftedCoords
@@ -618,11 +618,11 @@ namespace grill
 		const Coord& triviallyShiftedCoord=
 		  triviallyShiftedCoords(dir);
 		
-		{
-		  auto l=LOGGER;
-		  l<<"  triviallyShiftedCoords: ";
-		  printCoords(l,triviallyShiftedCoords);
-		}
+		// {
+		//   auto l=LOGGER;
+		//   l<<"  triviallyShiftedCoords: ";
+		//   printCoords(l,triviallyShiftedCoords);
+		// }
 		
 		EoSite& n=neighbours(parity,eoSite,ori,dir);
 		
@@ -872,7 +872,7 @@ namespace grill
 		    {
 		      list.push_back({eoSite,excess});
 		      
-		      LOGGER<<"parity "<<parity<<" eoSite "<<eoSite<<" ori "<<ori<<" dir "<<dir<<" must be copied in "<<excess;
+		      // LOGGER<<"parity "<<parity<<" eoSite "<<eoSite<<" ori "<<ori<<" dir "<<dir<<" must be copied in "<<excess;
 		    }
 		}
 	  
