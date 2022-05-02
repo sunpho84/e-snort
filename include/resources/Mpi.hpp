@@ -19,12 +19,13 @@
 #include <metaprogramming/templateEnabler.hpp>
 #include <serialize/binarize.hpp>
 #include <resources/MpiHiddenVariables.hpp>
+#include <resources/scopeDoer.hpp>
 #include <resources/timerGlobalVariablesDeclarations.hpp>
 
-  /// Makes all thread print for current scope
-#define ALLOWS_ALL_RANKS_TO_PRINT_FOR_THIS_SCOPE(LOGGER)		\
-  SET_FOR_CURRENT_SCOPE(LOGGER_ALL_RANKS_PRINT,LOGGER.onlyMasterRankPrint,false)
-  
+  /// Makes all ranks print for current scope
+#define ALLOW_ALL_RANKS_TO_PRINT_FOR_THIS_SCOPE				\
+  SET_FOR_CURRENT_SCOPE(Logger::onlyMasterRankPrint,false)
+
   /// Crash on MPI error, providing a meaningful error
 # define MPI_CRASH_ON_ERROR(ARGS...)					\
     Mpi::crashOnError(__LINE__,__FILE__,__PRETTY_FUNCTION__,ARGS)
