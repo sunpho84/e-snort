@@ -119,12 +119,16 @@ namespace grill
     /// Components that have been bound
     const BoundComps boundComps;
     
-#define PROVIDE_SIMDIFY(ATTRIB)					\
-    /*! Returns a ATTRIB simdified view */			\
-    INLINE_FUNCTION						\
-    auto simdify() ATTRIB					\
-    {								\
-      return bindComps(SUBNODE(0).simdify(),boundComps);	\
+#define PROVIDE_SIMDIFY(ATTRIB)						\
+    /*! Returns a ATTRIB simdified view */				\
+    INLINE_FUNCTION							\
+    auto simdify() ATTRIB						\
+    {									\
+      if constexpr(0)							\
+	LOGGER<<" simdifying binder from "<<typeid(SUBNODE(0)).name()	\
+	      <<" to "<<typeid(SUBNODE(0).simdify()).name();		\
+      									\
+      return bindComps(SUBNODE(0).simdify(),boundComps);		\
     }
     
     PROVIDE_SIMDIFY(const);
@@ -132,7 +136,7 @@ namespace grill
     PROVIDE_SIMDIFY(/* non const */);
     
 #undef PROVIDE_SIMDIFY
-
+    
 #define PROVIDE_GET_REF(ATTRIB)					\
     /*! Returns a reference */					\
     INLINE_FUNCTION						\
