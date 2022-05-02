@@ -254,15 +254,15 @@ namespace grill
 		      if(lattice->nRanksPerDir(dir)>1)
 			{
 			  const LocEoSite& sendOffset=lattice->loc.eoHaloOffsets(parity,ori,dir);
-			  const LocEoSite& recvOffset=lattice->loc.eoHaloOffsets(parity,oppositeOri(ori),dir);
+			  const LocEoSite& recvOffset=lattice->loc.eoHaloOffsets(parity,ori,dir);
 			  const LocEoSite& nSites=lattice->loc.eoHaloPerDir(ori,parity,dir);
 			  
 			  void* sendbuf=&bufferOut(parity,sendOffset,C(0)...);
 			  int sendcount=nSites*(C::sizeAtCompileTime*...);
 			  void* recvbuf=&bufferIn(parity,recvOffset,C(0)...);
 			  int recvcount=sendcount;
-			  int sendtag=0;
-			  int recvtag=0;
+			  int sendtag=index({},parity,ori,dir);
+			  int recvtag=index({},parity,oppositeOri(ori),dir); ///Here we switch the orientation...
 			  int dest=lattice->rankNeighbours(ori,dir)();
 			  int source=dest;
 			  
