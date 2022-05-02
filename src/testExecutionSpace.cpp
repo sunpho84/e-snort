@@ -15,6 +15,8 @@ using namespace grill;
 
 /////////////////////////////////////////////////////////////////
 
+constexpr int NDims=4;
+
 DECLARE_TRANSPOSABLE_COMP(Spin,int,4,spin);
 DECLARE_TRANSPOSABLE_COMP(Span,int,4,span);
 DECLARE_UNTRANSPOSABLE_COMP(SpaceTime,int64_t,0,spaceTime);
@@ -172,7 +174,7 @@ namespace Tests
 
 void testGrill()
 {
-  using U4D=Universe<4>;
+  using U4D=Universe<NDims>;
   using Dir=U4D::Dir;
   
   using Lattice=Lattice<U4D>;
@@ -200,36 +202,63 @@ void testGrill()
     using F=Field<OfComps<Dir>,double,Lattice,LatticeCoverage::EVEN_ODD,FieldLayout::SERIAL,ExecSpace::HOST>;
     
     F f(lattice,true);
+
+    // {
+    //   ALLOW_ALL_RANKS_TO_PRINT_FOR_THIS_SCOPE;
+    //   LOGGER<<"This rank: "<<Mpi::rank;
+    //   LOGGER<<"This rank coords:";
+    //   for(Dir dir=0;dir<NDims;dir++)
+    // 	LOGGER<<lattice.thisRankCoords(dir);
+    //   LOGGER<<"This rank origin coords:";
+    //   for(Dir dir=0;dir<NDims;dir++)
+    // 	LOGGER<<lattice.thisRankOriginGlbCoords(dir);
+    // }
     
     loopOnAllComps<CompsList<Parity,LocEoSite>>(std::make_tuple(lattice.loc.eoVol),[&f,&lattice](const Parity& parity,const LocEoSite& locEoSite)
     {
       f(parity,locEoSite)=lattice.glbCoordsOfLoceo(parity,locEoSite);
+      
+      // ALLOW_ALL_RANKS_TO_PRINT_FOR_THIS_SCOPE;
+      
+      // LOGGER<<"Site parity "<<parity<<" locEoSite "<<locEoSite<<" coords:";
+      // for(Dir dir=0;dir<NDims;dir++)
+      // 	LOGGER<<" "<<lattice.glbCoordsOfLoceo(parity,locEoSite)(dir);
     });
     
-    loopOnAllComps<CompsList<Parity,LocEoSite>>(std::make_tuple(lattice.loc.eoHalo),[&f,&lattice](const Parity& parity,const LocEoSite& haloEoSite)
-    {
-      const LocEoSite i=haloEoSite+lattice.loc.eoVol;
-      f(parity,i)=-1;
-    });
+    // loopOnAllComps<CompsList<Parity,LocEoSite>>(std::make_tuple(lattice.loc.eoHalo),[&f,&lattice](const Parity& parity,const LocEoSite& haloEoSite)
+    // {
+    //   const LocEoSite i=haloEoSite+lattice.loc.eoVol;
+    //   f(parity,i)=-8;
+    // });
     
+    // auto fbs=f(Parity(1),LocEoSite(648)).simdify();
+    // auto fs=f.simdify();
+    //     // auto test=(decltype(fs)*){};
+    // const Parity bP=std::get<0>(fbs.boundComps);
+    // LOGGER<<"Bound parity after simdifying: "<<bP;
+    // LOGGER<<"ANNA: "<<std::get<0>(f.data.getDynamicSizes())<<" "<<std::get<0>(fs.data.getDynamicSizes())<<" "<<std::get<0>(std::get<0>(fbs.subNodes).data.getDynamicSizes());
+    // //
     f.updateHalo();
     
     loopOnAllComps<CompsList<Ori,Dir,Parity,LocEoSite>>(std::make_tuple(lattice.loc.eoVol),[&f,&lattice](const Ori& ori,const Dir& dir,const Parity& parity,const LocEoSite& locEoSite)
     {
+      const Parity oppoParity=lattice.oppositeParity(parity);
+      
       LOGGER<<"Coordinates of site par "<<parity<<" loceo "<<locEoSite;
-      for(Dir dir=0;dir<4;dir++)
+      for(Dir dir=0;dir<NDims;dir++)
 	LOGGER<<" "<<f(parity,locEoSite,dir);
       
-      const LocEoSite neigh=lattice.loc.neighbours(parity,ori,dir,locEoSite);
+      const LocEoSite neigh=lattice.loc.eoNeighbours(parity,ori,dir,locEoSite);
       
       const bool isNonLoc=neigh>=lattice.loc.eoVol;
       
       const GlbCoords neighCoords=
 	(lattice.glbSides+lattice.glbCoordsOfLoceo(parity,locEoSite)+moveOffset[ori]*U4D::template versor<GlbCoord>(dir))%lattice.glbSides;
       
-      LOGGER<<" ori "<<ori<<" dir "<<dir<<" parity "<<parity<<" locEoSite "<<locEoSite<<" neigh "<<neigh<<" isNonLoc: "<<isNonLoc<<" expected, obtained:";
+      const double& p=f(oppoParity,neigh,Dir(0));
+      LOGGER<<" ori "<<ori<<" dir "<<dir<<" parity "<<parity<<" locEoSite "<<locEoSite<<" neigh "<<neigh<<" "<<&p<<"isNonLoc: "<<isNonLoc<<" expected, obtained:";
       for(Dir mu=0;mu<4;mu++)
-	LOGGER<<" "<<neighCoords(mu)<<" "<<f(parity,neigh,mu);
+	LOGGER<<" "<<neighCoords(mu)<<" "<<f(oppoParity,neigh,mu);
     });
     
     //grill::Node<grill::CompsBinder<std::tuple<grill::Lattice<grill::Universe<4> >::Parity, grill::Lattice<grill::Universe<4> >::SubLattice<grill::Lattice<grill::Universe<4> >::SubLatticeType::LOC>::EoSite>, std::tuple<grill::TensRef<std::tuple<grill::Lattice<grill::Universe<4> >::Parity, grill::Lattice<grill::Universe<4> >::SubLattice<grill::Lattice<grill::Universe<4> >::SubLatticeType::LOC>::EoSite, grill::NonSimdifiedComp<int, 1> >,double, grill::ExecSpace::HOST>&&>, std::tuple<grill::NonSimdifiedComp<int, 1> >,double> > [1];
@@ -296,9 +325,9 @@ g=1;
 						    const Parity oppoParity=lattice.oppositeParity(parity);
 						    
 						    for(Ori ori=0;ori<2;ori++)
-						      for(Dir dir=0;dir<4;dir++)
+						      for(Dir dir=0;dir<NDims;dir++)
 							{
-							  LocEoSite n=lattice.loc.neighbours(parity,locEoSite,ori,dir);
+							  LocEoSite n=lattice.loc.eoNeighbours(parity,locEoSite,ori,dir);
 							  auto l=LOGGER;
 							  l<<" par "<<parity<<" ori "<<ori<<" dir "<<dir<<" neigh "<<n;
 							  if(n>=lattice.loc.eoVol)
@@ -333,7 +362,7 @@ g=1;
 						  {
     for(Ori ori=0;ori<2;ori++)
       {
-	for(Dir dir=0;dir<4;dir++)
+	for(Dir dir=0;dir<NDims;dir++)
 	  {
 	    bool isLoc=true;
 	    
@@ -461,7 +490,7 @@ g=1;
   // LOGGER<<"Bulk volume:       "<<glbGrill.bulkVol();
   // LOGGER<<"Total halo volume: "<<glbGrill.totHaloVol();
   // for(Ori ori=0;ori<2;ori++)
-  //   for(Dir dir=0;dir<4;dir++)
+  //   for(Dir dir=0;dir<NDims;dir++)
   //     LOGGER<<" halo offset("<<ori<<","<<dir<<"): "<<glbGrill.haloOffset(ori,dir);
 }
 
