@@ -555,14 +555,15 @@ namespace grill
       
       /////////////////////////////////////////////////////////////////
       
-      DynamicTens<OfComps<Parity,EoSite,Ori,Dir>,EoSite,ExecSpace::HOST> neighbours;
+      /// Eo neighbor of a site of a given parity, pointing to an opposite-parity site
+      DynamicTens<OfComps<Parity,EoSite,Ori,Dir>,EoSite,ExecSpace::HOST> eoNeighbours;
       
       template <typename R>
-      void setNeighbours(const Lattice& lattice,const DirTens<R>& nPerDir)
+      void setEoNeighbours(const Lattice& lattice,const DirTens<R>& nPerDir)
       {
 	auto allocateSize=std::make_tuple(eoVol);
 	
-	neighbours.allocate(allocateSize);
+	eoNeighbours.allocate(allocateSize);
 	
 	loopOnAllComps<CompsList<Parity,EoSite>>(allocateSize,[this,&lattice,&nPerDir](const Parity& parity,const EoSite& eoSite)
 	{
@@ -624,11 +625,11 @@ namespace grill
 		//   printCoords(l,triviallyShiftedCoords);
 		// }
 		
-		EoSite& n=neighbours(parity,eoSite,ori,dir);
+		EoSite& n=eoNeighbours(parity,eoSite,ori,dir);
 		
 		if(triviallyShiftedCoord<0 or triviallyShiftedCoord>=sides(dir))
 		  {
-		    LOGGER<<"  exceeding local sides";
+		    // LOGGER<<"  exceeding local sides";
 		    
 		    /// Sets to zero the shifted coordinate in the excess direction
 		    const Coords shiftedCoords
@@ -637,11 +638,11 @@ namespace grill
 			return (dir==extDir)?Coord(0):triviallyShiftedCoords(dir);
 		      });
 		    
-		    {
-		      auto l=LOGGER;
-		      l<<"  shiftedCoords: ";
-		      printCoords(l,shiftedCoords);
-		    }
+		    // {
+		    //   auto l=LOGGER;
+		    //   l<<"  shiftedCoords: ";
+		    //   printCoords(l,shiftedCoords);
+		    // }
 		    
 		    const Coords haloSides
 		      ([this,extDir=dir](const Dir& dir)
@@ -651,12 +652,12 @@ namespace grill
 		    const EoSite posInEoHalo=
 		      U::template computeSiteOfCoordsInBoxOfSides<Site>(shiftedCoords,haloSides)/2;
 		    
-		    {
-		      auto l=LOGGER;
-		      l<<"  computing neigh in halo of sides: ";
-		      printCoords(l,haloSides);
-		      l<<" result: "<<eoHaloOffsets(oppoParity,ori,dir)+posInEoHalo;
-		    }
+		    // {
+		    //   auto l=LOGGER;
+		    //   l<<"  computing neigh in halo of sides: ";
+		    //   printCoords(l,haloSides);
+		    //   l<<" result: "<<eoHaloOffsets(oppoParity,ori,dir)+posInEoHalo;
+		    // }
 		    
 		    if(posInEoHalo>=eoHaloPerDir(oppoParity,ori,dir))
 		      CRASH<<"Neighbour for site of parity "<<parity<<" in the orientation "<<ori<<" direction "<<dir<<
@@ -665,6 +666,8 @@ namespace grill
 		    n=eoVol+
 		      eoHaloOffsets(oppoParity,ori,dir)+
 		      posInEoHalo;
+		    
+		    // LOGGER<<" pointing to "<<n;
 		  }
 		else
 		  n=computeEoSite(triviallyShiftedCoords/lattice.paritySides);
@@ -691,7 +694,7 @@ namespace grill
 	
 	setEoHalo(lattice);
 	
-	setNeighbours(lattice,nPerDir);
+	setEoNeighbours(lattice,nPerDir);
       }
     };
     
@@ -863,7 +866,7 @@ namespace grill
 	      for(Dir dir=0;dir<NDims;dir++)
 		{
 		  const LocEoSite neighEoSite=
-		    loc.neighbours(parity,eoSite,ori,dir);
+		    loc.eoNeighbours(parity,eoSite,ori,dir);
 		  
 		  const LocEoSite excess=
 		    (neighEoSite-loc.eoVol);
@@ -952,7 +955,7 @@ namespace grill
       for(Rank rank=0;rank<nRanks;rank++)
 	{
 	  rankCoords(rank)=computeRankCoords(rank);
-	  originGlbCoords(rank)=rankCoords(rank)*loc.sides;
+	  originGlbCoords(rank)=rankCoords(rank)*glbSides/nRanksPerDir; // Don't use loc.sides since not initialized here
 	  originParity(rank)=coordsParity(originGlbCoords(rank));
 	}
       
