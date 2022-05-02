@@ -258,7 +258,7 @@ namespace grill
 			  const LocEoSite& nSites=lattice->loc.eoHaloPerDir(ori,parity,dir);
 			  
 			  void* sendbuf=&bufferOut(parity,sendOffset,C(0)...);
-			  int sendcount=nSites*(C::sizeAtCompileTime*...);
+			  int sendcount=nSites*(C::sizeAtCompileTime*...)*sizeof(_Fund);
 			  void* recvbuf=&bufferIn(parity,recvOffset,C(0)...);
 			  int recvcount=sendcount;
 			  int sendtag=index({},parity,ori,dir);
