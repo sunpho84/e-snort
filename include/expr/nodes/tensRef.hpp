@@ -125,7 +125,7 @@ namespace grill
     // /Move constructor
     INLINE_FUNCTION HOST_DEVICE_ATTRIB
     TensRef(TensRef&& oth) :
-      TensRef(oth.storage,nElements,dynamicSizes)
+      TensRef(oth.storage,oth.nElements,oth.dynamicSizes)
     {
     }
     
