@@ -11,6 +11,7 @@
 #include <expr/comps/comps.hpp>
 #include <expr/nodes/tensRef.hpp>
 #include <lattice/fieldCompsProvider.hpp>
+#include <lattice/fieldParity.hpp>
 #include <lattice/lattice.hpp>
 #include <resources/Mpi.hpp>
 
@@ -41,7 +42,8 @@ namespace grill
   struct THIS :
     DynamicCompsProvider<FIELD_COMPS>,
     DetectableAsField,
-    // SubNodes<_E...>,
+    FieldParity<LATTICE,LC>,
+  // SubNodes<_E...>,
     BASE
   {
     /// Import the base expression
