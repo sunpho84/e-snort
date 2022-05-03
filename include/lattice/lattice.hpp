@@ -555,9 +555,10 @@ namespace grill
       
       /////////////////////////////////////////////////////////////////
       
-      /// Eo neighbor of a site of a given parity, pointing to an opposite-parity site
+      /// Eo neighbour of a site of a given parity, pointing to an opposite-parity site
       DynamicTens<OfComps<Parity,EoSite,Ori,Dir>,EoSite,ExecSpace::HOST> eoNeighbours;
       
+      /// Sets the neighbours
       template <typename R>
       void setEoNeighbours(const Lattice& lattice,const DirTens<R>& nPerDir)
       {

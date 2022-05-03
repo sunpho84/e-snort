@@ -239,9 +239,12 @@ DONE
 - Creates a SubLattice class
 - Halos
 - Neighbors
+- Rationalize the sites filling to split parity
 
 TODO
 ---
+- simdified shift
+- add shift method, which returns some proxy to select the opposite parity site, with shifted coords
 - when simdifying should not we reduce nelements? bindcomps is not doing it
 - how to pass a generic site comps?
 

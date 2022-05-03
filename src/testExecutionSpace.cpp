@@ -197,12 +197,28 @@ void testGrill()
   const Dir parityDir=1;
   
   Lattice lattice(glbSides,rankSides,simdRankSides,parityDir);
-
+  
+  {
+    using F=Field<OfComps<Dir>,double,Lattice,LatticeCoverage::EVEN,FieldLayout::SERIAL,ExecSpace::HOST>;
+    
+    F f(lattice,true);
+    f=1;
+    f.updateHalo();
+  }
+  
+  {
+    using F=Field<OfComps<Dir>,double,Lattice,LatticeCoverage::EVEN,FieldLayout::GPU,ExecSpace::HOST>;
+    
+    F f(lattice,true);
+    f=1;
+    f.updateHalo();
+  }
+  
   {
     using F=Field<OfComps<Dir>,double,Lattice,LatticeCoverage::EVEN_ODD,FieldLayout::SERIAL,ExecSpace::HOST>;
     
     F f(lattice,true);
-
+    
     // {
     //   ALLOW_ALL_RANKS_TO_PRINT_FOR_THIS_SCOPE;
     //   LOGGER<<"This rank: "<<Mpi::rank;

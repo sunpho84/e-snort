@@ -40,6 +40,10 @@ namespace grill
   PROVIDE_FIELD_COMPS_PROVIDER(EVEN,SERIAL,typename L::LocEoSite,C...);
   PROVIDE_FIELD_COMPS_PROVIDER(ODD,SERIAL,typename L::LocEoSite,C...);
   
+  PROVIDE_FIELD_COMPS_PROVIDER(EVEN_ODD,GPU,C...,typename L::Parity,typename L::LocEoSite);
+  PROVIDE_FIELD_COMPS_PROVIDER(EVEN,GPU,C...,typename L::LocEoSite);
+  PROVIDE_FIELD_COMPS_PROVIDER(ODD,GPU,C...,typename L::LocEoSite);
+  
   PROVIDE_FIELD_COMPS_PROVIDER(EVEN_ODD,SIMDIFIABLE,typename L::Parity,typename L::SimdLocEoSite,C...,typename L::SimdRank);
   PROVIDE_FIELD_COMPS_PROVIDER(EVEN,SIMDIFIABLE,typename L::LocSimdEoSite,C...,typename L::SimdRank);
   PROVIDE_FIELD_COMPS_PROVIDER(ODD,SIMDIFIABLE,typename L::LocSimdEoSite,C...,typename L::SimdRank);

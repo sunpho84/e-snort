@@ -218,95 +218,147 @@ namespace grill
     /// Determine whether the halos are allocated
     const bool haloFlag;
     
-    void updateHalo()
+    /// Updates the halo when the layout is simdifiable
+    void updateSimdifiableHalo()
     {
-      if(not haloFlag)
-	CRASH<<"Trying to synchronize the halo but they are not allocated";
-      
-      // LOGGER<<"Updating the halo. Output buffer is pre-set to -6, Input buffer is preset to -7. Halo is preset to -8";
+      CRASH<<"Not yet implemented";
+    }
+    
+    /// Updates the halo when the layout is serial or gpu
+    void updateNonSimdifiableHalo()
+    {
+      MPI_Request requests[2*4*NDims];
       
       using LocEoSite=typename L::Loc::EoSite;
       using Parity=typename L::Parity;
       using Dir=typename L::U::Dir;
       
-      MPI_Request requests[4*NDims];
+      const LocEoSite& locEoHalo=lattice->loc.eoHalo;
       
-      if constexpr(FL==FieldLayout::SERIAL)
+      auto fillBufferParity=
+	[this,locEoHalo](auto&& out,const auto& in,const Parity& parity)
 	{
-	  if constexpr(LC==LatticeCoverage::EVEN_ODD)
-	    {
-	      const LocEoSite& locEoHalo=lattice->loc.eoHalo;
-	      
-	      DynamicTens<OfComps<Parity,LocEoSite,C...>,Fund,ES> bufferOut(locEoHalo);
-	      DynamicTens<OfComps<Parity,LocEoSite,C...>,Fund,ES> bufferIn(locEoHalo);
-	      
-	      // bufferIn=-7;
-	      // bufferOut=-6;
-	      
-	      // ALLOW_ALL_RANKS_TO_PRINT_FOR_THIS_SCOPE;
-	      
-	      int iRequest=0;
-	      for(typename L::Parity parity=0;parity<2;parity++)
+	  loopOnAllComps<CompsList<LocEoSite>>(std::make_tuple(locEoHalo),
+					       [out=out.getRef(),in=in.getRef(),parity,this](const LocEoSite& siteRemappingId) MUTABLE_INLINE_ATTRIBUTE
+					       {
+						 const auto& r=lattice->eoHaloSiteOfEoSurfSite(parity,siteRemappingId);
+						 // const auto source=r.first;
+						 // const auto dest=r.second;
+						 // const _Fund& p=bufferOut(parity,dest,C(0)...);
+						 // LOGGER<<"Filling buffer, parity "<<parity<<" dest "<<dest<<" with source "<<source<<" before: "<<p;
+						 out(r.second)=in(r.first);
+						 // LOGGER<<" "<<p;
+					       });
+	};
+      
+      auto startCommunicationsParity=
+	[this](auto&& in,auto&& out,MPI_Request* requests,int& iRequest,const Parity& parity)
+	{
+	  for(Ori ori=0;ori<2;ori++)
+	    for(Dir dir=0;dir<NDims;dir++)
+	      if(lattice->nRanksPerDir(dir)>1)
 		{
-		  loopOnAllComps<CompsList<LocEoSite>>(std::make_tuple(locEoHalo),
-						       [&bufferOut,parity,this](const LocEoSite& siteRemappingId)
-						       {
-							 const auto& r=lattice->eoHaloSiteOfEoSurfSite(parity,siteRemappingId);
-							 // const auto source=r.first;
-							 // const auto dest=r.second;
-							 // const _Fund& p=bufferOut(parity,dest,C(0)...);
-							 // LOGGER<<"Filling buffer, parity "<<parity<<" dest "<<dest<<" with source "<<source<<" before: "<<p;
-							 bufferOut(parity,r.second)=data(parity,r.first);
-							 // LOGGER<<" "<<p;
-						       });
+		  const LocEoSite& sendOffset=lattice->loc.eoHaloOffsets(parity,ori,dir);
+		  const LocEoSite& recvOffset=lattice->loc.eoHaloOffsets(parity,ori,dir);
+		  const LocEoSite& nSites=lattice->loc.eoHaloPerDir(ori,parity,dir);
 		  
-		  for(Ori ori=0;ori<2;ori++)
-		    for(Dir dir=0;dir<NDims;dir++)
-		      if(lattice->nRanksPerDir(dir)>1)
-			{
-			  const LocEoSite& sendOffset=lattice->loc.eoHaloOffsets(parity,ori,dir);
-			  const LocEoSite& recvOffset=lattice->loc.eoHaloOffsets(parity,ori,dir);
-			  const LocEoSite& nSites=lattice->loc.eoHaloPerDir(ori,parity,dir);
-			  
-			  void* sendbuf=&bufferOut(parity,sendOffset,C(0)...);
-			  int sendcount=nSites*(C::sizeAtCompileTime*...)*sizeof(_Fund);
-			  void* recvbuf=&bufferIn(parity,recvOffset,C(0)...);
-			  int recvcount=sendcount;
-			  int sendtag=index({},parity,ori,dir);
-			  int recvtag=index({},parity,oppositeOri(ori),dir); ///Here we switch the orientation...
-			  int dest=lattice->rankNeighbours(ori,dir)();
-			  int source=dest;
-			  
-			  // LOGGER<<"Rank "<<Mpi::rank<<" parity "<<parity<<" ori "<<ori<<" dir "<<dir<<" sending to rank "<<dest<<" with tag "<<sendtag<<" receiving from "<<source<<" with tag "<<recvtag<<" sending data "<<((_Fund*)sendbuf-bufferOut.storage)<<" receiving into "<<((_Fund*)recvbuf-bufferIn.storage)<<" nbytes: "<<sendcount;
-			  
-			  MPI_Isend(sendbuf,sendcount,MPI_CHAR,dest,sendtag,MPI_COMM_WORLD,&requests[iRequest++]);
-			  MPI_Irecv(recvbuf,recvcount,MPI_CHAR,source,recvtag,MPI_COMM_WORLD,&requests[iRequest++]);
-			}
+		  void* sendbuf=&out(sendOffset,C(0)...);
+		  int sendcount=nSites*(C::sizeAtCompileTime*...)*sizeof(_Fund);
+		  void* recvbuf=&in(recvOffset,C(0)...);
+		  int recvcount=sendcount;
+		  int sendtag=index({},parity,ori,dir);
+		  int recvtag=index({},parity,oppositeOri(ori),dir); ///Here we switch the orientation...
+		  int dest=lattice->rankNeighbours(ori,dir)();
+		  int source=dest;
+		  
+		  // LOGGER<<"Rank "<<Mpi::rank<<" parity "<<parity<<" ori "<<ori<<" dir "<<dir<<" sending to rank "<<dest<<" with tag "<<sendtag<<" receiving from "<<source<<" with tag "<<recvtag<<" sending data "<<((_Fund*)sendbuf-bufferOut.storage)<<" receiving into "<<((_Fund*)recvbuf-bufferIn.storage)<<" nbytes: "<<sendcount;
+		  
+		  MPI_Isend(sendbuf,sendcount,MPI_CHAR,dest,sendtag,MPI_COMM_WORLD,&requests[iRequest++]);
+		  MPI_Irecv(recvbuf,recvcount,MPI_CHAR,source,recvtag,MPI_COMM_WORLD,&requests[iRequest++]);
 		}
+	    };
+      
+      auto fillHaloParity=
+	[this,locEoHalo](auto&& out,const auto& in,const Parity& parity)
+	{
+	  loopOnAllComps<CompsList<LocEoSite>>(std::make_tuple(locEoHalo),
+					       [this,out=out.getRef(),in=in.getRef(),parity](const LocEoSite& haloSite) MUTABLE_INLINE_ATTRIBUTE
+					       {
+						 const LocEoSite dest=haloSite+lattice->loc.eoVol;
+						 // const _Fund& p=data(parity,dest,C(0)...);
+						 // LOGGER<<"Filling halo, parity "<<parity<<" site "<<dest<<" before: "<<p;
+						 out(dest)=in(haloSite);
+						 // LOGGER<<" "<<p;
+						 
+						 // LOGGER<<"Retry";
+						 // auto lhs=data(parity,dest).simdify();
+						 //auto rhs=scalar(2);
+						 
+						 // const auto& q=lhs(grill::NonSimdifiedComp<int, 1>(0));
+						 // LOGGER<<" once simdify points to "<<&q;
+						 // lhs=2;
+						 // LOGGER<<" After reassigning: "<<p;
+					       });
+	};
+      
+      if constexpr(LC==LatticeCoverage::EVEN_ODD)
+	{
+	  DynamicTens<OfComps<Parity,LocEoSite,C...>,Fund,ES> bufferOut(locEoHalo);
+	  DynamicTens<OfComps<Parity,LocEoSite,C...>,Fund,ES> bufferIn(locEoHalo);
+	  
+	  // bufferIn=-7;
+	  // bufferOut=-6;
+	  
+	  // ALLOW_ALL_RANKS_TO_PRINT_FOR_THIS_SCOPE;
+	  
+	  int iRequest=0;
+	  for(typename L::Parity parity=0;parity<2;parity++)
+	    {
+	      fillBufferParity(bufferOut(parity),data(parity),parity);
 	      
-	      MPI_Waitall(iRequest,requests,MPI_STATUS_IGNORE);
-	      
-	      for(typename L::Parity parity=0;parity<2;parity++)
-		loopOnAllComps<CompsList<LocEoSite>>(std::make_tuple(locEoHalo),
-					  [this,parity,&bufferIn](const LocEoSite& haloSite)
-					  {
-					    const LocEoSite dest=haloSite+lattice->loc.eoVol;
-					    // const _Fund& p=data(parity,dest,C(0)...);
-					    // LOGGER<<"Filling halo, parity "<<parity<<" site "<<dest<<" before: "<<p;
-					    data(parity,dest)=bufferIn(parity,haloSite);
-					    // LOGGER<<" "<<p;
-					    
-					    // LOGGER<<"Retry";
-					    // auto lhs=data(parity,dest).simdify();
-					    //auto rhs=scalar(2);
-					    
-					    // const auto& q=lhs(grill::NonSimdifiedComp<int, 1>(0));
-					    // LOGGER<<" once simdify points to "<<&q;
-					    // lhs=2;
-					    // LOGGER<<" After reassigning: "<<p;
-					  });
+	      startCommunicationsParity(bufferIn(parity),bufferOut(parity),requests,iRequest,parity);
 	    }
+	  
+	  MPI_Waitall(iRequest,requests,MPI_STATUS_IGNORE);
+	  
+	  for(typename L::Parity parity=0;parity<2;parity++)
+	    fillHaloParity(data(parity),bufferIn(parity),parity);
 	}
+      else
+	{
+	  DynamicTens<OfComps<LocEoSite,C...>,Fund,ES> bufferOut(locEoHalo);
+	  DynamicTens<OfComps<LocEoSite,C...>,Fund,ES> bufferIn(locEoHalo);
+	  
+	  // bufferIn=-7;
+	  // bufferOut=-6;
+	  
+	  // ALLOW_ALL_RANKS_TO_PRINT_FOR_THIS_SCOPE;
+	  
+	  int iRequest=0;
+	  fillBufferParity(bufferOut,data,this->parity);
+	  
+	  startCommunicationsParity(bufferIn,bufferOut,requests,iRequest,this->parity);
+	  
+	  MPI_Waitall(iRequest,requests,MPI_STATUS_IGNORE);
+	  
+	  fillHaloParity(data,bufferIn,this->parity);
+	}
+    }
+    
+    /// Updates the halo
+    void updateHalo()
+    {
+      if(not haloFlag)
+	CRASH<<"Trying to synchronize the halo but they it is not allocated";
+      
+      // LOGGER<<"Updating the halo. Output buffer is pre-set to -6, Input buffer is preset to -7. Halo is preset to -8";
+      
+      static_assert(FL!=FieldLayout::SIMDIFIED,"Cannot communicate the halo of simdified layout");
+      
+      if constexpr(FL==FieldLayout::SIMDIFIABLE)
+	updateNonSimdifiableHalo();
+      else
+	updateNonSimdifiableHalo();
     }
     
     /// Create a field
