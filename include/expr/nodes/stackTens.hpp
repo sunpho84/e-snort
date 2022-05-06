@@ -112,42 +112,64 @@ namespace grill
     constexpr INLINE_FUNCTION
     StackTens(const CompsList<> ={})
     {
+      if constexpr(std::is_class_v<_Fund>)
+	{
+	  for(std::decay_t<decltype(nElements)> iEl=0;iEl<nElements;iEl++)
+	    new(&storage[iEl]) _Fund;
+	}
     }
     
     /// Copy constructor
     constexpr INLINE_FUNCTION
     StackTens(const StackTens& oth)
     {
-      std::copy(oth.storage,oth.storage+nElements,storage);
+      if constexpr(std::is_class_v<_Fund>)
+	for(std::decay_t<decltype(nElements)> iEl=0;iEl<nElements;iEl++)
+	  new(&storage[iEl]) _Fund(oth.storage[iEl]);
+      else
+	std::copy(oth.storage,oth.storage+nElements,storage);
     }
     
     /// Construct from another node
     template <typename TOth>
     constexpr INLINE_FUNCTION
-    StackTens(const Node<TOth>& oth)
+    StackTens(const Node<TOth>& _oth)
     {
-      (*this)=DE_CRTPFY(const TOth,&oth);
+      const auto& oth=DE_CRTPFY(const TOth,&_oth);
+      
+      // if constexpr(std::is_class_v<_Fund>)
+	loopOnAllComps<Comps>({},
+			      [this,&oth](const auto&...c) CONSTEXPR_INLINE_ATTRIBUTE
+			      {
+				const auto cs=tupleGetSubset<typename TOth::Comps>(std::make_tuple(c...));
+				
+				new(&(*this)(c...)) _Fund(std::apply(oth,cs));
+			      });
+      // else
+      // 	(*this)=DE_CRTPFY(const TOth,&oth);
     }
     
     /// Construct from fundamental
     constexpr INLINE_FUNCTION
-    StackTens(const Fund& oth) : storage{}
+    StackTens(const Fund& oth)
     {
-      (*this)=scalar(oth);
+      loopOnAllComps<Comps>({},
+			    [this,&oth](const auto&...c) CONSTEXPR_INLINE_ATTRIBUTE
+			    {
+			      new(&(*this)(c...)) _Fund(oth);
+			    });
     }
     
     /// Construct from an invocable
     template <typename F,
-	      ENABLE_THIS_TEMPLATE_IF(std::is_invocable_v<F,C...> and
-	      not isNode<F>)>
+	      ENABLE_THIS_TEMPLATE_IF(not isNode<F> and std::is_invocable_v<F,C...>)>
     constexpr INLINE_FUNCTION
     explicit StackTens(// InitializerFunction,
 		       F f) : storage{}
     {
       loopOnAllComps<Comps>({},[this,f](const auto&...c) CONSTEXPR_INLINE_ATTRIBUTE
       {
-	this->storage[grill::index({},c...)]=
-	  f(c...);
+	new(&((*this)(c...))) _Fund(f(c...));
       });
     }
     

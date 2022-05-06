@@ -172,6 +172,8 @@ namespace grill
 									\
       using SubsComps=std::tuple<C...>;					\
 									\
+      static_assert((isComp<C> and...),"Trying to subscribe with non-comps arguments"); \
+      									\
       static_assert(tupleHaveTypes<Comps,SubsComps>);			\
 									\
       /*! Leftover components */					\

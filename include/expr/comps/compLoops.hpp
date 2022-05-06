@@ -93,7 +93,7 @@ namespace grill
       {
 	/// Loop task
 	auto task=
-	  [&dynamicSizes,&function,&processedComps...] (const FirstComp& comp) INLINE_ATTRIBUTE
+	  [&dynamicSizes,&function,&processedComps...](const FirstComp& comp) INLINE_ATTRIBUTE
 	{
 	  if constexpr(sizeof...(RemainingComps))
 	    _CompsLooper<CompsList<RemainingComps...>>::loop(dynamicSizes,function,processedComps...,comp);
