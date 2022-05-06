@@ -233,7 +233,13 @@ void testGrill()
 	      
 	      LOGGER<<" simdRank "<<simdRank<<" ori "<<ori<<" dir "<<dir<<" parity "<<parity<<" simdLocEoSite "<<simdLocEoSite<<" neigh "<<neighSimdLocEoSite<<" isNonLoc: "<<isNonLoc<<" coords, expected, obtained:";
 	      for(Dir mu=0;mu<NDims;mu++)
-		LOGGER<<" "<<gc(mu)<<" "<<gnc(mu)<<" "<<f(oppoParity,neighSimdLocEoSite,simdRank,mu);
+		{
+		  const auto expected=gnc(mu);
+		  const auto obtained=f(oppoParity,neighSimdLocEoSite,simdRank,mu);
+		  LOGGER<<" "<<gc(mu)<<" "<<expected<<" "<<obtained;
+		  if(expected!=obtained)
+		    LOGGER<<"Not agreeing";
+		}
 	    });
 	  }
     });

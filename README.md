@@ -244,6 +244,7 @@ DONE
 TODO
 ---
 - simdified shift
+- put together orientation and dir for filling halo, to simplify
 - add shift method, which returns some proxy to select the opposite parity site, with shifted coords
 - when simdifying should not we reduce nelements? bindcomps is not doing it
 - how to pass a generic site comps?

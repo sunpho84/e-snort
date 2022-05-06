@@ -241,7 +241,7 @@ namespace grill
       auto fillBufferParity=
 	[this,simdLocEoHalo](auto&& data,const Parity& parity)
 	{
-	  for(Ori ori=0;ori<2;ori++)
+	  // for(Ori ori=0;ori<2;ori++)
 	    // for(typename L::Dir dir=0;dir<NDims;dir++)
 	      {
 		// const SimdLocEoSite& eoHaloPerDir=lattice->simdLoc.eoHaloPerDir(ori,parity,dir);
@@ -252,7 +252,7 @@ namespace grill
 		// if(eoHaloPerDir)
 		  loopOnAllComps<CompsList<SimdLocEoSite>>(std::make_tuple(lattice->simdLoc.eoHalo),
 							   [data=data.getRef(),// eoHaloOffset,
-							    parity,this,&ori// ,&dir
+							    parity,this//,&ori// ,&dir
 							    ](const SimdLocEoSite& eoHaloSite) MUTABLE_INLINE_ATTRIBUTE
 							   {
 							     // const SimdLocEoSite siteRemappingId=eoHaloSiteInOriDir+eoHaloOffset;
@@ -260,7 +260,8 @@ namespace grill
 													  );
 							     const auto source=std::get<0>(r);
 							     const SimdLocEoSite dest=std::get<1>(r)+lattice->simdLoc.eoVol;
-							     const typename L::Dir dir=std::get<2>(r);
+							     const Ori ori=std::get<2>(r);
+							     const typename L::Dir dir=std::get<3>(r);
 							     LOGGER<<"Filling halo, id "<<eoHaloSite<<" parity "<<parity<<" ori "<<ori<<" dir "<<dir<<" dest "<<std::get<0>(r)<<" lattice->simdLoc.eoVol "<<lattice->simdLoc.eoVol<<"full dest "<<dest<<" with source "<<source;
 							     
 							     for(SimdRank simdRank=0;simdRank<lattice->nSimdRanks;simdRank++)

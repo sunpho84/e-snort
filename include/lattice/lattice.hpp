@@ -491,7 +491,7 @@ namespace grill
       
       for(Parity parity=0;parity<2;parity++)
 	{
-	  std::vector<std::tuple<EoSite,EoSite,Dir>> list;
+	  std::vector<std::tuple<EoSite,EoSite,Ori,Dir>> list;
 	  
 	  for(EoSite eoSite=0;eoSite<eoVol;eoSite++)
 	    for(Ori ori=0;ori<2;ori++)
@@ -507,7 +507,7 @@ namespace grill
 		    {
 		      const EoSite flippingOriOffset=
 			eoHaloOffsets(parity,oppositeOri(ori),dir)-eoHaloOffsets(parity,ori,dir);
-		      list.emplace_back(eoSite,excess+flippingOriOffset,dir);
+		      list.emplace_back(eoSite,excess+flippingOriOffset,ori,dir);
 		      
 		      LOGGER<<"parity "<<parity<<" eoSite "<<eoSite<<" ori "<<ori<<" dir "<<dir<<" must be copied in "<<excess;
 		    }
@@ -794,9 +794,9 @@ namespace grill
     
     /////////////////////////////////////////////////////////////////
     
-    DynamicTens<OfComps<Parity,LocEoSite>,std::tuple<LocEoSite,LocEoSite,Dir>,ExecSpace::HOST> eoHaloFillerTable;
+    DynamicTens<OfComps<Parity,LocEoSite>,std::tuple<LocEoSite,LocEoSite,Ori,Dir>,ExecSpace::HOST> eoHaloFillerTable;
     
-    DynamicTens<OfComps<Parity,SimdLocEoSite>,std::tuple<SimdLocEoSite,SimdLocEoSite,Dir>,ExecSpace::HOST> simdEoHaloFillerTable;
+    DynamicTens<OfComps<Parity,SimdLocEoSite>,std::tuple<SimdLocEoSite,SimdLocEoSite,Ori,Dir>,ExecSpace::HOST> simdEoHaloFillerTable;
     
     /////////////////////////////////////////////////////////////////
     
