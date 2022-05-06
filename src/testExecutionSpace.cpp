@@ -191,12 +191,53 @@ void testGrill()
   using RankCoords=Lattice::RankCoords;
   using SimdRankCoords=Lattice::SimdRankCoords;
   
-  const GlbCoords glbSides(6,6,6,12);
+  const GlbCoords glbSides(6,6,4,8);
   const RankCoords rankSides(Mpi::nRanks,1,1,1);
   const SimdRankCoords simdRankSides(1,1,2,4);
   const Dir parityDir=1;
   
   Lattice lattice(glbSides,rankSides,simdRankSides,parityDir);
+  
+  {
+    using F=Field<OfComps<Dir>,double,Lattice,LatticeCoverage::EVEN_ODD,FieldLayout::SIMDIFIABLE,ExecSpace::HOST>;
+    
+    F f(lattice,true);
+    f=1;
+    
+    loopOnAllComps<CompsList<Parity,SimdLocEoSite,SimdRank>>(std::make_tuple(lattice.simdLoc.eoVol),[&lattice,&f](const Parity& parity,const SimdLocEoSite& simdLocEoSite,const SimdRank& simdRank)
+    {
+      const GlbCoords gc=lattice.computeGlbCoordsOfSimdEoRepOfLocSite(parity,simdLocEoSite,simdRank);
+      
+      for(Dir dir=0;dir<NDims;dir++)
+	f(parity,simdLocEoSite,simdRank,dir)=gc(dir);
+    });
+    
+    f.updateHalo();
+    
+    loopOnAllComps<CompsList<Parity,SimdLocEoSite>>(std::make_tuple(lattice.simdLoc.eoVol),[&lattice,&f](const Parity& parity,const SimdLocEoSite& simdLocEoSite)
+    {
+      const Parity oppoParity=lattice.oppositeParity(parity);
+      
+      LOGGER<<"Site par "<<parity<<" simdLoceo "<<simdLocEoSite;
+      
+      for(Ori ori=0;ori<2;ori++)
+	for(Dir dir=0;dir<NDims;dir++)
+	  {
+	    const SimdLocEoSite neighSimdLocEoSite=lattice.simdLoc.eoNeighbours(parity,simdLocEoSite,ori,dir);
+	    const bool isNonLoc=neighSimdLocEoSite>=lattice.simdLoc.eoVol;
+	    
+	    compLoop<SimdRank>([&lattice,&f,simdLocEoSite,&neighSimdLocEoSite,dir,&ori,&isNonLoc, &parity, &oppoParity](const SimdRank& simdRank)
+	    {
+	      const GlbCoords gc=lattice.computeGlbCoordsOfSimdEoRepOfLocSite(parity,simdLocEoSite,simdRank);
+	      const GlbCoords gnc=(gc+U4D::versor<GlbCoord>(dir)*moveOffset[ori]+lattice.glbSides)%lattice.glbSides;
+	      
+	      LOGGER<<" simdRank "<<simdRank<<" ori "<<ori<<" dir "<<dir<<" parity "<<parity<<" simdLocEoSite "<<simdLocEoSite<<" neigh "<<neighSimdLocEoSite<<" isNonLoc: "<<isNonLoc<<" coords, expected, obtained:";
+	      for(Dir mu=0;mu<NDims;mu++)
+		LOGGER<<" "<<gc(mu)<<" "<<gnc(mu)<<" "<<f(oppoParity,neighSimdLocEoSite,simdRank,mu);
+	    });
+	  }
+    });
+  }
   
   {
     using F=Field<OfComps<Dir>,double,Lattice,LatticeCoverage::EVEN,FieldLayout::SERIAL,ExecSpace::HOST>;

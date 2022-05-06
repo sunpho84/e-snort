@@ -221,7 +221,70 @@ namespace grill
     /// Updates the halo when the layout is simdifiable
     void updateSimdifiableHalo()
     {
-      CRASH<<"Not yet implemented";
+      LOGGER<<" updateSimdifiableHalo";
+      
+      using SimdLocEoSite=typename L::SimdLoc::EoSite;
+      using SimdRank=typename L::SimdRank;
+      using Parity=typename L::Parity;
+      
+      const SimdLocEoSite& simdLocEoHalo=lattice->simdLoc.eoHalo;
+      
+      for(Ori ori=0;ori<2;ori++)
+	for(typename L::Dir dir=0;dir<NDims;dir++)
+	  {
+	    LOGGER<<"Ori "<<ori<<" dir "<<dir;
+	    
+	    for(SimdRank simdRank=0;simdRank<lattice->nSimdRanks;simdRank++)
+	      LOGGER<<"simdRank "<<lattice->simdRankNeighbours(simdRank,ori,dir)<<" will be copied to "<<simdRank;
+	  }
+      
+      auto fillBufferParity=
+	[this,simdLocEoHalo](auto&& data,const Parity& parity)
+	{
+	  for(Ori ori=0;ori<2;ori++)
+	    // for(typename L::Dir dir=0;dir<NDims;dir++)
+	      {
+		// const SimdLocEoSite& eoHaloPerDir=lattice->simdLoc.eoHaloPerDir(ori,parity,dir);
+		// const SimdLocEoSite& eoHaloOffset=lattice->simdLoc.eoHaloOffsets(ori,parity,dir);
+		
+		// LOGGER<<"Ori "<<ori<<" dir "<<dir<<" "<<eoHaloPerDir;
+		
+		// if(eoHaloPerDir)
+		  loopOnAllComps<CompsList<SimdLocEoSite>>(std::make_tuple(lattice->simdLoc.eoHalo),
+							   [data=data.getRef(),// eoHaloOffset,
+							    parity,this,&ori// ,&dir
+							    ](const SimdLocEoSite& eoHaloSite) MUTABLE_INLINE_ATTRIBUTE
+							   {
+							     // const SimdLocEoSite siteRemappingId=eoHaloSiteInOriDir+eoHaloOffset;
+							     const auto& r=lattice->simdEoHaloFillerTable(parity,eoHaloSite// siteRemappingId
+													  );
+							     const auto source=std::get<0>(r);
+							     const SimdLocEoSite dest=std::get<1>(r)+lattice->simdLoc.eoVol;
+							     const typename L::Dir dir=std::get<2>(r);
+							     LOGGER<<"Filling halo, id "<<eoHaloSite<<" parity "<<parity<<" ori "<<ori<<" dir "<<dir<<" dest "<<std::get<0>(r)<<" lattice->simdLoc.eoVol "<<lattice->simdLoc.eoVol<<"full dest "<<dest<<" with source "<<source;
+							     
+							     for(SimdRank simdRank=0;simdRank<lattice->nSimdRanks;simdRank++)
+							       LOGGER<<"simdRank "<<lattice->simdRankNeighbours(simdRank,ori,dir)<<" will be copied to "<<simdRank;
+							     
+							     loopOnAllComps<CompsList<C...>>(this->getDynamicSizes(),[this,&data,&dest,&source,&r,&ori,&dir](const auto&...cs)
+							     {
+							       for(SimdRank simdRank=0;simdRank<lattice->nSimdRanks;simdRank++)
+								 {
+								   const SimdRank& sourceSimdRank=simdRank;
+								   const SimdRank destSimdRank=lattice->simdRankNeighbours(simdRank,ori,dir);
+								   data(dest,cs...,destSimdRank)=data(source,cs...,sourceSimdRank);
+								   LOGGER<<" Copying "<<sourceSimdRank<<" simd rank into "<<destSimdRank;
+								 }
+							     });
+						   });
+	      }
+	};
+      
+      if constexpr(LC==LatticeCoverage::EVEN_ODD)
+	for(typename L::Parity parity=0;parity<2;parity++)
+	  fillBufferParity(data(parity),parity);
+      else
+	fillBufferParity(data,this->parity);
     }
     
     /// Updates the halo when the layout is serial or gpu
@@ -241,12 +304,12 @@ namespace grill
 	  loopOnAllComps<CompsList<LocEoSite>>(std::make_tuple(locEoHalo),
 					       [out=out.getRef(),in=in.getRef(),parity,this](const LocEoSite& siteRemappingId) MUTABLE_INLINE_ATTRIBUTE
 					       {
-						 const auto& r=lattice->eoHaloSiteOfEoSurfSite(parity,siteRemappingId);
+						 const auto& r=lattice->eoHaloFillerTable(parity,siteRemappingId);
 						 // const auto source=r.first;
 						 // const auto dest=r.second;
 						 // const _Fund& p=bufferOut(parity,dest,C(0)...);
 						 // LOGGER<<"Filling buffer, parity "<<parity<<" dest "<<dest<<" with source "<<source<<" before: "<<p;
-						 out(r.second)=in(r.first);
+						 out(std::get<1>(r))=in(std::get<0>(r));
 						 // LOGGER<<" "<<p;
 					       });
 	};
@@ -267,7 +330,7 @@ namespace grill
 		  void* recvbuf=&in(recvOffset,C(0)...);
 		  int recvcount=sendcount;
 		  int sendtag=index({},parity,ori,dir);
-		  int recvtag=index({},parity,oppositeOri(ori),dir); ///Here we switch the orientation...
+		  int recvtag=sendtag;//index({},parity,oppositeOri(ori),dir); ///We don't have to switch the orientation as the offset is already computed w.r.t dest
 		  int dest=lattice->rankNeighbours(ori,dir)();
 		  int source=dest;
 		  
@@ -356,7 +419,7 @@ namespace grill
       static_assert(FL!=FieldLayout::SIMDIFIED,"Cannot communicate the halo of simdified layout");
       
       if constexpr(FL==FieldLayout::SIMDIFIABLE)
-	updateNonSimdifiableHalo();
+	updateSimdifiableHalo();
       else
 	updateNonSimdifiableHalo();
     }

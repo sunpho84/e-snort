@@ -47,21 +47,21 @@ namespace grill
     PROVIDE_ASSERT_ARE_COORDS(NAME, name)
   
 #define PROVIDE_COORDS_OF_SITE_COMPUTER(NAME,name,SIDES)		\
-									\
-    /*! Computes the coordinates of the passed name ## Site */		\
-    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB			\
-    NAME ## Coords compute ## NAME ## Coords(const NAME ## Site& name ## Site) const \
-    {									\
-      return U::computeCoordsOfSiteInBoxOfSides(name ## Site,SIDES);	\
-    }									\
-									\
-    /*! Computes the global site given the global coordinates */	\
-    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB			\
-    NAME ## Site compute ## NAME ## Site(const NAME ## Coords& name ## Coords) const \
-    {									\
-      return								\
-	U::template computeSiteOfCoordsInBoxOfSides<NAME ## Site>(name ## Coords,SIDES); \
-    }
+  									\
+  /*! Computes the coordinates of the passed name ## Site */		\
+  constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB				\
+  NAME ## Coords compute ## NAME ## Coords(const NAME ## Site& name ## Site) const \
+  {									\
+    return U::computeCoordsOfSiteInBoxOfSides(name ## Site,SIDES);	\
+  }									\
+  									\
+  /*! Computes the global site given the global coordinates */		\
+  constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB				\
+  NAME ## Site compute ## NAME ## Site(const NAME ## Coords& name ## Coords) const \
+  {									\
+    return								\
+      U::template computeSiteOfCoordsInBoxOfSides<NAME ## Site>(name ## Coords,SIDES); \
+  }
   
   /// Declare lattice
   template <typename U>
@@ -159,11 +159,13 @@ namespace grill
     
     RankCoords nRanksPerDir;
     
+    /// Coordinates of all ranks
     DynamicTens<OfComps<Rank>,RankCoords,ExecSpace::HOST> rankCoords;
     
     /// Coordinates of the present rank
     RankCoords thisRankCoords;
     
+    /// Neighboring ranks
     StackTens<OfComps<Ori,Dir>,Rank> rankNeighbours;
     
     Rank nRanks;
@@ -199,7 +201,14 @@ namespace grill
     
     PROVIDE_COORDS_OF_SITE_COMPUTER(SimdRank,simdRank,nSimdRanksPerDir);
     
+    /// Coordinates of all simd ranks
     StackTens<OfComps<SimdRank>,SimdRankCoords> simdRankCoords;
+    
+    /// Neighbouring simd ranks
+    StackTens<OfComps<SimdRank,Ori,Dir>,SimdRank> simdRankNeighbours;
+    
+    /// Number of non local simd ranks for each direction
+    StackTens<OfComps<Dir>,SimdRank> nNonLocSimdRanks;
     
     /////////////////////////////////////////////////////////////////
     
@@ -471,6 +480,51 @@ namespace grill
 	  CRASH<<"Not reached the total halo volume, "<<offset<<" while "<<halo<<" expected";
       }
       
+    /// We loop on orientation, then direction, to scan all sites that
+    /// need to be copied elsewhere. The computed halo site points to
+    /// where the the site should reside if we wanted to fill a
+    /// fictitious halo for current rank alone
+    template <typename T>
+    void precomputeHaloFiller(T& tab)
+    {
+      tab.allocate(eoHalo);
+      
+      for(Parity parity=0;parity<2;parity++)
+	{
+	  std::vector<std::tuple<EoSite,EoSite,Dir>> list;
+	  
+	  for(EoSite eoSite=0;eoSite<eoVol;eoSite++)
+	    for(Ori ori=0;ori<2;ori++)
+	      for(Dir dir=0;dir<NDims;dir++)
+		{
+		  const EoSite neighEoSite=
+		    eoNeighbours(parity,eoSite,ori,dir);
+		  
+		  const EoSite excess=
+		    (neighEoSite-eoVol);
+		  
+		  if(excess>=0)
+		    {
+		      const EoSite flippingOriOffset=
+			eoHaloOffsets(parity,oppositeOri(ori),dir)-eoHaloOffsets(parity,ori,dir);
+		      list.emplace_back(eoSite,excess+flippingOriOffset,dir);
+		      
+		      LOGGER<<"parity "<<parity<<" eoSite "<<eoSite<<" ori "<<ori<<" dir "<<dir<<" must be copied in "<<excess;
+		    }
+		}
+	  
+	  std::sort(list.begin(),list.end());
+	  
+	  if((int64_t)list.size()!=eoHalo)
+	    CRASH<<"list of sites that must be copied to other ranks e/o halo has size"<<list.size()<<" not agreeing with e/o halo size "<<eoHalo;
+	  
+	  for(int64_t i=0;i<(int64_t)list.size();i++)
+	    tab(parity,EoSite(i))=list[i];
+	}
+    }
+    
+    /////////////////////////////////////////////////////////////////
+    
     // /// Compute the site of given coords in the given ori,dir halo
     //   Site haloSiteOfCoords(const Coords& cs,const Ori& ori,const Dir& dir) const
     //   {
@@ -578,7 +632,7 @@ namespace grill
 	  const Coords coordsWithUnfixedParity=
 	    eoCoords*lattice.paritySides;
 	  
-	  LOGGER<<"Setting neigh of site of parity "<<parity<<" eoSite "<<eoSite<<": ";
+	  // LOGGER<<"Setting neigh of site of parity "<<parity<<" eoSite "<<eoSite<<": ";
 	  
 	  const Parity resultingParity=
 	    (coordsParity(coordsWithUnfixedParity)+lattice.thisRankOriginParity)%2;
@@ -740,7 +794,9 @@ namespace grill
     
     /////////////////////////////////////////////////////////////////
     
-    DynamicTens<OfComps<Parity,LocEoSite>,std::pair<LocEoSite,LocEoSite>,ExecSpace::HOST> eoHaloSiteOfEoSurfSite;
+    DynamicTens<OfComps<Parity,LocEoSite>,std::tuple<LocEoSite,LocEoSite,Dir>,ExecSpace::HOST> eoHaloFillerTable;
+    
+    DynamicTens<OfComps<Parity,SimdLocEoSite>,std::tuple<SimdLocEoSite,SimdLocEoSite,Dir>,ExecSpace::HOST> simdEoHaloFillerTable;
     
     /////////////////////////////////////////////////////////////////
     
@@ -852,46 +908,6 @@ namespace grill
     
     /////////////////////////////////////////////////////////////////
     
-    /// We loop on orientation, then direction, to scan all sites that
-    /// need to be copied elsewhere
-    void precomputeHaloFiller()
-    {
-      eoHaloSiteOfEoSurfSite.allocate(loc.eoHalo);
-      
-      for(Parity parity=0;parity<2;parity++)
-	{
-	  std::vector<std::pair<LocEoSite,LocEoSite>> list;
-	  
-	  for(LocEoSite eoSite=0;eoSite<loc.eoVol;eoSite++)
-	    for(Ori ori=0;ori<2;ori++)
-	      for(Dir dir=0;dir<NDims;dir++)
-		{
-		  const LocEoSite neighEoSite=
-		    loc.eoNeighbours(parity,eoSite,ori,dir);
-		  
-		  const LocEoSite excess=
-		    (neighEoSite-loc.eoVol);
-		  
-		  if(excess>=0)
-		    {
-		      list.push_back({eoSite,excess});
-		      
-		      // LOGGER<<"parity "<<parity<<" eoSite "<<eoSite<<" ori "<<ori<<" dir "<<dir<<" must be copied in "<<excess;
-		    }
-		}
-	  
-	  std::sort(list.begin(),list.end());
-	  
-	  if((int64_t)list.size()!=loc.eoHalo)
-	    CRASH<<"list of sites that must be copied to other ranks e/o halo has size"<<list.size()<<" not agreeing with e/o halo size "<<loc.eoHalo;
-	  
-	  for(int64_t i=0;i<(int64_t)list.size();i++)
-	    eoHaloSiteOfEoSurfSite(parity,LocEoSite(i))=list[i];
-	}
-    }
-    
-    /////////////////////////////////////////////////////////////////
-    
     template <typename L,
 	      typename T>
     static void printCoords(L&& l,const DirTens<T>& c)
@@ -956,7 +972,7 @@ namespace grill
       for(Rank rank=0;rank<nRanks;rank++)
 	{
 	  rankCoords(rank)=computeRankCoords(rank);
-	  originGlbCoords(rank)=rankCoords(rank)*glbSides/nRanksPerDir; // Don't use loc.sides since not initialized here
+	  originGlbCoords(rank)=rankCoords(rank)*glbSides/nRanksPerDir; // Don't use loc.sides since not yet initialized here
 	  originParity(rank)=coordsParity(originGlbCoords(rank));
 	}
       
@@ -1003,8 +1019,43 @@ namespace grill
       COMP_LOOP(SimdRank,simdRank,
 		{
 		  simdRankCoords(simdRank)=computeSimdRankCoords(simdRank);
-		  simdRankLocOrigins(simdRank)=simdRankCoords(simdRank)*simdLoc.sides;
+		  simdRankLocOrigins(simdRank)=simdRankCoords(simdRank)*glbSides/nGlbSimdRanks; // Don't use simdLoc.sides since not yet initialized here
+		  
+		  const Parity par=coordsParity(simdRankLocOrigins(simdRank));
+		  if(par!=0)
+		    CRASH<<"Simd Rank origins do not have the same parity, please set the simd local sides to an even number";
 		});
+      
+      nNonLocSimdRanks=0;
+      
+      LOGGER<<"Neighbours simd rank:";
+      for(Ori ori=0;ori<2;ori++)
+	for(Dir dir=0;dir<NDims;dir++)
+	  {
+	    LOGGER<<" ori "<<ori<<" dir "<<dir;
+	    
+	    for(SimdRank simdRank=0;simdRank<nSimdRanks;simdRank++)
+	      {
+		const SimdRankCoords triviallyShiftedCoords=
+		  simdRankCoords(simdRank)+moveOffset[ori]*U::template versor<SimdRankCoord>(dir);
+		
+		const SimdRankCoords simdNeighRankCoords=
+		  (triviallyShiftedCoords+nSimdRanksPerDir)%nSimdRanksPerDir;
+		
+		const SimdRank simdNeighRank=
+		  U::template computeSiteOfCoordsInBoxOfSides<SimdRank>(simdNeighRankCoords,nSimdRanksPerDir);
+		
+		LOGGER<<"  simd rank "<<simdRank<<": "<<simdNeighRank;
+		
+		if(ori and triviallyShiftedCoords(dir)!=simdNeighRankCoords(dir))
+		  nNonLocSimdRanks(dir)++;
+		
+		simdRankNeighbours(simdRank,ori,dir)=simdNeighRank;
+	      }
+	}
+      
+      for(Dir dir=0;dir<NDims;dir++)
+	LOGGER<<" nonlocSimdRanks(dir="<<dir<<")="<<nNonLocSimdRanks(dir)<<" nSimdRanksPerDir: "<<nSimdRanksPerDir(dir);
       
 #ifndef __CUDA_ARCH__
       LOGGER<<"SimdRanksLocOrigin: ";
@@ -1053,9 +1104,12 @@ namespace grill
       
       loc.init(*this,nRanksPerDir);
       
+      loc.precomputeHaloFiller(eoHaloFillerTable);
+      
       simdLoc.init(*this,nGlbSimdRanks);
       
-      precomputeHaloFiller();
+      simdLoc.precomputeHaloFiller(simdEoHaloFillerTable);
+      
       
       /////////////////////////////////////////////////////////////////
       

@@ -6,77 +6,49 @@
 
 using namespace grill;
 
-
 DECLARE_TRANSPOSABLE_COMP(Spin,int,4,spin);
 
-StackTens<OfComps<SpinRow,SpinCln>,double> dt;
+// template <int I>
+// constexpr void callS()
+// {
+// }
 
-StackTens<OfComps<SpinRow,SpinCln>,double> pt;
+// template <typename I>
+// void call(I i)
+// {
+//   auto c=[i](const auto& c,auto&& f,auto _j,auto _max) __attribute((always_inline))
+//   {
+//     using j=decltype(_j);
+//     using max=decltype(_max);
+    
+//     // static_assert(j()<max(),"");
+    
+//     if(i==_j)
+//       f(i);
+//     else
+//       if constexpr(j()<max())
+// 	c(c,f,std::integral_constant<int,j()+1>(),_max);
+//   };
+  
+//   c(c,[](const int i)
+//   {
+//     LOGGER<<i;
+//   },std::integral_constant<int,3>(),std::integral_constant<int,10>());
+// }
 
-// double data[4],dota[4];
-
-void testSimdifiedAssign()
+void test()
 {
-  ASM_BOOKMARK_BEGIN("TEST_SIMDIFIED_ASSIGN");
-  //std::bool_constant<dt.canSimdify>& a=1;
-  //_mm256_store_pd(data,_mm256_load_pd(dota));
-  dt=pt;
-  ASM_BOOKMARK_END("TEST_SIMDIFIED_ASSIGN");
-}
-
-double d=1;
-
-void testGrill()
-{
-  using U4D=Universe<4>;
-  // using Dir=U4D::Dir;
+  // call(3);
   
-  using Lattice=Lattice<U4D>;
-  //using GlbGrill=U::GlbGrill;
-
-  using Parity=Lattice::Parity;
-  using SimdLocEoSite=Lattice::SimdLocEoSite;
-  using SimdRank=Lattice::SimdRank;
+  StackTens<OfComps<Spin>,
+    std::vector<int>> s;
   
-  using GlbCoords=Lattice::GlbCoords;
-  // using LocCoords=Lattice::LocCoords;
-  using RankCoords=Lattice::RankCoords;
-  using SimdRankCoords=Lattice::SimdRankCoords;
-  
-  GlbCoords glbSides(6,6,6,12);
-  RankCoords rankSides(2,1,1,1);
-  SimdRankCoords simdRankSides(1,1,2,4);
-  
-  Lattice lattice(glbSides,rankSides,simdRankSides,1);
-  
-  using F=Field<OfComps<Spin>,double,Lattice,LatticeCoverage::EVEN_ODD,FieldLayout::SIMDIFIABLE,ExecSpace::DEVICE>;
-  
-  F f(lattice),g(lattice),h(lattice);
-  
-  // using FF=decltype(ff);
-  // auto FC=FF::Comps{};
-  
-  // auto e=ff(Parity(0),SimdLocEoSite(0),SpinRow(0),NonSimdifiedComp<int, 2>(0));
-  // loopOnAllComps<F::Comps>(f.getDynamicSizes(),[&f,&g](const auto...c){
-  //   f(c...)=1;
-  //   g(c...)=1;
-  // });
-  
-  f=d;
-  g=d;
-  
-  ASM_BOOKMARK_BEGIN("feq0");
-  h=g+f;
-  ASM_BOOKMARK_END("feq0");
-
-#if ENABLE_SIMD
-  LOGGER<<"Is two: "<<h(Parity(0),SimdLocEoSite(0),SpinRow(0),SimdRank(0));
-#endif
+  LOGGER<<s.storage<<" "<<s(Spin(0)).size();
 }
 
 int main(int narg,char**arg)
 {
-  grill::runProgram(narg,arg,[](int narg,char** arg){testGrill();});
+  grill::runProgram(narg,arg,[](int narg,char** arg){test();});
   
   return 0;
 }
