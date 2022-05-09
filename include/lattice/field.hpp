@@ -238,7 +238,7 @@ namespace grill
 	      LOGGER<<"simdRank "<<lattice->simdRankNeighbours(simdRank,ori,dir)<<" will be copied to "<<simdRank;
 	  }
       
-      auto fillBufferParity=
+      auto fillLocHalo=
 	[this,simdLocEoHalo](auto&& data,const Parity& parity)
 	{
 	  // for(Ori ori=0;ori<2;ori++)
@@ -283,9 +283,9 @@ namespace grill
       
       if constexpr(LC==LatticeCoverage::EVEN_ODD)
 	for(typename L::Parity parity=0;parity<2;parity++)
-	  fillBufferParity(data(parity),parity);
+	  fillLocHalo(data(parity),parity);
       else
-	fillBufferParity(data,this->parity);
+	fillLocHalo(data,this->parity);
     }
     
     /// Updates the halo when the layout is serial or gpu
