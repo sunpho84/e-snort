@@ -228,6 +228,49 @@ namespace grill
   }
   
   /////////////////////////////////////////////////////////////////
+#define PROVIDE_FUND_CAST(ATTRIB)					\
+  template <typename T,							\
+	    typename...C,						\
+	    typename F,							\
+	    ExecSpace ES>						\
+  template <typename FC>						\
+  auto BaseTens<T,CompsList<C...>,F,ES>::fundCast() ATTRIB		\
+  {									\
+    decltype(auto) t=DE_CRTPFY(ATTRIB T,this);				\
+									\
+    if(not t.allocated)							\
+      CRASH<<"Cannot take the reference of a non allocated tensor";	\
+									\
+    return TensRef<CompsList<C...>,ATTRIB FC,ES>((ATTRIB FC*)t.storage,t.nElements,t.getDynamicSizes()); \
+  }
+  
+  PROVIDE_FUND_CAST(const);
+  
+  PROVIDE_FUND_CAST(/* non const */);
+  
+#undef PROVIDE_FUND_CAST
+  
+/////////////////////////////////////////////////////////////////
+  
+#define PROVIDE_BASE_FUND_CAST_OPERATOR(ATTRIB)				\
+  template <typename T,							\
+	    typename...C,						\
+	    typename F,							\
+	    ExecSpace ES>						\
+  auto BaseTens<T,CompsList<C...>,F,ES>::operator~() ATTRIB		\
+  {									\
+    static_assert(isComp<F>,"For now only defined for comps");		\
+    									\
+    return this->fundCast<typename F::Index>();				\
+  }
+  
+  PROVIDE_BASE_FUND_CAST_OPERATOR(const);
+  
+  PROVIDE_BASE_FUND_CAST_OPERATOR(/* non const */);
+  
+#undef PROVIDE_BASE_FUND_CAST_OPERATOR
+  
+  /////////////////////////////////////////////////////////////////
   
 #define PROVIDE_GET_REF(ATTRIB)						\
   template <typename T,							\
@@ -236,22 +279,16 @@ namespace grill
 	    ExecSpace ES>						\
   auto BaseTens<T,CompsList<C...>,F,ES>::getRef() ATTRIB		\
   {									\
-    decltype(auto) t=DE_CRTPFY(ATTRIB T,this);				\
-									\
-    /*LOGGER<<"Building reference to "<<execSpaceName<ES><<" tensor-like, pointer: "<<t.storage;*/ \
-    if(not t.allocated)							\
-      CRASH<<"Cannot take the reference of a non allocated tensor";	\
-									\
-    return TensRef<CompsList<C...>,ATTRIB F,ES>(t.storage,t.nElements,t.getDynamicSizes()); \
+    return this->fundCast<F>();						\
   }
   
   PROVIDE_GET_REF(const);
   
   PROVIDE_GET_REF(/* non const */);
   
-  /////////////////////////////////////////////////////////////////
-  
 #undef PROVIDE_GET_REF
+  
+  /////////////////////////////////////////////////////////////////
   
 #define PROVIDE_SIMDIFY(ATTRIB)						\
   template <typename T,							\
@@ -283,6 +320,8 @@ namespace grill
   
 #undef PROVIDE_SIMDIFY
   
+  /////////////////////////////////////////////////////////////////
+
   template <typename T,
 	    typename...C,
 	    typename F,
@@ -306,6 +345,14 @@ namespace grill
 	
 	return res;
       }
+  }
+  
+  /// Calss the fundamental caster
+  template <typename F,
+	    typename T>
+  auto fundCast(T&& t)
+  {
+    return t.template fundCast<F>();
   }
 }
 

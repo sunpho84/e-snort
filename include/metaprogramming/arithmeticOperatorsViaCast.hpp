@@ -38,14 +38,20 @@ namespace grill
     INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB			\
     RETURNED_TYPE operator OP(const ArithmeticOperators& oth) const	\
     {									\
-      return ((CastToExec)(this->crtp())) OP ((CastToExec)oth.crtp());	\
+      const auto& This=DE_CRTPFY(const ReturnedType,this);		\
+      									\
+      const auto& Oth=DE_CRTPFY(const ReturnedType,&oth);		\
+									\
+      return ((const CastToExec&)This) OP ((const CastToExec&)Oth);	\
     }									\
     									\
     template <typename Oth>						\
     INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB			\
     RETURNED_TYPE operator OP(const Oth& oth) const			\
     {									\
-      return ((CastToExec)(DE_CRTPFY(ReturnedType,this))) OP oth;	\
+      const auto& This=DE_CRTPFY(const ReturnedType,this);		\
+      									\
+      return ((const CastToExec&)This) OP ((const CastToExec&)oth);	\
     }
     
     PROVIDE_OPERATOR(+,ReturnedType);
@@ -66,9 +72,11 @@ namespace grill
 #define PROVIDE_SELF_OPERATOR(OP)					\
     ReturnedType& operator OP ##=(const ArithmeticOperators& oth)	\
     {									\
-      auto& This=this->crtp();						\
+      const auto& Oth=DE_CRTPFY(const ReturnedType,&oth);		\
 									\
-      ((CastToExec&)DE_CRTPFY(ReturnedType,this)) OP ## =(CastToExec)oth.crtp(); \
+      auto& This=DE_CRTPFY(ReturnedType,this);				\
+									\
+      (CastToExec&)This OP ## =(const CastToExec&)Oth;			\
 									\
       return This;							\
     }
