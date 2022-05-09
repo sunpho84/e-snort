@@ -78,6 +78,10 @@ namespace grill
     static constexpr auto execSpace=
       ExecSpace::HOST;
     
+    /// Always allocated
+    static constexpr bool allocated=
+      true;
+    
     /// Returns empty dynamic sizes
     constexpr const CompsList<> getDynamicSizes() const
     {

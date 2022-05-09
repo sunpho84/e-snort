@@ -8,6 +8,7 @@
 /// \file lattice/lattice.hpp
 
 #include <expr/comps/compLoops.hpp>
+#include <expr/nodes/dynamicTens.hpp>
 #include <lattice/universe.hpp>
 #include <metaprogramming/forEachInTuple.hpp>
 #include <resources/mathOperations.hpp>
@@ -207,6 +208,9 @@ namespace grill
     /// Neighbouring simd ranks
     StackTens<OfComps<SimdRank,Ori,Dir>,SimdRank> simdRankNeighbours;
     
+    /// Non local simd ranks for each direction
+    StackTens<OfComps<Ori,Dir,SimdRank>,SimdRank> nonLocSimdRanks;
+    
     /// Number of non local simd ranks for each direction
     StackTens<OfComps<Dir>,SimdRank> nNonLocSimdRanks;
     
@@ -237,13 +241,13 @@ namespace grill
       for(Dir dir=0;dir<NDims;dir++)
 	sum+=coords(dir);
       
-      return sum%2;
+      return (~sum)%2;
     }
     
     /// Opposite parity
     static constexpr INLINE_FUNCTION Parity oppositeParity(const Parity& parity)
     {
-      return 1-parity();
+      return 1-(~parity);
     }
     
     /// Sides of the parity grid
@@ -303,7 +307,7 @@ namespace grill
       template <typename R>
       void setSidesAndVol(const GlbCoords& dividendSides,const DirTens<R>& nPerDir)
       {
-	sides=dividendSides/nPerDir;
+	sides=~dividendSides/~nPerDir;
 	LOGGER<<tag()<<" sides: ";
 	printCoords(LOGGER,sides);
 	
@@ -370,7 +374,7 @@ namespace grill
 		    surfPerDir(dir)=
 		      (nPerDir(dir)>1)?
 		      (vol/sides(dir)):
-		      0;
+		      Site(0);
 		  });
 	
 	LOGGER<<tag()<<" Surf per dir: ";
@@ -403,13 +407,14 @@ namespace grill
       {
 	// Set the e/o sides
 	
-	eoSides=sides/lattice.paritySides;
+	eoSides=~sides/~lattice.paritySides;
 	LOGGER<<tag()<<" e/o sides: ";
 	printCoords(LOGGER,eoSides);
 	
 	assertIsPartitionable(sides,tag(),lattice.paritySides,"parity");
 	
-	eoVol=vol/2;
+	eoVol=
+	  ~vol/2;
       }
       
       /////////////////////////////////////////////////////////////////
@@ -423,9 +428,12 @@ namespace grill
       /// Set the e/o surface
       void setEoSurfaces(const Lattice& lattice)
       {
-	eoSurf=surf/2;
+	eoSurf=
+	  ~surf/2;
 	
-	eoSurfPerDir=surfPerDir/2;
+	eoSurfPerDir=
+	  ~surfPerDir/2;
+	
 	if(surfPerDir(lattice.parityDir)%2)
 	  {
 	    eoSurfPerDir(BW,lattice.thisRankOriginParity,lattice.parityDir)++;
@@ -572,9 +580,10 @@ namespace grill
       /// Set the e/o halo
       void setEoHalo(const Lattice& lattice)
       {
-	eoHalo=halo/2;
+	eoHalo=
+	  ~halo/2;
 	
-	eoHaloPerDir=haloPerDir/2;
+	eoHaloPerDir=~haloPerDir/2;
 	if(haloPerDir(lattice.parityDir)%2)
 	  {
 	    eoHaloPerDir(BW,oppositeParity(lattice.thisRankOriginParity),lattice.parityDir)++;
@@ -630,7 +639,7 @@ namespace grill
 	    computeEoCoords(eoSite);
 	  
 	  const Coords coordsWithUnfixedParity=
-	    eoCoords*lattice.paritySides;
+	    ~eoCoords*~lattice.paritySides;
 	  
 	  // LOGGER<<"Setting neigh of site of parity "<<parity<<" eoSite "<<eoSite<<": ";
 	  
@@ -705,7 +714,7 @@ namespace grill
 			return (dir==extDir)?Coord(1):sides(dir);
 		      });
 		    const EoSite posInEoHalo=
-		      U::template computeSiteOfCoordsInBoxOfSides<Site>(shiftedCoords,haloSides)/2;
+		      ~U::template computeSiteOfCoordsInBoxOfSides<Site>(shiftedCoords,haloSides)/2;
 		    
 		    // {
 		    //   auto l=LOGGER;
@@ -725,7 +734,7 @@ namespace grill
 		    // LOGGER<<" pointing to "<<n;
 		  }
 		else
-		  n=computeEoSite(triviallyShiftedCoords/lattice.paritySides);
+		  n=computeEoSite(~triviallyShiftedCoords/~lattice.paritySides);
 	      }
 	});
       }
@@ -784,7 +793,10 @@ namespace grill
       typename SUB::Site;			\
 						\
     using SUB ## EoCoords=			\
-      typename SUB::EoCoords
+      typename SUB::EoCoords;			\
+						\
+    using SUB ## EoCoord=			\
+      typename SUB::EoCoord
     
     IMPORT_SUBLATTICE_TYPES(Loc);
     
@@ -828,7 +840,7 @@ namespace grill
       
       /// Coordinates of the site, not having yet fixed the parity
       const SimdLocCoords simdLocCoordsWithUnfixedParity=
-	simdLocEoCoords*paritySides;
+	~simdLocEoCoords*~paritySides;
       
       /// Local coordinates of the simdRank origin
       const LocCoords simdRankLocOrigin=
@@ -877,25 +889,25 @@ namespace grill
     SimdEoRepOfGlbSite computeSimdEoRepOfGlbCoords(const GlbCoords& glbCoords) const
     {
       const RankCoords rankCoords=
-	glbCoords/loc.sides;
+	~glbCoords/~loc.sides;
       
       const Rank rank=
 	computeRankSite(rankCoords);
       
       const LocCoords locCoords=
-	glbCoords-originGlbCoords(rank);
+	(~glbCoords)-(~originGlbCoords(rank));
       
       const Parity parity=
 	coordsParity(glbCoords);
       
       const SimdLocCoords simdLocCoords=
-	locCoords%simdLoc.sides;
+	~locCoords%simdLoc.sides;
       
       const SimdRankCoords simdRankCoords=
-	locCoords/simdLoc.sides;
+	~locCoords/~simdLoc.sides;
       
       const SimdLocEoCoords simdLocEoCoords=
-	simdLocCoords/paritySides;
+	~simdLocCoords/~paritySides;
       
       const SimdLocEoSite simdLocEoSite=
 	simdLoc.computeEoSite(simdLocEoCoords);
@@ -935,7 +947,8 @@ namespace grill
       nSimdRanksPerDir(nSimdRanksPerDir),
       parityDir(parityDir)
     {
-      DirTens<SimdRank> nGlbSimdRanks=nRanksPerDir*nSimdRanksPerDir;
+      DirTens<SimdRank> nGlbSimdRanks=
+	~nRanksPerDir*~nSimdRanksPerDir;
       
       // Set the global and rank lattices
       
@@ -972,7 +985,7 @@ namespace grill
       for(Rank rank=0;rank<nRanks;rank++)
 	{
 	  rankCoords(rank)=computeRankCoords(rank);
-	  originGlbCoords(rank)=rankCoords(rank)*glbSides/nRanksPerDir; // Don't use loc.sides since not yet initialized here
+	  originGlbCoords(rank)=~rankCoords(rank)*glbSides/~nRanksPerDir; // Don't use loc.sides since not yet initialized here
 	  originParity(rank)=coordsParity(originGlbCoords(rank));
 	}
       
@@ -1019,7 +1032,8 @@ namespace grill
       COMP_LOOP(SimdRank,simdRank,
 		{
 		  simdRankCoords(simdRank)=computeSimdRankCoords(simdRank);
-		  simdRankLocOrigins(simdRank)=simdRankCoords(simdRank)*glbSides/nGlbSimdRanks; // Don't use simdLoc.sides since not yet initialized here
+		  simdRankLocOrigins(simdRank)=
+		    ~simdRankCoords(simdRank)*~glbSides/~nGlbSimdRanks; // Don't use simdLoc.sides since not yet initialized here
 		  
 		  const Parity par=coordsParity(simdRankLocOrigins(simdRank));
 		  if(par!=0)
@@ -1048,7 +1062,7 @@ namespace grill
 		LOGGER<<"  simd rank "<<simdRank<<": "<<simdNeighRank;
 		
 		if(ori and triviallyShiftedCoords(dir)!=simdNeighRankCoords(dir))
-		  nNonLocSimdRanks(dir)++;
+		  nonLocSimdRanks(ori,dir,nNonLocSimdRanks(dir)++)=simdRank;
 		
 		simdRankNeighbours(simdRank,ori,dir)=simdNeighRank;
 	      }

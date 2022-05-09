@@ -332,7 +332,7 @@ namespace grill
 		  int recvcount=sendcount;
 		  int sendtag=index({},parity,ori,dir);
 		  int recvtag=sendtag;//index({},parity,oppositeOri(ori),dir); ///We don't have to switch the orientation as the offset is already computed w.r.t dest
-		  int dest=lattice->rankNeighbours(ori,dir)();
+		  int dest=~lattice->rankNeighbours(ori,dir);
 		  int source=dest;
 		  
 		  // LOGGER<<"Rank "<<Mpi::rank<<" parity "<<parity<<" ori "<<ori<<" dir "<<dir<<" sending to rank "<<dest<<" with tag "<<sendtag<<" receiving from "<<source<<" with tag "<<recvtag<<" sending data "<<((_Fund*)sendbuf-bufferOut.storage)<<" receiving into "<<((_Fund*)recvbuf-bufferIn.storage)<<" nbytes: "<<sendcount;
