@@ -9,6 +9,7 @@
 ///
 /// \brief Implements a tensor comp base functionalities
 
+#include <metaprogramming/arithmeticOperatorsViaCast.hpp>
 #include <metaprogramming/inline.hpp>
 #include <metaprogramming/nonConstMethod.hpp>
 #include <metaprogramming/typeConversion.hpp>
@@ -18,7 +19,8 @@ namespace grill
   /// A component
   template <typename _C,
 	    typename _Index>
-  struct BaseComp
+  struct BaseComp :
+    ArithmeticOperators<_Index,_C>
   {
     /// Value type
     using Index=_Index;
@@ -93,7 +95,7 @@ namespace grill
     
     /// Convert to actual reference with const attribute
     INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
-    const Index& operator()() const
+    const Index& operator~() const
     {
       return i;
     }
@@ -102,7 +104,7 @@ namespace grill
     INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
     const Index& nastyConvert() const
     {
-      return (*this)();
+      return ~*this;
     }
     
     PROVIDE_ALSO_NON_CONST_METHOD_WITH_ATTRIB(nastyConvert,HOST_DEVICE_ATTRIB);

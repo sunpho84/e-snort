@@ -183,7 +183,8 @@ namespace grill
       using MaybeComplId=
 	std::conditional_t<isComplProd,CompsList<ComplId>,CompsList<>>;
       
-      auto res=zero<Fund>();
+      Fund res;
+      setToZero(res);
       
       loopOnAllComps<ContractedComps>(dynamicSizes,[this,&allNccs,&res](const auto&..._ccs) INLINE_ATTRIBUTE
       {

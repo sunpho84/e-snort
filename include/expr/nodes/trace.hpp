@@ -138,7 +138,8 @@ namespace grill
     Fund eval(const NTc&...nTCs) const
     {
       /// Result
-      auto res=zero<Fund>();
+      Fund res;
+      setToZero(res);
       
       loopOnAllComps<TracedComps>(getDynamicSizes(),
 				  [this,&res,&nTCs...](const auto&...tCs) INLINE_ATTRIBUTE

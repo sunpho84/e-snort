@@ -239,10 +239,16 @@ DONE
 - Creates a SubLattice class
 - Halos
 - Neighbors
-- Rationalize the sites filling to split parity
+- Rationalize the sites filling to split parity (oridir)
+- Comp cnanot relaly mix, strict cast needed
 
 TODO
 ---
+- we need to scan for each direction the simd rank surface, these are
+  the elements to be moved out, they must be scanned for the whole
+  surf for each direction and put into the appropriate buffer. Then
+  the data must be swapped, and put back into position. Maybe we can
+  recycle the non-simd transfer
 - simdified shift
 - put together orientation and dir for filling halo, to simplify
 - add shift method, which returns some proxy to select the opposite parity site, with shifted coords

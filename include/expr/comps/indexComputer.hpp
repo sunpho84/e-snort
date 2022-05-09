@@ -49,11 +49,11 @@ namespace grill
       if constexpr(Head::sizeIsKnownAtCompileTime)
 	size=Head::sizeAtCompileTime;
       else
-	size=std::get<Head>(dynamicSizes)();
+	size=~std::get<Head>(dynamicSizes);
       
       /// Value of the index when including this component
       const GlbIndex inner=
-	outer*size+head();
+	outer*size+(~head);
       
       if constexpr(sizeof...(tail))
 	return
@@ -150,7 +150,7 @@ namespace grill
       if constexpr(T::sizeIsKnownAtCompileTime)
 	return T::sizeAtCompileTime;
       else
-	return std::get<T>(dynamicSizes)();
+	return ~std::get<T>(dynamicSizes);
     }
   }
   

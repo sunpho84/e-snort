@@ -191,9 +191,9 @@ void testGrill()
   using RankCoords=Lattice::RankCoords;
   using SimdRankCoords=Lattice::SimdRankCoords;
   
-  const GlbCoords glbSides(6,6,4,8);
-  const RankCoords rankSides(Mpi::nRanks,1,1,1);
-  const SimdRankCoords simdRankSides(1,1,2,4);
+  const GlbCoords glbSides(6,6,8,32);
+  const RankCoords rankSides(1,1,1,Mpi::nRanks);
+  const SimdRankCoords simdRankSides(1,1,1,8);
   const Dir parityDir=1;
   
   Lattice lattice(glbSides,rankSides,simdRankSides,parityDir);
@@ -584,10 +584,10 @@ int in_main(int narg,char** arg)
   
   StackTens<OfComps<SpinRow>,double> hostTens;
   for(SpinRow st=0;st<4;st++)
-    hostTens(st)=st();
+    hostTens(st)=~st;
   
   for(SpinRow st=0;st<4;st++)
-    LOGGER<<st()<<" "<<hostTens(st);
+    LOGGER<<~st<<" "<<hostTens(st);
   
   /// Create
   const auto deviceTens=hostTens.getCopyOnExecSpace<ExecSpace::DEVICE>();
@@ -596,7 +596,7 @@ int in_main(int narg,char** arg)
   //dtd=dtg.getCopyOnExecSpace<ExecSpace::HOST>();
   
   for(SpinRow st=0;st<4;st++)
-    LOGGER<<st()<<" "<<backHostTens(st);
+    LOGGER<<~st<<" "<<backHostTens(st);
   
   /////////////////////////////////////////////////////////////////
   

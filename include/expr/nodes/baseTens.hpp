@@ -117,6 +117,20 @@ namespace grill
     /// Returns a reference
     auto getRef();
     
+    /// Returns a const cast to base fundamental
+    auto operator~() const;
+    
+    /// Returns a cast to base fundamental
+    auto operator~();
+    
+    /// Returns a const reference with different type
+    template <typename FC>
+    auto fundCast() const;
+    
+    /// Returns a reference with different type
+    template <typename FC>
+    auto fundCast();
+    
     /// Returns a const simdified view
     auto simdify() const;
     

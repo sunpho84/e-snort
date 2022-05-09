@@ -43,6 +43,8 @@ void test()
   StackTens<OfComps<Spin>,
     std::vector<int>> s;
   
+  s(Spin(0)).push_back(4);
+  
   LOGGER<<s.storage<<" "<<s(Spin(0)).size();
 }
 

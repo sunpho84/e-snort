@@ -30,13 +30,16 @@ namespace grill
     
     using DC=std::tuple_element_t<0,typename Lhs::DynamicComps>;
     
-    const auto dynamicSize=std::get<0>(lhs.getDynamicSizes());
+    using Index=typename DC::Index;
+    
+    const auto dynamicSize=
+      ~std::get<0>(lhs.getDynamicSizes());
     
     const auto assign=getAssigner(lhs,rhs);
     
 #pragma omp parallel for
-    for(DC dc=0;dc<dynamicSize;dc++)
-      loopOnAllComps<typename Lhs::StaticComps>(lhs.getDynamicSizes(),assign,dc);
+    for(Index dc=0;dc<dynamicSize;dc++)
+      loopOnAllComps<typename Lhs::StaticComps>(lhs.getDynamicSizes(),assign,DC(dc));
   }
 }
 

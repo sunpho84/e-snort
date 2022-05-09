@@ -33,7 +33,7 @@ namespace grill
   constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB
   Ori oppositeOri(const Ori& ori)
   {
-    return 1-ori();
+    return Ori(1)-ori;
   }
   
   /// Assert that ori is an orientation

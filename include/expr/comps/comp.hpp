@@ -88,7 +88,7 @@ namespace grill
   DECLARE_COMPONENT_FACTORY(FACTORY ## Cln,NAME ## Cln);	\
 								\
   DECLARE_COMPONENT_FACTORY(FACTORY,NAME)
-
+  
 #define DECLARE_UNTRANSPOSABLE_COMP(NAME,TYPE,SIZE,FACTORY)	\
   struct NAME :							\
     Comp<compFeat::IsTransposable::FALSE,			\
