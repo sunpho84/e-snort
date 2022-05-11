@@ -192,6 +192,8 @@ namespace grill
     
     DECLARE_UNTRANSPOSABLE_COMP(SimdRank,int,maxAvailableSimdSize,simdSite);
     
+    DECLARE_UNTRANSPOSABLE_COMP(NonLocSimdRank,int,0,nonLocSimdRank);
+    
     using SimdRankSite=SimdRank;
     
     const SimdRank nSimdRanks=maxAvailableSimdSize;
@@ -209,10 +211,10 @@ namespace grill
     StackTens<OfComps<SimdRank,Ori,Dir>,SimdRank> simdRankNeighbours;
     
     /// Non local simd ranks for each direction
-    StackTens<OfComps<Ori,Dir,SimdRank>,SimdRank> nonLocSimdRanks;
+    StackTens<OfComps<Ori,Dir>,std::vector<SimdRank>> nonLocSimdRanks;
     
     /// Number of non local simd ranks for each direction
-    StackTens<OfComps<Dir>,SimdRank> nNonLocSimdRanks;
+    StackTens<OfComps<Dir>,NonLocSimdRank> nNonLocSimdRanks;
     
     /////////////////////////////////////////////////////////////////
     
@@ -810,6 +812,8 @@ namespace grill
     
     DynamicTens<OfComps<Parity,SimdLocEoSite>,std::tuple<SimdLocEoSite,SimdLocEoSite,Ori,Dir>,ExecSpace::HOST> simdEoHaloFillerTable;
     
+    //DynamicTens<OfComps<Parity,LocEoSite>,std::tuple<SimdLocEoSite,SimdRank,LocEoSite>,ExecSpace::HOST> simdEoHaloNonLocFillerTable;
+    
     /////////////////////////////////////////////////////////////////
     
     /// Local origin of the simd rank
@@ -948,7 +952,8 @@ namespace grill
       parityDir(parityDir)
     {
       DirTens<SimdRank> nGlbSimdRanks=
-	~nRanksPerDir*~nSimdRanksPerDir;
+	~nRanksPerDir*
+	~nSimdRanksPerDir;
       
       // Set the global and rank lattices
       
@@ -1040,12 +1045,13 @@ namespace grill
 		    CRASH<<"Simd Rank origins do not have the same parity, please set the simd local sides to an even number";
 		});
       
-      nNonLocSimdRanks=0;
-      
       LOGGER<<"Neighbours simd rank:";
       for(Ori ori=0;ori<2;ori++)
 	for(Dir dir=0;dir<NDims;dir++)
 	  {
+	    // Computed twice, so reset twice
+	    nNonLocSimdRanks(dir)=0;
+	    
 	    LOGGER<<" ori "<<ori<<" dir "<<dir;
 	    
 	    for(SimdRank simdRank=0;simdRank<nSimdRanks;simdRank++)
@@ -1061,15 +1067,30 @@ namespace grill
 		
 		LOGGER<<"  simd rank "<<simdRank<<": "<<simdNeighRank;
 		
-		if(ori and triviallyShiftedCoords(dir)!=simdNeighRankCoords(dir))
-		  nonLocSimdRanks(ori,dir,nNonLocSimdRanks(dir)++)=simdRank;
+		if(triviallyShiftedCoords(dir)!=simdNeighRankCoords(dir) and nRanksPerDir(dir)>1)
+		  {
+		    nonLocSimdRanks(ori,dir).push_back(simdRank);
+		    LOGGER<<" simdRank "<<simdRank<<" is non local, stored as #"<<nNonLocSimdRanks(dir);
+		    nNonLocSimdRanks(dir)++;
+		  }
 		
 		simdRankNeighbours(simdRank,ori,dir)=simdNeighRank;
 	      }
 	}
       
       for(Dir dir=0;dir<NDims;dir++)
-	LOGGER<<" nonlocSimdRanks(dir="<<dir<<")="<<nNonLocSimdRanks(dir)<<" nSimdRanksPerDir: "<<nSimdRanksPerDir(dir);
+	LOGGER<<" nSimdRanksPerDir: "<<nSimdRanksPerDir(dir);
+      
+      for(Dir dir=0;dir<NDims;dir++)
+	{
+	  LOGGER<<" nonlocSimdRanks(dir="<<dir<<")="<<nNonLocSimdRanks(dir);
+	  for(Ori ori=0;ori<2;ori++)
+	    {
+	      LOGGER<<" orientation "<<ori;
+	      for(const SimdRank& sr :nonLocSimdRanks(ori,dir))
+		LOGGER<<"  "<<sr;
+	    }
+	}
       
 #ifndef __CUDA_ARCH__
       LOGGER<<"SimdRanksLocOrigin: ";
@@ -1124,6 +1145,47 @@ namespace grill
       
       simdLoc.precomputeHaloFiller(simdEoHaloFillerTable);
       
+      // LOGGER<<"Scanning surf of loc, converting to simd rep";
+      
+      //simdEoHaloNonLocFillerTable.allocate(loc.eoHalo);
+      
+      // for(Parity parity=0;parity<2;parity++)
+      // 	{
+      // 	  // LOGGER<<" Parity "<<parity;
+      // 	  std::vector<std::tuple<SimdLocEoSite,SimdRank,LocEoSite>> list;
+	  
+      // 	  loopOnAllComps<CompsList<LocEoSite>>(std::make_tuple(loc.eoHalo),
+      // 					       [&list,parity,this](const LocEoSite& siteRemappingId) MUTABLE_INLINE_ATTRIBUTE
+      // 					       {
+      // 						 const auto& r=eoHaloFillerTable(parity,siteRemappingId);
+      // 						 const LocEoSite source=std::get<0>(r);
+      // 						 const LocEoSite dest=std::get<1>(r);
+      // 						 // const Ori ori=std::get<2>(r);
+      // 						 // const Dir dir=std::get<3>(r);
+						 
+      // 						 const GlbCoords glbCoords=glbCoordsOfLoceo(parity,source);
+      // 						 const auto [rankCheck,parityCheck,simdLocEoSite,simdRankCheck]=
+      // 						   computeSimdEoRepOfGlbCoords(glbCoords);
+						 
+      // 						 // LOGGER<<" ori: "<<ori;
+      // 						 // LOGGER<<" dir: "<<dir;
+      // 						 // LOGGER<<" rank: "<<rankCheck<<" expected: "<<Mpi::rank;
+      // 						 // LOGGER<<" parity: "<<parityCheck<<" expected: "<<parity;
+      // 						 // LOGGER<<" simdLocEoSite: "<<simdLocEoSite;
+      // 						 // LOGGER<<" simdRank: "<<simdRankCheck;
+      // 						 // LOGGER<<" dest CCC: "<<dest;
+						 
+      // 						 list.emplace_back(simdLocEoSite,simdRankCheck,dest);
+      // 					       });
+	  
+      // 	  // std::sort(list.begin(),list.end());
+	  
+      // 	  if((int64_t)list.size()!=loc.eoHalo)
+      // 	    CRASH<<"list of sites that must be copied to other ranks e/o halo has size "<<list.size()<<" not agreeing with e/o halo size "<<loc.eoHalo;
+	  
+      // 	  // for(int64_t i=0;i<(int64_t)list.size();i++)
+      // 	  //   simdEoHaloNonLocFillerTable(parity,LocEoSite(i))=list[i];
+      // 	}
       
       /////////////////////////////////////////////////////////////////
       

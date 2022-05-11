@@ -36,6 +36,14 @@ DECLARE_TRANSPOSABLE_COMP(Spin,int,4,spin);
 //   },std::integral_constant<int,3>(),std::integral_constant<int,10>());
 // }
 
+template <typename F,
+	  typename...Args>
+auto affetta(F&& f,Args&&...args)
+{
+  return std::tuple_cat(f(std::forward<Args>(args))...);
+}
+
+
 void test()
 {
   // call(3);
@@ -48,9 +56,25 @@ void test()
   LOGGER<<s.storage<<" "<<s(Spin(0)).size();
 }
 
+void v()
+{
+}
+
 int main(int narg,char**arg)
 {
   grill::runProgram(narg,arg,[](int narg,char** arg){test();});
+  
+  // auto d=affetta([](const auto& e)
+  // {
+  // },1.0,2,"");
+
+  auto d=affetta([](const auto& e)
+  {
+    if constexpr(std::is_same_v<std::decay_t<decltype(e)>,double>)
+      return std::make_tuple(e);
+    else
+      return std::make_tuple();
+  },1.0,2,"");
   
   return 0;
 }

@@ -286,11 +286,183 @@ namespace grill
 	  fillLocHalo(data(parity),parity);
       else
 	fillLocHalo(data,this->parity);
+      
+      /////////////////////////////////////////////////////////////////
+      
+      MPI_Request requests[2*4*NDims];
+      
+      using LocEoSite=typename L::Loc::EoSite;
+      using Parity=typename L::Parity;
+      using Dir=typename L::U::Dir;
+      
+      const LocEoSite& locEoHalo=lattice->loc.eoHalo;
+      
+      auto fillBufferParity=
+	[this,locEoHalo](auto&& out,const auto& in,const Parity& parity)
+	{
+	  for(Ori ori=0;ori<2;ori++)
+	    for(Dir dir=0;dir<NDims;dir++)
+	      {
+       		const typename L::NonLocSimdRank nNlsr=
+		  lattice->nNonLocSimdRanks(dir);
+		
+		const SimdLocEoSite nPerDir=
+		  lattice->simdLoc.eoHaloPerDir(ori,parity,dir);
+		
+		  if(nNlsr)
+		    loopOnAllComps<CompsList<SimdLocEoSite>>(std::make_tuple(nPerDir),
+							     [out=out.getRef(),
+							      in=in.getRef(),
+							      parity,
+							      ori,
+							      nPerDir,
+							      nNlsr,
+							      dir,     locEoHalo,
+							      this](const SimdLocEoSite& simdEoHaloPerDirSite) MUTABLE_INLINE_ATTRIBUTE
+							     {
+							       for(typename L::NonLocSimdRank nLsr=0;nLsr<nNlsr;nLsr++)
+								 {
+								   const SimdLocEoSite source=
+								     lattice->simdLoc.eoVol+
+								     lattice->simdLoc.eoHaloOffsets(parity,ori,dir)+
+								     simdEoHaloPerDirSite;
+								   
+								   const LocEoSite dest=
+								     index(std::make_tuple(nPerDir,nNlsr),simdEoHaloPerDirSite,nLsr);
+								   
+								   // if(dest>=locEoHalo)
+								   //   CRASH<<"("<<simdEoHaloPerDirSite<<","<<nLsr<<") in ("<<nPerDir<<","<<nNlsr<<"): dest "<<dest<<" >= "<<locEoHalo;
+								   
+								   const SimdRank sr=lattice->nonLocSimdRanks(ori,dir)[nLsr];
+								   
+								   out(dest)=in(source,sr);
+								 }
+							     });
+	      }
+	};
+      
+      auto startCommunicationsParity=
+	[this](auto&& in,auto&& out,MPI_Request* requests,int& iRequest,const Parity& parity)
+	{
+	  for(Ori ori=0;ori<2;ori++)
+	    for(Dir dir=0;dir<NDims;dir++)
+	      if(lattice->nRanksPerDir(dir)>1)
+		{
+		  // ALLOW_ALL_RANKS_TO_PRINT_FOR_THIS_SCOPE;
+		  
+		  const LocEoSite& sendOffset=lattice->loc.eoHaloOffsets(parity,ori,dir);
+		  const LocEoSite& recvOffset=lattice->loc.eoHaloOffsets(parity,ori,dir);
+		  const LocEoSite& nSites=lattice->loc.eoHaloPerDir(ori,parity,dir);
+		  
+		  void* sendbuf=&out(sendOffset,C(0)...);
+		  int sendcount=nSites*(C::sizeAtCompileTime*...)*sizeof(_Fund);
+		  void* recvbuf=&in(recvOffset,C(0)...);
+		  int recvcount=sendcount;
+		  int sendtag=index({},parity,ori,dir);
+		  int recvtag=index({},parity,oppositeOri(ori),dir);
+		  int dest=~lattice->rankNeighbours(ori,dir);
+		  int source=dest;
+		  
+		  // LOGGER<<"Rank "<<Mpi::rank<<" parity "<<parity<<" ori "<<ori<<" dir "<<dir<<" sending to rank "<<dest<<" with tag "<<sendtag<<" receiving from "<<source<<" with tag "<<recvtag<<" nbytes: "<<sendcount;
+		  
+		  MPI_Isend(sendbuf,sendcount,MPI_CHAR,dest,sendtag,MPI_COMM_WORLD,&requests[iRequest++]);
+		  MPI_Irecv(recvbuf,recvcount,MPI_CHAR,source,recvtag,MPI_COMM_WORLD,&requests[iRequest++]);
+		}
+	    };
+      
+      auto fillHaloParity=
+	[this,locEoHalo](auto&& out,const auto& in,const Parity& parity)
+	{
+	  for(Ori ori=0;ori<2;ori++)
+	    for(Dir dir=0;dir<NDims;dir++)
+	      {
+       		const typename L::NonLocSimdRank nNlsr=
+		  lattice->nNonLocSimdRanks(dir);
+		
+		const SimdLocEoSite nPerDir=
+		  lattice->simdLoc.eoHaloPerDir(ori,parity,dir);
+		
+		  if(nNlsr)
+		    loopOnAllComps<CompsList<SimdLocEoSite>>(std::make_tuple(nPerDir),
+							     [out=out.getRef(),
+							      in=in.getRef(),
+							      parity,
+							      ori,
+							      nPerDir,
+							      nNlsr,
+							      dir,
+							      this](const SimdLocEoSite& simdEoHaloPerDirSite) MUTABLE_INLINE_ATTRIBUTE
+							     {
+							       for(typename L::NonLocSimdRank nLsr=0;nLsr<nNlsr;nLsr++)
+								 {
+								   const SimdLocEoSite dest=
+								     lattice->simdLoc.eoVol+
+								     lattice->simdLoc.eoHaloOffsets(parity,ori,dir)+
+								     simdEoHaloPerDirSite;
+								   
+								   const LocEoSite source=
+								     index(std::make_tuple(nPerDir,nNlsr),simdEoHaloPerDirSite,nLsr);
+								   
+								   const SimdRank sr=lattice->nonLocSimdRanks(ori,dir)[nLsr];
+								   
+								   out(dest,sr)=in(source);
+								 }
+							     });
+	      }
+	};
+      
+      
+      if constexpr(LC==LatticeCoverage::EVEN_ODD)
+	{
+	  DynamicTens<OfComps<Parity,LocEoSite,C...>,Fund,ES> bufferOut(locEoHalo);
+	  DynamicTens<OfComps<Parity,LocEoSite,C...>,Fund,ES> bufferIn(locEoHalo);
+	  
+	  bufferIn=-7;
+	  bufferOut=-6;
+	  
+	  // ALLOW_ALL_RANKS_TO_PRINT_FOR_THIS_SCOPE;
+	  
+	  int iRequest=0;
+	  for(typename L::Parity parity=0;parity<2;parity++)
+	    {
+	      fillBufferParity(bufferOut(parity),data(parity),parity);
+	      
+	      startCommunicationsParity(bufferIn(parity),bufferOut(parity),requests,iRequest,parity);
+	    }
+	  
+	  MPI_Waitall(iRequest,requests,MPI_STATUS_IGNORE);
+	  
+	  for(typename L::Parity parity=0;parity<2;parity++)
+	    fillHaloParity(data(parity),bufferIn(parity),parity);
+	}
+      else
+	{
+	  DynamicTens<OfComps<LocEoSite,C...>,Fund,ES> bufferOut(locEoHalo);
+	  DynamicTens<OfComps<LocEoSite,C...>,Fund,ES> bufferIn(locEoHalo);
+	  
+	  // bufferIn=-7;
+	  // bufferOut=-6;
+	  
+	  // ALLOW_ALL_RANKS_TO_PRINT_FOR_THIS_SCOPE;
+	  
+	  int iRequest=0;
+	  fillBufferParity(bufferOut,data,this->parity);
+	  
+	  startCommunicationsParity(bufferIn,bufferOut,requests,iRequest,this->parity);
+	  
+	  MPI_Waitall(iRequest,requests,MPI_STATUS_IGNORE);
+	  
+	  fillHaloParity(data,bufferIn,this->parity);
+	}
     }
     
     /// Updates the halo when the layout is serial or gpu
     void updateNonSimdifiableHalo()
     {
+      ALLOW_ALL_RANKS_TO_PRINT_FOR_THIS_SCOPE;
+      
+      LOGGER<<"updateNonSimdifiableHalo";
+      
       MPI_Request requests[2*4*NDims];
       
       using LocEoSite=typename L::Loc::EoSite;
@@ -331,11 +503,11 @@ namespace grill
 		  void* recvbuf=&in(recvOffset,C(0)...);
 		  int recvcount=sendcount;
 		  int sendtag=index({},parity,ori,dir);
-		  int recvtag=sendtag;//index({},parity,oppositeOri(ori),dir); ///We don't have to switch the orientation as the offset is already computed w.r.t dest
+		  int recvtag=index({},parity,oppositeOri(ori),dir);
 		  int dest=~lattice->rankNeighbours(ori,dir);
 		  int source=dest;
 		  
-		  // LOGGER<<"Rank "<<Mpi::rank<<" parity "<<parity<<" ori "<<ori<<" dir "<<dir<<" sending to rank "<<dest<<" with tag "<<sendtag<<" receiving from "<<source<<" with tag "<<recvtag<<" sending data "<<((_Fund*)sendbuf-bufferOut.storage)<<" receiving into "<<((_Fund*)recvbuf-bufferIn.storage)<<" nbytes: "<<sendcount;
+		  LOGGER<<"Rank "<<Mpi::rank<<" parity "<<parity<<" ori "<<ori<<" dir "<<dir<<" sending to rank "<<dest<<" with tag "<<sendtag<<" receiving from "<<source<<" with tag "<<recvtag<<" nbytes: "<<sendcount;
 		  
 		  MPI_Isend(sendbuf,sendcount,MPI_CHAR,dest,sendtag,MPI_COMM_WORLD,&requests[iRequest++]);
 		  MPI_Irecv(recvbuf,recvcount,MPI_CHAR,source,recvtag,MPI_COMM_WORLD,&requests[iRequest++]);
