@@ -317,23 +317,28 @@ namespace grill
 							      ori,
 							      nPerDir,
 							      nNlsr,
+							      nLlist=lattice->nonLocSimdRanks(ori,dir),
+							      sourceOffset=lattice->simdLoc.eoVol+
+							      lattice->simdLoc.eoHaloOffsets(parity,ori,dir),
+							      destOffset=lattice->loc.eoHaloOffsets(parity,oppositeOri(ori),dir),
 							      dir,     //locEoHalo,
 							      this](const SimdLocEoSite& simdEoHaloPerDirSite) MUTABLE_INLINE_ATTRIBUTE
 							     {
 							       for(typename L::NonLocSimdRank nLsr=0;nLsr<nNlsr;nLsr++)
 								 {
 								   const SimdLocEoSite source=
-								     lattice->simdLoc.eoVol+
-								     lattice->simdLoc.eoHaloOffsets(parity,ori,dir)+
+								     sourceOffset+
 								     simdEoHaloPerDirSite;
 								   
 								   const LocEoSite dest=
-								     index(std::make_tuple(nPerDir,nNlsr),simdEoHaloPerDirSite,nLsr);
+								     index(std::make_tuple(nPerDir,nNlsr),simdEoHaloPerDirSite,nLsr)+
+								     destOffset;
 								   
 								   // if(dest>=locEoHalo)
 								   //   CRASH<<"("<<simdEoHaloPerDirSite<<","<<nLsr<<") in ("<<nPerDir<<","<<nNlsr<<"): dest "<<dest<<" >= "<<locEoHalo;
 								   
-								   const SimdRank sr=lattice->nonLocSimdRanks(ori,dir)[nLsr];
+								   const SimdRank sr=nLlist[nLsr];
+								   
 								   // LOGGER<<"Copying ("<<source<<","<<sr<<") "<<in(source,sr,C(0)...)<<" into: "<<dest;
 								   
 								   out(dest)=in(source,sr);
@@ -391,20 +396,25 @@ namespace grill
 							      ori,
 							      nPerDir,
 							      nNlsr,
+							      sourceOffset=lattice->loc.eoHaloOffsets(parity,ori,dir),
+							      nList=lattice->nonLocSimdRanks(ori,dir),
+							      destOffset=
+							      lattice->simdLoc.eoVol+
+							      lattice->simdLoc.eoHaloOffsets(parity,ori,dir),
 							      dir,
 							      this](const SimdLocEoSite& simdEoHaloPerDirSite) MUTABLE_INLINE_ATTRIBUTE
 							     {
 							       for(typename L::NonLocSimdRank nLsr=0;nLsr<nNlsr;nLsr++)
 								 {
 								   const SimdLocEoSite dest=
-								     lattice->simdLoc.eoVol+
-								     lattice->simdLoc.eoHaloOffsets(parity,ori,dir)+
+								     destOffset+
 								     simdEoHaloPerDirSite;
 								   
 								   const LocEoSite source=
-								     index(std::make_tuple(nPerDir,nNlsr),simdEoHaloPerDirSite,nLsr);
+								     index(std::make_tuple(nPerDir,nNlsr),simdEoHaloPerDirSite,nLsr)+
+								     sourceOffset;
 								   
-								   const SimdRank sr=lattice->nonLocSimdRanks(ori,dir)[nLsr];
+								   const SimdRank sr=nList[nLsr];
 								   
 								   //LOGGER<<"Copying "<<source<<" "<<in(source,C(0)...)<<" into: ("<<dest<<","<<sr<<")";
 								   out(dest,sr)=in(source);
