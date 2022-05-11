@@ -240,7 +240,7 @@ DONE
 - Halos
 - Neighbors
 - Rationalize the sites filling to split parity (oridir)
-- Comp cnanot relaly mix, strict cast needed
+- Comps now cannot mix anymore, strict cast needed
 
 TODO
 ---

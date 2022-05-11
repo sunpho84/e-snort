@@ -191,9 +191,9 @@ void testGrill()
   using RankCoords=Lattice::RankCoords;
   using SimdRankCoords=Lattice::SimdRankCoords;
   
-  const GlbCoords glbSides(6,6,8,32);
+  const GlbCoords glbSides(6,4,8,32);
   const RankCoords rankSides(1,1,1,Mpi::nRanks);
-  const SimdRankCoords simdRankSides(1,1,1,8);
+  const SimdRankCoords simdRankSides(1,2,1,4);
   const Dir parityDir=1;
   
   Lattice lattice(glbSides,rankSides,simdRankSides,parityDir);
