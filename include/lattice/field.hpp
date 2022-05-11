@@ -317,7 +317,7 @@ namespace grill
 							      ori,
 							      nPerDir,
 							      nNlsr,
-							      dir,     locEoHalo,
+							      dir,     //locEoHalo,
 							      this](const SimdLocEoSite& simdEoHaloPerDirSite) MUTABLE_INLINE_ATTRIBUTE
 							     {
 							       for(typename L::NonLocSimdRank nLsr=0;nLsr<nNlsr;nLsr++)
@@ -334,6 +334,7 @@ namespace grill
 								   //   CRASH<<"("<<simdEoHaloPerDirSite<<","<<nLsr<<") in ("<<nPerDir<<","<<nNlsr<<"): dest "<<dest<<" >= "<<locEoHalo;
 								   
 								   const SimdRank sr=lattice->nonLocSimdRanks(ori,dir)[nLsr];
+								   // LOGGER<<"Copying ("<<source<<","<<sr<<") "<<in(source,sr,C(0)...)<<" into: "<<dest;
 								   
 								   out(dest)=in(source,sr);
 								 }
@@ -354,9 +355,9 @@ namespace grill
 		  const LocEoSite& recvOffset=lattice->loc.eoHaloOffsets(parity,ori,dir);
 		  const LocEoSite& nSites=lattice->loc.eoHaloPerDir(ori,parity,dir);
 		  
-		  void* sendbuf=&out(sendOffset,C(0)...);
+		  Fund* sendbuf=&out(sendOffset,C(0)...);
 		  int sendcount=nSites*(C::sizeAtCompileTime*...)*sizeof(_Fund);
-		  void* recvbuf=&in(recvOffset,C(0)...);
+		  Fund* recvbuf=&in(recvOffset,C(0)...);
 		  int recvcount=sendcount;
 		  int sendtag=index({},parity,ori,dir);
 		  int recvtag=index({},parity,oppositeOri(ori),dir);
@@ -405,6 +406,7 @@ namespace grill
 								   
 								   const SimdRank sr=lattice->nonLocSimdRanks(ori,dir)[nLsr];
 								   
+								   //LOGGER<<"Copying "<<source<<" "<<in(source,C(0)...)<<" into: ("<<dest<<","<<sr<<")";
 								   out(dest,sr)=in(source);
 								 }
 							     });
