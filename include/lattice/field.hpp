@@ -100,8 +100,8 @@ namespace grill
     /// Internal storage type
     using Data=
       std::conditional_t<IsRef,
-      TensRef<Comps,Fund,ES>,
-      DynamicTens<Comps,Fund,ES>>;
+			 TensRef<Comps,Fund,ES>,
+			 DynamicTens<Comps,Fund,ES>>;
     
     /// Executes where allocated
     static constexpr ExecSpace execSpace=ES;
@@ -111,12 +111,12 @@ namespace grill
     decltype(auto) getInitVol(const bool flagVol) const
     {
       auto res=[flagVol](const auto& vol,const auto& halo)->std::decay_t<decltype(vol)>
-      {
-	if(flagVol)
-	  return vol+halo;
-	else
-	  return vol;
-      };
+	{
+	  if(flagVol)
+	    return vol+halo;
+	  else
+	    return vol;
+	};
       
       if constexpr(FL==FieldLayout::SIMDIFIABLE or
 		   FL==FieldLayout::SIMDIFIED)
@@ -153,23 +153,23 @@ namespace grill
     /////////////////////////////////////////////////////////////////
     
 #define PROVIDE_GET_REF(ATTRIB)						\
-  auto getRef() ATTRIB							\
-  {									\
-    return Field<CompsList<C...>,ATTRIB _Fund,L,LC,FL,ES,true>		\
-      (*lattice,haloFlag,data.storage,data.nElements,data.getDynamicSizes()); \
-  }
-  
-  PROVIDE_GET_REF(const);
-  
-  PROVIDE_GET_REF(/* non const */);
-  
-  /////////////////////////////////////////////////////////////////
-  
+    auto getRef() ATTRIB						\
+    {									\
+      return Field<CompsList<C...>,ATTRIB _Fund,L,LC,FL,ES,true>	\
+	(*lattice,haloFlag,data.storage,data.nElements,data.getDynamicSizes()); \
+    }
+    
+    PROVIDE_GET_REF(const);
+    
+    PROVIDE_GET_REF(/* non const */);
+    
+    /////////////////////////////////////////////////////////////////
+    
 #undef PROVIDE_GET_REF
     
 #define PROVIDE_SIMDIFY(ATTRIB)						\
     INLINE_FUNCTION							\
-  auto simdify() ATTRIB							\
+    auto simdify() ATTRIB						\
     {									\
       if constexpr(FL==FieldLayout::SIMDIFIABLE)			\
 	return Field<CompsList<C...>,ATTRIB _Fund,L,LC,FieldLayout::SIMDIFIED,ES,true> \
@@ -184,13 +184,13 @@ namespace grill
 	    (*lattice,haloFlag,(ATTRIB void*)data.storage,data.nElements,data.getDynamicSizes()); \
 	}								\
     }
-  
-  PROVIDE_SIMDIFY(const);
-  
-  PROVIDE_SIMDIFY(/* non const */);
-  
+    
+    PROVIDE_SIMDIFY(const);
+    
+    PROVIDE_SIMDIFY(/* non const */);
+    
 #undef PROVIDE_SIMDIFY
-  
+    
     /// States whether the field can be simdified
     static constexpr bool canSimdify=
       FL!=FieldLayout::SIMDIFIED and Data::canSimdify;
