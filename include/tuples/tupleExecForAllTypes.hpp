@@ -44,7 +44,7 @@ namespace grill
   {
     [[maybe_unused]]
     auto l=
-      {grill::internal::call(f,std::integral_constant<int,Is>())...,0};
+      {grill::internal::call(std::forward<F>(f),std::integral_constant<int,Is>())...,0};
   }
   
 #define EXEC_FOR_ALL_TUPLE_IDS(I,TP,CORE...)			\
