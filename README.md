@@ -241,17 +241,13 @@ DONE
 - Neighbors
 - Rationalize the sites filling to split parity (oridir)
 - Comps now cannot mix anymore, strict cast needed
+- Simdified halo
+- Shifter added
 
 TODO
 ---
-- we need to scan for each direction the simd rank surface, these are
-  the elements to be moved out, they must be scanned for the whole
-  surf for each direction and put into the appropriate buffer. Then
-  the data must be swapped, and put back into position. Maybe we can
-  recycle the non-simd transfer
-- simdified shift
+- closing should infer via sticky mechanism if to store as stacktens, dynamictens, or field
 - put together orientation and dir for filling halo, to simplify
-- add shift method, which returns some proxy to select the opposite parity site, with shifted coords
 - when simdifying should not we reduce nelements? bindcomps is not doing it
 - how to pass a generic site comps?
 

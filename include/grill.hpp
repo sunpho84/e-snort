@@ -26,6 +26,7 @@
 #include <expr/nodes/dynamicTens.hpp>
 #include <expr/nodes/prod.hpp>
 #include <expr/nodes/stackTens.hpp>
+#include <expr/nodes/shift.hpp>
 #include <expr/nodes/trace.hpp>
 #include <expr/nodes/transp.hpp>
 

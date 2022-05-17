@@ -1,45 +1,44 @@
-#ifndef _CONJ_HPP
-#define _CONJ_HPP
+#ifndef _SHIFT_HPP
+#define _SHIFT_HPP
 
+#include "lattice/lattice.hpp"
 #ifdef HAVE_CONFIG_H
 # include <config.hpp>
 #endif
 
-/// \file expr/nodes/conj.hpp
+/// \file expr/nodes/shift.hpp
 
-#include <expr/comps/comp.hpp>
-#include <expr/comps/comps.hpp>
+#include <expr/comps/dynamicCompsProvider.hpp>
 #include <expr/nodes/node.hpp>
 #include <expr/nodes/subNodes.hpp>
+#include <expr/comps/comps.hpp>
+#include <metaprogramming/detectableAs.hpp>
 
 namespace grill
 {
-  DECLARE_UNTRANSPOSABLE_COMP(ComplId,int,2,reIm);
+  PROVIDE_DETECTABLE_AS(Shifter);
   
-  PROVIDE_DETECTABLE_AS(Conjugator);
-  
-  /// Conjugator
+  /// Shifter
   ///
   /// Forward declaration to capture the components
   template <typename _E,
 	    typename _Comps,
 	    typename _Fund>
-  struct Conjugator;
+  struct Shifter;
   
 #define THIS					\
-  Conjugator<std::tuple<_E...>,CompsList<C...>,_Fund>
-
+  Shifter<std::tuple<_E...>,CompsList<C...>,_Fund>
+  
 #define BASE					\
     Node<THIS>
   
-  /// Conjugator
-  ///
+  /// Shifter
   template <typename..._E,
 	    typename...C,
 	    typename _Fund>
   struct THIS :
     DynamicCompsProvider<CompsList<C...>>,
-    DetectableAsConjugator,
+    DetectableAsShifter,
     SubNodes<_E...>,
     BASE
   {
@@ -62,6 +61,14 @@ namespace grill
     
     /// Fundamental tye
     using Fund=_Fund;
+    
+    using L=std::decay_t<decltype(*SubNode<0>::lattice)>;
+    
+    using Dir=typename L::Dir;
+    
+    const Ori ori;
+    
+    const Dir dir;
     
     /// Executes where allocated
     static constexpr ExecSpace execSpace=
@@ -92,8 +99,7 @@ namespace grill
     
     /// States whether the tensor can be simdified
     static constexpr bool canSimdify=
-      SubNode<0>::canSimdify and
-      not std::is_same_v<ComplId,typename SubNode<0>::SimdifyingComp>;
+      SubNode<0>::canSimdify;
     
     /// Components on which simdifying
     using SimdifyingComp=
@@ -104,7 +110,7 @@ namespace grill
     INLINE_FUNCTION						\
     auto simdify() ATTRIB					\
     {								\
-      return conj(SUBNODE(0).simdify());			\
+      return shift(SUBNODE(0).simdify(),ori,dir);			\
     }
     
     PROVIDE_SIMDIFY(const);
@@ -112,13 +118,13 @@ namespace grill
     PROVIDE_SIMDIFY(/* non const */);
     
 #undef PROVIDE_SIMDIFY
-
+    
 #define PROVIDE_GET_REF(ATTRIB)					\
     /*! Returns a reference */					\
     INLINE_FUNCTION						\
     auto getRef() ATTRIB					\
     {								\
-      return conj(SUBNODE(0).getRef());				\
+      return shift(SUBNODE(0).getRef());				\
     }
     
     PROVIDE_GET_REF(const);
@@ -130,89 +136,66 @@ namespace grill
     /// Evaluate
     template <typename...TD>
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-    Fund eval(const TD&...td) const
+    decltype(auto) eval(const TD&...td) const
     {
-      /// Compute the real or imaginary component
-      const ComplId reIm= //don't take as ref, it messes up
-	std::get<ComplId>(std::make_tuple(td...));
+      using Parity=
+	typename L::Parity;
       
-      /// Nested result
-      decltype(auto) nestedRes=
-	SUBNODE(0)(td...);
+      constexpr bool parityIsPassed=
+	(std::is_same_v<std::decay_t<TD>,Parity> or...);
       
-      if(reIm==0)
-	return nestedRes;
+      Parity parity;
+      
+      if constexpr(parityIsPassed)
+	parity=std::get<typename L::Parity>(std::make_tuple(td...));
       else
-       	return -nestedRes;
+	parity=SUBNODE(0).parity;
+      
+      auto compTransform=
+	[this,&parity](const auto& c) INLINE_ATTRIBUTE
+      {
+	const auto lattice=SUBNODE(0).lattice;
+	
+	using I=std::decay_t<decltype(c)>;
+	
+	if constexpr(std::is_same_v<I,typename L::LocEoSite>)
+	  return lattice->loc.eoNeighbours(parity,c,ori,dir);
+	else
+	  if constexpr(std::is_same_v<I,typename L::SimdLocEoSite>)
+	    return lattice->simdLoc.eoNeighbours(parity,c,ori,dir);
+	  else
+	    if constexpr(std::is_same_v<I,Parity>)
+	      return L::oppositeParity(parity);
+	    else
+	      return c;
+      };
+      
+      return SUBNODE(0)(compTransform(td)...);
     }
     
     /// Construct
     template <typename T>
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-    Conjugator(T&& arg,
-	       UNIVERSAL_CONSTRUCTOR_IDENTIFIER) :
-      SubNodes<_E...>(std::forward<T>(arg))
+    Shifter(T&& arg,
+	    const Ori& ori,
+	    const Dir& dir) :
+      SubNodes<_E...>(std::forward<T>(arg)),
+      ori(ori),
+      dir(dir)
     {
     }
   };
   
-  /// Conjugate an expression
+  /// Shifts an expression
   template <typename _E,
+	    typename D,
 	    ENABLE_THIS_TEMPLATE_IF(isNode<_E>)>
   HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-  decltype(auto) conj(_E&& e)
+  decltype(auto) shift(_E&& e,const Ori& ori,const D& dir)
   {
-    /// Base passed type
-    using E=
-      std::decay_t<_E>;
+    using E=std::decay_t<_E>;
     
-    if constexpr(isConjugator<E>)
-      return e.template subNode<0>;
-    else
-      {
-	/// Components
-	using Comps=
-	  typename E::Comps;
-	
-	if constexpr(not tupleHasType<Comps,ComplId>)
-	  return RemoveRValueReference<_E>(e);
-	else
-	  {
-	    /// Type returned when evaluating the expression
-	    using Fund=
-	      typename E::Fund;
-	    
-	    return
-	      Conjugator<std::tuple<_E>,Comps,Fund>(std::forward<_E>(e),UNIVERSAL_CONSTRUCTOR_CALL);
-	  }
-      }
-  }
-  
-#define FOR_REIM_PARTS(NAME)		\
-  FOR_ALL_COMPONENT_VALUES(ComplId,NAME)
-  
-  /// Real component index - we cannot rely on a constexpr inline as the compiler does not propagate it correctly
-#define Re ComplId(0)
-  
-  /// Imaginary component index
-#define Im ComplId(1)
-  
-  /// Returns the real part, subscribing the complex component to Re value
-  template <typename _E>
-  HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-  decltype(auto) real(_E&& e)
-  {
-    return
-      e(Re);
-  }
-  
-  /// Returns the imaginary part, subscribing the complex component to Im value
-  template <typename _E>
-  HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
-  decltype(auto) imag(_E&& e)
-  {
-    return
-      e(Im);
+    return Shifter<std::tuple<_E>,typename E::Comps,typename E::Fund>(std::forward<_E>(e),ori,dir);
   }
 }
 
