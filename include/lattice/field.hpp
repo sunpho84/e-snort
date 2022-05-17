@@ -242,43 +242,43 @@ namespace grill
 	[this,simdLocEoHalo](auto&& data,const Parity& parity)
 	{
 	  // for(Ori ori=0;ori<2;ori++)
-	    // for(typename L::Dir dir=0;dir<NDims;dir++)
-	      {
-		// const SimdLocEoSite& eoHaloPerDir=lattice->simdLoc.eoHaloPerDir(ori,parity,dir);
-		// const SimdLocEoSite& eoHaloOffset=lattice->simdLoc.eoHaloOffsets(ori,parity,dir);
-		
-		// LOGGER<<"Ori "<<ori<<" dir "<<dir<<" "<<eoHaloPerDir;
-		
-		// if(eoHaloPerDir)
-		  loopOnAllComps<CompsList<SimdLocEoSite>>(std::make_tuple(lattice->simdLoc.eoHalo),
-							   [data=data.getRef(),// eoHaloOffset,
-							    parity,this//,&ori// ,&dir
-							    ](const SimdLocEoSite& eoHaloSite) MUTABLE_INLINE_ATTRIBUTE
+	  // for(typename L::Dir dir=0;dir<NDims;dir++)
+	  {
+	    // const SimdLocEoSite& eoHaloPerDir=lattice->simdLoc.eoHaloPerDir(ori,parity,dir);
+	    // const SimdLocEoSite& eoHaloOffset=lattice->simdLoc.eoHaloOffsets(ori,parity,dir);
+	    
+	    // LOGGER<<"Ori "<<ori<<" dir "<<dir<<" "<<eoHaloPerDir;
+	    
+	    // if(eoHaloPerDir)
+	    loopOnAllComps<CompsList<SimdLocEoSite>>(std::make_tuple(lattice->simdLoc.eoHalo),
+						     [data=data.getRef(),// eoHaloOffset,
+						      parity,this//,&ori// ,&dir
+						      ](const SimdLocEoSite& eoHaloSite) MUTABLE_INLINE_ATTRIBUTE
+						     {
+						       // const SimdLocEoSite siteRemappingId=eoHaloSiteInOriDir+eoHaloOffset;
+						       const auto& r=lattice->simdEoHaloFillerTable(parity,eoHaloSite// siteRemappingId
+												    );
+						       const auto source=std::get<0>(r);
+						       const SimdLocEoSite dest=std::get<1>(r)+lattice->simdLoc.eoVol;
+						       const Ori ori=std::get<2>(r);
+						       const typename L::Dir dir=std::get<3>(r);
+						       LOGGER<<"Filling halo, id "<<eoHaloSite<<" parity "<<parity<<" ori "<<ori<<" dir "<<dir<<" dest "<<std::get<0>(r)<<" lattice->simdLoc.eoVol "<<lattice->simdLoc.eoVol<<"full dest "<<dest<<" with source "<<source;
+						       
+						       for(SimdRank simdRank=0;simdRank<lattice->nSimdRanks;simdRank++)
+							 LOGGER<<"simdRank "<<lattice->simdRankNeighbours(simdRank,ori,dir)<<" will be copied to "<<simdRank;
+						       
+						       loopOnAllComps<CompsList<C...>>(this->getDynamicSizes(),[this,&data,&dest,&source,&r,&ori,&dir](const auto&...cs)
+						       {
+							 for(SimdRank simdRank=0;simdRank<lattice->nSimdRanks;simdRank++)
 							   {
-							     // const SimdLocEoSite siteRemappingId=eoHaloSiteInOriDir+eoHaloOffset;
-							     const auto& r=lattice->simdEoHaloFillerTable(parity,eoHaloSite// siteRemappingId
-													  );
-							     const auto source=std::get<0>(r);
-							     const SimdLocEoSite dest=std::get<1>(r)+lattice->simdLoc.eoVol;
-							     const Ori ori=std::get<2>(r);
-							     const typename L::Dir dir=std::get<3>(r);
-							     LOGGER<<"Filling halo, id "<<eoHaloSite<<" parity "<<parity<<" ori "<<ori<<" dir "<<dir<<" dest "<<std::get<0>(r)<<" lattice->simdLoc.eoVol "<<lattice->simdLoc.eoVol<<"full dest "<<dest<<" with source "<<source;
-							     
-							     for(SimdRank simdRank=0;simdRank<lattice->nSimdRanks;simdRank++)
-							       LOGGER<<"simdRank "<<lattice->simdRankNeighbours(simdRank,ori,dir)<<" will be copied to "<<simdRank;
-							     
-							     loopOnAllComps<CompsList<C...>>(this->getDynamicSizes(),[this,&data,&dest,&source,&r,&ori,&dir](const auto&...cs)
-							     {
-							       for(SimdRank simdRank=0;simdRank<lattice->nSimdRanks;simdRank++)
-								 {
-								   const SimdRank& sourceSimdRank=simdRank;
-								   const SimdRank destSimdRank=lattice->simdRankNeighbours(simdRank,ori,dir);
-								   data(dest,cs...,destSimdRank)=data(source,cs...,sourceSimdRank);
-								   LOGGER<<" Copying "<<sourceSimdRank<<" simd rank into "<<destSimdRank;
-								 }
-							     });
-						   });
-	      }
+							     const SimdRank& sourceSimdRank=simdRank;
+							     const SimdRank destSimdRank=lattice->simdRankNeighbours(simdRank,ori,dir);
+							     data(dest,cs...,destSimdRank)=data(source,cs...,sourceSimdRank);
+							     LOGGER<<" Copying "<<sourceSimdRank<<" simd rank into "<<destSimdRank;
+							   }
+						       });
+						     });
+	  }
 	};
       
       if constexpr(LC==LatticeCoverage::EVEN_ODD)
@@ -309,41 +309,41 @@ namespace grill
 		const SimdLocEoSite nPerDir=
 		  lattice->simdLoc.eoHaloPerDir(ori,parity,dir);
 		
-		  if(nNlsr)
-		    loopOnAllComps<CompsList<SimdLocEoSite>>(std::make_tuple(nPerDir),
-							     [out=out.getRef(),
-							      in=in.getRef(),
-							      parity,
-							      ori,
-							      nPerDir,
-							      nNlsr,
-							      nLlist=lattice->nonLocSimdRanks(ori,dir),
-							      sourceOffset=lattice->simdLoc.eoVol+
-							      lattice->simdLoc.eoHaloOffsets(parity,ori,dir),
-							      destOffset=lattice->loc.eoHaloOffsets(parity,oppositeOri(ori),dir),
-							      dir,     //locEoHalo,
-							      this](const SimdLocEoSite& simdEoHaloPerDirSite) MUTABLE_INLINE_ATTRIBUTE
-							     {
-							       for(typename L::NonLocSimdRank nLsr=0;nLsr<nNlsr;nLsr++)
-								 {
-								   const SimdLocEoSite source=
-								     sourceOffset+
-								     simdEoHaloPerDirSite;
-								   
-								   const LocEoSite dest=
-								     index(std::make_tuple(nPerDir,nNlsr),simdEoHaloPerDirSite,nLsr)+
-								     destOffset;
-								   
-								   // if(dest>=locEoHalo)
-								   //   CRASH<<"("<<simdEoHaloPerDirSite<<","<<nLsr<<") in ("<<nPerDir<<","<<nNlsr<<"): dest "<<dest<<" >= "<<locEoHalo;
-								   
-								   const SimdRank sr=nLlist[nLsr];
-								   
-								   // LOGGER<<"Copying ("<<source<<","<<sr<<") "<<in(source,sr,C(0)...)<<" into: "<<dest;
-								   
-								   out(dest)=in(source,sr);
-								 }
-							     });
+		if(nNlsr)
+		  loopOnAllComps<CompsList<SimdLocEoSite>>(std::make_tuple(nPerDir),
+							   [out=out.getRef(),
+							    in=in.getRef(),
+							    parity,
+							    ori,
+							    nPerDir,
+							    nNlsr,
+							    nLlist=lattice->nonLocSimdRanks(ori,dir),
+							    sourceOffset=lattice->simdLoc.eoVol+
+							    lattice->simdLoc.eoHaloOffsets(parity,ori,dir),
+							    destOffset=lattice->loc.eoHaloOffsets(parity,oppositeOri(ori),dir),
+							    dir,     //locEoHalo,
+							    this](const SimdLocEoSite& simdEoHaloPerDirSite) MUTABLE_INLINE_ATTRIBUTE
+							   {
+							     for(typename L::NonLocSimdRank nLsr=0;nLsr<nNlsr;nLsr++)
+							       {
+								 const SimdLocEoSite source=
+								   sourceOffset+
+								   simdEoHaloPerDirSite;
+								 
+								 const LocEoSite dest=
+								   index(std::make_tuple(nPerDir,nNlsr),simdEoHaloPerDirSite,nLsr)+
+								   destOffset;
+								 
+								 // if(dest>=locEoHalo)
+								 //   CRASH<<"("<<simdEoHaloPerDirSite<<","<<nLsr<<") in ("<<nPerDir<<","<<nNlsr<<"): dest "<<dest<<" >= "<<locEoHalo;
+								 
+								 const SimdRank sr=nLlist[nLsr];
+								 
+								 // LOGGER<<"Copying ("<<source<<","<<sr<<") "<<in(source,sr,C(0)...)<<" into: "<<dest;
+								 
+								 out(dest)=in(source,sr);
+							       }
+							   });
 	      }
 	};
       
@@ -374,7 +374,7 @@ namespace grill
 		  MPI_Isend(sendbuf,sendcount,MPI_CHAR,dest,sendtag,MPI_COMM_WORLD,&requests[iRequest++]);
 		  MPI_Irecv(recvbuf,recvcount,MPI_CHAR,source,recvtag,MPI_COMM_WORLD,&requests[iRequest++]);
 		}
-	    };
+	};
       
       auto fillHaloParity=
 	[this,locEoHalo](auto&& out,const auto& in,const Parity& parity)
@@ -388,38 +388,38 @@ namespace grill
 		const SimdLocEoSite nPerDir=
 		  lattice->simdLoc.eoHaloPerDir(ori,parity,dir);
 		
-		  if(nNlsr)
-		    loopOnAllComps<CompsList<SimdLocEoSite>>(std::make_tuple(nPerDir),
-							     [out=out.getRef(),
-							      in=in.getRef(),
-							      parity,
-							      ori,
-							      nPerDir,
-							      nNlsr,
-							      sourceOffset=lattice->loc.eoHaloOffsets(parity,ori,dir),
-							      nList=lattice->nonLocSimdRanks(ori,dir),
-							      destOffset=
-							      lattice->simdLoc.eoVol+
-							      lattice->simdLoc.eoHaloOffsets(parity,ori,dir),
-							      dir,
-							      this](const SimdLocEoSite& simdEoHaloPerDirSite) MUTABLE_INLINE_ATTRIBUTE
-							     {
-							       for(typename L::NonLocSimdRank nLsr=0;nLsr<nNlsr;nLsr++)
-								 {
-								   const SimdLocEoSite dest=
-								     destOffset+
-								     simdEoHaloPerDirSite;
-								   
-								   const LocEoSite source=
-								     index(std::make_tuple(nPerDir,nNlsr),simdEoHaloPerDirSite,nLsr)+
-								     sourceOffset;
-								   
-								   const SimdRank sr=nList[nLsr];
-								   
-								   //LOGGER<<"Copying "<<source<<" "<<in(source,C(0)...)<<" into: ("<<dest<<","<<sr<<")";
-								   out(dest,sr)=in(source);
-								 }
-							     });
+		if(nNlsr)
+		  loopOnAllComps<CompsList<SimdLocEoSite>>(std::make_tuple(nPerDir),
+							   [out=out.getRef(),
+							    in=in.getRef(),
+							    parity,
+							    ori,
+							    nPerDir,
+							    nNlsr,
+							    sourceOffset=lattice->loc.eoHaloOffsets(parity,ori,dir),
+							    nList=lattice->nonLocSimdRanks(ori,dir),
+							    destOffset=
+							    lattice->simdLoc.eoVol+
+							    lattice->simdLoc.eoHaloOffsets(parity,ori,dir),
+							    dir,
+							    this](const SimdLocEoSite& simdEoHaloPerDirSite) MUTABLE_INLINE_ATTRIBUTE
+							   {
+							     for(typename L::NonLocSimdRank nLsr=0;nLsr<nNlsr;nLsr++)
+							       {
+								 const SimdLocEoSite dest=
+								   destOffset+
+								   simdEoHaloPerDirSite;
+								 
+								 const LocEoSite source=
+								   index(std::make_tuple(nPerDir,nNlsr),simdEoHaloPerDirSite,nLsr)+
+								   sourceOffset;
+								 
+								 const SimdRank sr=nList[nLsr];
+								 
+								 //LOGGER<<"Copying "<<source<<" "<<in(source,C(0)...)<<" into: ("<<dest<<","<<sr<<")";
+								 out(dest,sr)=in(source);
+							       }
+							   });
 	      }
 	};
       
@@ -524,7 +524,7 @@ namespace grill
 		  MPI_Isend(sendbuf,sendcount,MPI_CHAR,dest,sendtag,MPI_COMM_WORLD,&requests[iRequest++]);
 		  MPI_Irecv(recvbuf,recvcount,MPI_CHAR,source,recvtag,MPI_COMM_WORLD,&requests[iRequest++]);
 		}
-	    };
+	};
       
       auto fillHaloParity=
 	[this,locEoHalo](auto&& out,const auto& in,const Parity& parity)

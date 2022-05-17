@@ -19,7 +19,7 @@ namespace grill::internal
 #define PROVIDE_CALL(NAME,ATTRIB)			\
   template <typename F,					\
 	    typename...Args>				\
-  INLINE_FUNCTION ATTRIB				\
+  INLINE_FUNCTION HOST_DEVICE_ATTRIB ATTRIB		\
   int NAME(F&& f,					\
 	   Args&&...args)				\
   {							\

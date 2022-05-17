@@ -247,10 +247,12 @@ DONE
 TODO
 ---
 - closing should infer via sticky mechanism if to store as stacktens, dynamictens, or field
+- halo state tracking
+- unify simdified and non simdified halo communications
 - put together orientation and dir for filling halo, to simplify
 - when simdifying should not we reduce nelements? bindcomps is not doing it
 - how to pass a generic site comps?
-
+- Putting 1 and I complex
 - Reducer from nissa
 - MPI io
 
