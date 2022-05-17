@@ -139,24 +139,20 @@ namespace grill
     {									\
       assertCorrectEvaluationStorage<ES>();				\
       									\
-      if constexpr(0)							\
-	{								\
-	  const int64_t d[]={cs()...};					\
-	  const char* n[]={typeid(cs).name()...};			\
-									\
-	  LOGGER<<"Evaluating acces:";					\
-	  for(size_t i=0;i<sizeof...(cs);i++)				\
-	    LOGGER<<" "<<demangle(n[i])<<" "<<d[i];			\
-	  forEachInTuple(this->dynamicSizes,[](const auto c)		\
-	  {								\
-	    LOGGER<<"Dynamic size "<<typeid(c).name()<<" "<<c;		\
-	  });								\
-	}								\
+      /* const int64_t d[]={cs()...};				     */	\
+      /* const char* n[]={typeid(cs).name()...};		     */	\
+      /* 							     */	\
+      /* LOGGER<<"Evaluating acces:";				     */	\
+      /* for(size_t i=0;i<sizeof...(cs);i++)			     */	\
+      /* LOGGER<<" "<<demangle(n[i])<<" "<<d[i];		     */	\
+      /* forEachInTuple(this->dynamicSizes,[](const auto c)	     */	\
+      /* {							     */	\
+      /* LOGGER<<"Dynamic size "<<typeid(c).name()<<" "<<c;	     */	\
+      /* });							     */	\
       									\
       const auto id=orderedIndex<C...>(this->dynamicSizes,cs...);	\
       									\
-      if constexpr(0)							\
-	LOGGER<<" id: "<<id;						\
+      /* LOGGER<<" id: "<<id;					     */	\
       									\
       return storage[id];						\
     }
