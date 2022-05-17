@@ -172,6 +172,13 @@ namespace Tests
 // DECLARE_UNTRANSPOSABLE_COMP(GlbCoord,int,0,glbCoord);
 // DECLARE_UNTRANSPOSABLE_COMP(GlbSite,int64_t,0,glbSite);
 
+template <typename Fund=double>
+constexpr INLINE_FUNCTION
+StackTens<OfComps<ComplId>,Fund> complexOne()
+{
+  return {1,0};
+}
+
 void testGrill()
 {
   using U4D=Universe<NDims>;
@@ -197,6 +204,32 @@ void testGrill()
   const Dir parityDir=1;
   
   Lattice lattice(glbSides,rankSides,simdRankSides,parityDir);
+  
+  {
+    using F=Field<OfComps<Dir,ComplId>,double,Lattice,LatticeCoverage::EVEN_ODD,FieldLayout::SIMDIFIABLE,ExecSpace::HOST>;
+    
+    F f(lattice,true);
+    f=complexOne();
+    
+    auto s=shift(f,Ori(0),Dir(0));
+    
+    const SimdLocEoSite neigh=lattice.simdLoc.eoNeighbours(Parity(0),SimdLocEoSite(0),Ori(0),Dir(0));
+    LOGGER<<"neigh: "<<neigh;
+    f(neigh,Parity(1),Dir(0),Re,SimdRank(0))=14;
+    LOGGER<<"Dist: "<<size_t(&f(neigh,Parity(1),Dir(0),Re,SimdRank(0))-f.data.storage)/sizeof(double);
+    LOGGER<<"Set to: "<<    f(neigh,Parity(1),Dir(0),Re,SimdRank(0));
+
+    const auto r=(s*f).fillDynamicTens();
+
+    // auto d=NodeRefOrVal<F>(f);
+    
+    // auto& y=s(Dir(0),Re,Parity(0),SimdLocEoSite(0),SimdRank(0));
+    // LOGGER<<" shifter subnode pointer: "<<&s.subNode<0>()<<" field: "<<&f;
+    
+    // LOGGER<<" "<<y;
+    // LOGGER<<" dist: "<<size_t(&y-f.data.storage)/sizeof(double);
+    // CRASH<<" ";
+  }
   
   {
     using F=Field<OfComps<Dir>,double,Lattice,LatticeCoverage::EVEN_ODD,FieldLayout::SIMDIFIABLE,ExecSpace::HOST>;
@@ -417,56 +450,51 @@ g=1;
   
   StackTens<OfComps<Parity,Ori,Dir>,int> nNonLoc=0,nLoc=0;
   LOGGER<<"Now doing the neigh test";
-  loopOnAllComps<CompsList<Parity,SimdLocEoSite>>(std::make_tuple(lattice.simdLoc.eoVol),
-						  [&nLoc,&nNonLoc,
-						   &printCoords,
-						   &lattice](const Parity& parity,
-							     const SimdLocEoSite& simdLocEoSite)
-						  {
-    for(Ori ori=0;ori<2;ori++)
-      {
-	for(Dir dir=0;dir<NDims;dir++)
-	  {
-	    bool isLoc=true;
-	    
- 	    for(SimdRank simdRank=0;simdRank<SimdRank::sizeAtCompileTime;simdRank++)
-	      {
-		const GlbCoords glbCoords=
-		  lattice.computeGlbCoordsOfSimdEoRepOfLocSite(parity,simdLocEoSite,simdRank);
-		
-		GlbCoords neighCoords=lattice.shiftedCoords(glbCoords,ori,dir);
-		
-		const auto [rankP,parityP,simdLocEoSiteP,simdRankP]=lattice.computeSimdEoRepOfGlbCoords(neighCoords);
-		
-		auto l=LOGGER;
-		l<<"   ";
-		l<<"parity "<<parity<<" simdLocEoSite "<<simdLocEoSite<<" simdRank "<<simdRank<<" glbCoords: ";
-		printCoords(l,glbCoords);
-		l<<" ori "<<ori<<" dir "<<dir<<" neighCoords: ";
-		printCoords(l,neighCoords);
-		
-		l<<" rank "<<rankP<<" parity "<<parityP<<" simdLocEoSite "<<simdLocEoSiteP<<" simdRank "<<simdRankP;
-		if(Mpi::rank!=rankP)
-		  {
-		    isLoc=false;
-		    l<<" (rank) ";
-		  }
-		if(simdRank!=simdRankP)
-		  {
-		    isLoc=false;
-		    l<<" (simdRank) ";
-		  }
-	      }
-	    LOGGER<<"isLoc: "<<isLoc;
-	    LOGGER<<"";
-	    
-	    if(not isLoc)
-	      nNonLoc(parity,ori,dir)++;
-	    else
-	      nLoc(parity,ori,dir)++;
-	  }
-      }
-  });
+  for(Parity parity=0;parity<2;parity++)
+    for(SimdLocEoSite simdLocEoSite=0;simdLocEoSite<lattice.simdLoc.eoVol;simdLocEoSite++)
+      for(Ori ori=0;ori<2;ori++)
+	{
+	  for(Dir dir=0;dir<NDims;dir++)
+	    {
+	      bool isLoc=true;
+	      
+	      for(SimdRank simdRank=0;simdRank<SimdRank::sizeAtCompileTime;simdRank++)
+		{
+		  const GlbCoords glbCoords=
+		    lattice.computeGlbCoordsOfSimdEoRepOfLocSite(parity,simdLocEoSite,simdRank);
+		  
+		  GlbCoords neighCoords=lattice.shiftedCoords(glbCoords,ori,dir);
+		  
+		  const auto [rankP,parityP,simdLocEoSiteP,simdRankP]=lattice.computeSimdEoRepOfGlbCoords(neighCoords);
+		  
+		  auto l=LOGGER;
+		  l<<"   ";
+		  l<<"parity "<<parity<<" simdLocEoSite "<<simdLocEoSite<<" simdRank "<<simdRank<<" glbCoords: ";
+		  printCoords(l,glbCoords);
+		  l<<" ori "<<ori<<" dir "<<dir<<" neighCoords: ";
+		  printCoords(l,neighCoords);
+		  
+		  l<<" rank "<<rankP<<" parity "<<parityP<<" simdLocEoSite "<<simdLocEoSiteP<<" simdRank "<<simdRankP;
+		  if(Mpi::rank!=rankP)
+		    {
+		      isLoc=false;
+		      l<<" (rank) ";
+		    }
+		  if(simdRank!=simdRankP)
+		    {
+		      isLoc=false;
+		      l<<" (simdRank) ";
+		    }
+		}
+	      LOGGER<<"isLoc: "<<isLoc;
+	      LOGGER<<"";
+	      
+	      if(not isLoc)
+		nNonLoc(parity,ori,dir)++;
+	      else
+		nLoc(parity,ori,dir)++;
+	    }
+	}
   
   LOGGER<<"Summary";
   loopOnAllComps<CompsList<Parity,Ori,Dir>>({},
