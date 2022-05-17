@@ -84,6 +84,7 @@ namespace grill
     DynamicComps dynamicSizes;
     
     /// Returns the dynamic sizes
+    INLINE_FUNCTION HOST_DEVICE_ATTRIB constexpr
     const DynamicComps& getDynamicSizes() const
     {
       return dynamicSizes;
