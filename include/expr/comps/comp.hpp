@@ -73,16 +73,6 @@ namespace grill
   								\
   using NAME ## Cln=NAME ## RwOrCl<RwCl::CLN,0>;		\
   								\
-  /*! Transposed of a transposable component */			\
-  template <RwCl RC,						\
-	    int Which>						\
-  INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB			\
-  NAME ## RwOrCl<transpRwCl<RC>,Which>				\
-  transp(const NAME ## RwOrCl<RC,Which>& c)			\
-  {								\
-    return c();							\
-  }								\
-  								\
   DECLARE_COMPONENT_FACTORY(FACTORY ## Row,NAME ## Row);	\
 								\
   DECLARE_COMPONENT_FACTORY(FACTORY ## Cln,NAME ## Cln);	\
@@ -105,30 +95,26 @@ namespace grill
     static constexpr int sizeAtCompileTime=SIZE;		\
   };								\
 								\
-  /*! Transposed of a non-transposable component */		\
-  INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB			\
-  const NAME& transp(const NAME& c)				\
-  {								\
-    return c;							\
-  }								\
-								\
   DECLARE_COMPONENT_FACTORY(FACTORY,NAME)
   
   /////////////////////////////////////////////////////////////////
   
-  namespace internal
+  template <typename T,
+	    ENABLE_THIS_TEMPLATE_IF(isTransposableComp<T>)>
+  typename T::Transp transp(const T& t)
   {
-    template <typename T,
-	      ENABLE_THIS_TEMPLATE_IF(isTransposableComp<T>)>
-    typename T::Transp _transp();
-    
-    template <typename T,
-	      ENABLE_THIS_TEMPLATE_IF(not isTransposableComp<T>)>
-    T _transp();
+    return ~t;
+  }
+  
+  template <typename T,
+	    ENABLE_THIS_TEMPLATE_IF(not isTransposableComp<T>)>
+  const T& transp(const T& t)
+  {
+    return t;
   }
   
   template <typename T>
-  using Transp=decltype(internal::_transp<T>());
+  using Transp=decltype(transp(std::declval<T>()));
 }
 
 #endif

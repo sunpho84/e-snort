@@ -109,11 +109,11 @@ namespace grill
     
     PROVIDE_ALSO_NON_CONST_METHOD_WITH_ATTRIB(nastyConvert,HOST_DEVICE_ATTRIB);
     
-    INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
-    auto transp() const
-    {
-      return (typename _C::Transp)(*this)();
-    }
+    // INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
+    // auto transp() const
+    // {
+    //   return DE_CRTPFY(const _C,this).transp();
+    // }
   };
 }
 
