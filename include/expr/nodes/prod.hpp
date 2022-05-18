@@ -189,7 +189,7 @@ namespace grill
       loopOnAllComps<ContractedComps>(dynamicSizes,[this,&allNccs,&res](const auto&..._ccs) INLINE_ATTRIBUTE
       {
 	auto ccs2=
-	  std::make_tuple(std::make_tuple(_ccs.transp()...),
+	  std::make_tuple(std::make_tuple(transp(_ccs)...),
 			  std::make_tuple(_ccs...));
 	
 	/// Gets the evaluator for a given subnode
@@ -208,6 +208,17 @@ namespace grill
 		/// Non contracted components
 		auto nccs=
 		  getCompsForFact<I,CompsToRemove>(allNccs);
+		
+		// auto print=[](const auto& c)
+		// {
+		//   LOGGER<<typeid(c).name()<<" "<<c;
+		// };
+		
+		// LOGGER<<"dynamicSizes: ";
+		// forEachInTuple(dynamicSizes,print);
+		
+		// LOGGER<<"comps:";
+		// forEachInTuple(std::tuple_cat(ccs,nccs,std::make_tuple(maybeReIm...)),print);
 		
 		/// Result
 		const auto res=
