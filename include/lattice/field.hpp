@@ -129,7 +129,7 @@ namespace grill
     INLINE_FUNCTION HOST_DEVICE_ATTRIB
     auto getDynamicSizes() const
     {
-      return std::make_tuple(getInitVol(haloFlag));
+      return std::make_tuple(getInitVol(false /*no halo */));
     }
     
 #define PROVIDE_EVAL(ATTRIB)					\
@@ -429,8 +429,8 @@ namespace grill
 	  DynamicTens<OfComps<Parity,LocEoSite,C...>,Fund,ES> bufferOut(locEoHalo);
 	  DynamicTens<OfComps<Parity,LocEoSite,C...>,Fund,ES> bufferIn(locEoHalo);
 	  
-	  bufferIn=-7;
-	  bufferOut=-6;
+	  // bufferIn=-7;
+	  // bufferOut=-6;
 	  
 	  // ALLOW_ALL_RANKS_TO_PRINT_FOR_THIS_SCOPE;
 	  
