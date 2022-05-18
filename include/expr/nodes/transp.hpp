@@ -93,9 +93,17 @@ namespace grill
     static constexpr bool canSimdify=
       SubNode<0>::canSimdify;
     
+    static constexpr auto _simdifyingCompHelper()
+    {
+      using S=typename SubNode<0>::SimdifyingComp;
+      
+      if constexpr(not std::is_void_v<S>)
+	return Transp<S>{};
+    }
+    
     /// Components on which simdifying
     using SimdifyingComp=
-      Transp<typename SubNode<0>::SimdifyingComp>;
+      decltype(_simdifyingCompHelper());
     
 #define PROVIDE_SIMDIFY(ATTRIB)					\
     /*! Returns a ATTRIB simdified view */			\
