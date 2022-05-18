@@ -6,75 +6,140 @@
 
 using namespace grill;
 
-DECLARE_TRANSPOSABLE_COMP(Spin,int,4,spin);
-
-// template <int I>
-// constexpr void callS()
-// {
-// }
-
-// template <typename I>
-// void call(I i)
-// {
-//   auto c=[i](const auto& c,auto&& f,auto _j,auto _max) __attribute((always_inline))
-//   {
-//     using j=decltype(_j);
-//     using max=decltype(_max);
-    
-//     // static_assert(j()<max(),"");
-    
-//     if(i==_j)
-//       f(i);
-//     else
-//       if constexpr(j()<max())
-// 	c(c,f,std::integral_constant<int,j()+1>(),_max);
-//   };
-  
-//   c(c,[](const int i)
-//   {
-//     LOGGER<<i;
-//   },std::integral_constant<int,3>(),std::integral_constant<int,10>());
-// }
-
-template <typename F,
-	  typename...Args>
-auto affetta(F&& f,Args&&...args)
-{
-  return std::tuple_cat(f(std::forward<Args>(args))...);
-}
-
+DECLARE_TRANSPOSABLE_COMP(Col,int,3,col);
 
 void test()
 {
-  // call(3);
+  using Lat=
+    Lattice<U4D>;
   
-  StackTens<OfComps<Spin>,
-    std::vector<int>> s;
+  using GlbCoords=
+    Lat::GlbCoords;
   
-  s(Spin(0)).push_back(4);
+  using GlbCoords=
+    Lat::GlbCoords;
   
-  LOGGER<<s.storage<<" "<<s(Spin(0)).size();
-}
-
-void v()
-{
+  using GlbCoord=
+    Lat::GlbCoord;
+  
+  using RankCoords=
+    Lat::RankCoords;
+  
+  using SimdRankCoords=
+    Lat::SimdRankCoords;
+  
+  using SimdRank=
+    Lat::SimdRank;
+  
+  using SimdLocEoSite=
+    Lat::SimdLocEoSite;
+  
+  using Parity=
+    Lat::Parity;
+  
+  using Dir=U4D::Dir;
+  
+  constexpr GlbCoord Nt=8,Ns=4;
+  
+  GlbCoords glbSides{Nt,Ns,Ns,Ns};
+  
+  RankCoords nRanksPerDir{1,1,1,1};
+  SimdRankCoords nSimdRanksPerDir;
+  switch(maxAvailableSimdSize)
+    {
+    case 8:
+      nSimdRanksPerDir={4,2,1,1};
+      break;
+    case 1:
+      nSimdRanksPerDir=1;
+      break;
+    default:
+      CRASH<<"Unknown nSimdRanksPerDir "<<maxAvailableSimdSize;
+    }
+  Dir parityDir=3;
+  
+  using Lat=Lattice<U4D>;
+  
+  Lattice<U4D> lattice(glbSides,nRanksPerDir,nSimdRanksPerDir,parityDir);
+  using GaugeConf=Field<OfComps<Dir,ColRow,ColCln,ComplId>,double,Lat,LatticeCoverage::EVEN_ODD,FieldLayout::SIMDIFIABLE,ExecSpace::HOST>;
+  using Su3Field=Field<OfComps<ColRow,ColCln,ComplId>,double,Lat,LatticeCoverage::EVEN_ODD,FieldLayout::SIMDIFIABLE,ExecSpace::HOST>;
+  using ScalarField=Field<OfComps<>,double,Lat,LatticeCoverage::EVEN_ODD,FieldLayout::SIMDIFIABLE,ExecSpace::HOST>;
+  
+  GaugeConf conf(lattice,true);
+  
+  const char* path="/home/francesco/QCD/SORGENTI/grill/buildOpt/L4T8conf";
+  FILE* fin=fopen(path,"r");
+  if(fin==nullptr)
+    CRASH<<"Unable to open the file "<<path;
+  
+  for(int t=0;t<Nt;t++)
+    for(int x=0;x<Ns;x++)
+      for(int y=0;y<Ns;y++)
+	for(int z=0;z<Ns;z++)
+	  for(Dir dir=0;dir<4;dir++)
+	    for(ColRow colRow=0;colRow<3;colRow++)
+	      for(ColCln colCln=0;colCln<3;colCln++)
+		for(ComplId ri=0;ri<2;ri++)
+		  {
+		    const int id=index(std::tuple<>{},dir,colRow,colCln,ri);
+		    
+		    const auto [rank,parity,simdLocEoSite,simdRank]=
+		      lattice.computeSimdEoRepOfGlbCoords(GlbCoords{t,x,y,z});
+		    
+		    int _t,_x,_y,_z,_id;
+		    double d;
+		    const int rc=fscanf(fin,"%d %d %d %d %d %lg",&_t,&_x,&_y,&_z,&_id,&d);
+		    if(rc!=6)
+		      CRASH<<" read "<<rc<<" instead of "<<6;
+		    
+		    for(auto p : {std::make_tuple(_t,t,"t"),{_x,x,"x"},{_y,y,"y"},{_z,z,"z"},{_id,id,"id"}})
+		      if(std::get<0>(p)!=std::get<1>(p))
+			CRASH<<"obtained "<<std::get<0>(p)<<" instead of "<<std::get<1>(p)<<" for "<<std::get<2>(p);
+		    
+		    if(rank==Mpi::rank)
+		      conf(parity,simdLocEoSite,(dir+1)%Dir(4),colRow,colCln,ri,simdRank)=d;
+		  }
+  conf.updateHalo();
+  
+  LOGGER<<"Finished reading";
+  
+  if(0)
+    loopOnAllComps<GaugeConf::Comps>(std::make_tuple(lattice.simdLoc.eoVol),
+				     [&conf](const Parity& parity,const SimdLocEoSite& simdLocEoSite,const Dir& dir,const ColRow& colRow,const ColCln& colCln,const ComplId& ri,const SimdRank& simdRank)
+				     {
+				       LOGGER<<"Parity "<<parity<<" SimdLocEoSite "<<simdLocEoSite<<" Dir "<<dir<<" ColRow "<<colRow<<" ColCln "<<colCln<<" ComplId "<<ri<<" SimdRank "<<simdRank;
+				       LOGGER<<" "<<conf(parity,simdLocEoSite,dir,colRow,colCln,ri,simdRank);
+				     });
+  
+  ScalarField plaquette(lattice,true);
+  plaquette=0;
+  
+  for(Dir dir=0;dir<4;dir++)
+    for(Dir othDir=dir+1;othDir<4;othDir++)
+      {
+	Su3Field prod1(lattice,true);
+	prod1=conf(dir)*(shift(conf,FW,dir)(othDir));
+	Su3Field prod2(lattice,true);
+	prod2=conf(othDir)*(shift(conf,FW,othDir)(dir));;
+	
+	plaquette=plaquette+real(trace(prod1*dag(prod2)));
+      }
+  
+  double totPlaq=0.0;
+  for(Parity parity=0;parity<2;parity++)
+    for(SimdLocEoSite simdLocEoSite=0;simdLocEoSite<lattice.simdLoc.eoVol;simdLocEoSite++)
+      compLoop<SimdRank>([&totPlaq,&plaquette,simdLocEoSite,parity](const SimdRank& simdRank)
+      {
+	totPlaq+=plaquette(parity,simdLocEoSite,simdRank);
+      });
+  
+  totPlaq/=lattice.glbVol*6*3;
+  LOGGER<<"Plaquette: "<<totPlaq;
 }
 
 int main(int narg,char**arg)
 {
   grill::runProgram(narg,arg,[](int narg,char** arg){test();});
-  
-  // auto d=affetta([](const auto& e)
-  // {
-  // },1.0,2,"");
-
-  auto d=affetta([](const auto& e)
-  {
-    if constexpr(std::is_same_v<std::decay_t<decltype(e)>,double>)
-      return std::make_tuple(e);
-    else
-      return std::make_tuple();
-  },1.0,2,"");
   
   return 0;
 }
