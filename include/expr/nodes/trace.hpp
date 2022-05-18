@@ -146,7 +146,7 @@ namespace grill
 				  {
 				    /// First argument
 				    res+=
-				      this->nestedExpr(nTCs...,tCs...,tCs.transp()...);
+				      this->template subNode<0>()(nTCs...,tCs...,transp(tCs)...);
 				  });
       
       return
@@ -154,10 +154,18 @@ namespace grill
     }
     
     /// Construct
-    template <typename T>
+    template <typename T,
+	      ENABLE_THIS_TEMPLATE_IF(not isTracer<T>)>
     HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
     Tracer(T&& arg) :
       SubNodes<_E...>(std::forward<T>(arg))
+    {
+    }
+    
+    /// Copy constructor
+    HOST_DEVICE_ATTRIB INLINE_FUNCTION constexpr
+    Tracer(const Tracer& oth) :
+      SubNodes<_E...>(oth.template subNode<0>())
     {
     }
   };
