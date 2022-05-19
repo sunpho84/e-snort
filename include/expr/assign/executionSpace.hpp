@@ -112,6 +112,16 @@ namespace grill
 	break;
       }
   }
+  
+  /// Default execution space
+  inline constexpr ExecSpace defaultExecSpace=
+    ExecSpace::
+#if ENABLE_DEVICE_CODE
+    DEVICE
+#else
+    HOST
+#endif
+    ;
 }
 
 #endif
