@@ -43,7 +43,6 @@ namespace grill
     DynamicCompsProvider<FIELD_COMPS>,
     DetectableAsField,
     FieldParity<LATTICE,LC>,
-  // SubNodes<_E...>,
     BASE
   {
     /// Import the base expression
@@ -108,14 +107,23 @@ namespace grill
     
     /// Returns the size needed to allocate
     INLINE_FUNCTION HOST_DEVICE_ATTRIB
-    decltype(auto) getInitVol(const bool flagVol) const
+    decltype(auto) getNAllocatedSites(const HaloPresence withOrWithoutHalo) const
     {
-      auto res=[flagVol](const auto& vol,const auto& halo)->std::decay_t<decltype(vol)>
+      auto res=
+	[withOrWithoutHalo](const auto& vol,const auto& halo)->std::decay_t<decltype(vol)>
 	{
-	  if(flagVol)
+	  switch(withOrWithoutHalo)
+	    {
+	    case HaloPresence::WITH_HALO:
 	    return vol+halo;
-	  else
+	    break;
+	    case HaloPresence::WITHOUT_HALO:
 	    return vol;
+	    break;
+	    default:
+	    CRASH<<"impossible condition";
+	    return {};
+	    }
 	};
       
       if constexpr(FL==FieldLayout::SIMDIFIABLE or
@@ -129,7 +137,7 @@ namespace grill
     INLINE_FUNCTION HOST_DEVICE_ATTRIB
     auto getDynamicSizes() const
     {
-      return std::make_tuple(getInitVol(false /*no halo */));
+      return std::make_tuple(getNAllocatedSites(HaloPresence::WITHOUT_HALO /*no halo */));
     }
     
 #define PROVIDE_EVAL(ATTRIB)					\
@@ -156,7 +164,7 @@ namespace grill
     auto getRef() ATTRIB						\
     {									\
       return Field<CompsList<C...>,ATTRIB _Fund,L,LC,FL,ES,true>	\
-	(*lattice,haloFlag,data.storage,data.nElements,data.getDynamicSizes()); \
+	(*lattice,haloPresence,data.storage,data.nElements,data.getDynamicSizes()); \
     }
     
     PROVIDE_GET_REF(const);
@@ -173,7 +181,7 @@ namespace grill
     {									\
       if constexpr(FL==FieldLayout::SIMDIFIABLE)			\
 	return Field<CompsList<C...>,ATTRIB _Fund,L,LC,FieldLayout::SIMDIFIED,ES,true> \
-	  (*lattice,haloFlag,(ATTRIB void*)data.storage,data.nElements,data.getDynamicSizes()); \
+	  (*lattice,haloPresence,(ATTRIB void*)data.storage,data.nElements,data.getDynamicSizes()); \
       else								\
 	{								\
 	  using Traits=CompsListSimdifiableTraits<CompsList<C...>,_Fund>; \
@@ -181,7 +189,7 @@ namespace grill
 	  using SimdFund=typename Traits::SimdFund;			\
 	  								\
 	  return Field<typename Traits::Comps,ATTRIB SimdFund,L,LC,FieldLayout::SERIAL,ES,true> \
-	    (*lattice,haloFlag,(ATTRIB void*)data.storage,data.nElements,data.getDynamicSizes()); \
+	    (*lattice,haloPresence,(ATTRIB void*)data.storage,data.nElements,data.getDynamicSizes()); \
 	}								\
     }
     
@@ -216,7 +224,7 @@ namespace grill
     Data data;
     
     /// Determine whether the halos are allocated
-    const bool haloFlag;
+    const HaloPresence haloPresence;
     
     /// Updates the halo when the layout is simdifiable
     void updateSimdifiableHalo()
@@ -596,7 +604,7 @@ namespace grill
     /// Updates the halo
     void updateHalo()
     {
-      if(not haloFlag)
+      if(haloPresence==HaloPresence::WITHOUT_HALO)
 	CRASH<<"Trying to synchronize the halo but they it is not allocated";
       
       // LOGGER<<"Updating the halo. Output buffer is pre-set to -6, Input buffer is preset to -7. Halo is preset to -8";
@@ -611,24 +619,24 @@ namespace grill
     
     /// Create a field
     Field(const L& lattice,
-	  const bool& haloFlag=false) :
+	  const HaloPresence& haloPresence=defaultHaloPresence) :
       lattice(&lattice),
-      haloFlag(haloFlag)
+      haloPresence(haloPresence)
     {
       static_assert(not IsRef,"Can allocate only if not a reference");
       
-      data.allocate(std::make_tuple(getInitVol(haloFlag)));
+      data.allocate(std::make_tuple(getNAllocatedSites(haloPresence)));
     }
     
     /// Create a refence to a field
     Field(const L& lattice,
-	  const bool& haloFlag,
+	  const HaloPresence& haloPresence,
 	  void* storage,
 	  const int64_t& nElements,
 	  const DynamicComps& dynamicSizes) :
       lattice(&lattice),
       data((Fund*)storage,nElements,dynamicSizes),
-      haloFlag(haloFlag)
+      haloPresence(haloPresence)
     {
       static_assert(IsRef,"Can initialize as reference only if declared as a reference");
     }
@@ -638,10 +646,20 @@ namespace grill
     Field(const Field& oth) :
       lattice(oth.lattice),
       data(oth.data),
-      haloFlag(oth.haloFlag)
+      haloPresence(oth.haloPresence)
     {
     }
   };
+  
+  /// Returns an even/odd field living on current lattice
+  template <int NDims>
+  template <typename Comps,
+	    typename Fund>
+  auto Lattice<Universe<NDims>>::getField(const HaloPresence haloPresence)
+  {
+    return
+      Field<Comps,Fund,Lattice<Universe<NDims>>,LatticeCoverage::EVEN_ODD>(*this,haloPresence);
+  }
 }
 
 #endif
