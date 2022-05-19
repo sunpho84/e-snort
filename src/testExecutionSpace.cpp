@@ -208,7 +208,7 @@ void testGrill()
   {
     using F=Field<OfComps<Dir,ComplId>,double,Lattice,LatticeCoverage::EVEN_ODD,FieldLayout::SIMDIFIABLE,ExecSpace::HOST>;
     
-    F f(lattice,true);
+    F f(lattice,HaloPresence::WITH_HALO);
     f=complexOne();
     
     auto s=shift(f,Ori(0),Dir(0));
@@ -234,7 +234,7 @@ void testGrill()
   {
     using F=Field<OfComps<Dir>,double,Lattice,LatticeCoverage::EVEN_ODD,FieldLayout::SIMDIFIABLE,ExecSpace::HOST>;
     
-    F f(lattice,true);
+    F f(lattice,HaloPresence::WITH_HALO);
     f=1;
     
     loopOnAllComps<CompsList<Parity,SimdLocEoSite,SimdRank>>(std::make_tuple(lattice.simdLoc.eoVol),[&lattice,&f](const Parity& parity,const SimdLocEoSite& simdLocEoSite,const SimdRank& simdRank)
@@ -281,7 +281,7 @@ void testGrill()
   {
     using F=Field<OfComps<Dir>,double,Lattice,LatticeCoverage::EVEN,FieldLayout::SERIAL,ExecSpace::HOST>;
     
-    F f(lattice,true);
+    F f(lattice,HaloPresence::WITH_HALO);
     f=1;
     f.updateHalo();
   }
@@ -289,7 +289,7 @@ void testGrill()
   {
     using F=Field<OfComps<Dir>,double,Lattice,LatticeCoverage::EVEN,FieldLayout::GPU,ExecSpace::HOST>;
     
-    F f(lattice,true);
+    F f(lattice,HaloPresence::WITH_HALO);
     f=1;
     f.updateHalo();
   }
@@ -297,7 +297,7 @@ void testGrill()
   {
     using F=Field<OfComps<Dir>,double,Lattice,LatticeCoverage::EVEN_ODD,FieldLayout::SERIAL,ExecSpace::HOST>;
     
-    F f(lattice,true);
+    F f(lattice,HaloPresence::WITH_HALO);
     
     // {
     //   ALLOW_ALL_RANKS_TO_PRINT_FOR_THIS_SCOPE;
