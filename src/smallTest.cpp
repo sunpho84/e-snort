@@ -43,7 +43,19 @@ void test()
   
   GlbCoords glbSides{Nt,Ns,Ns,Ns};
   
-  RankCoords nRanksPerDir{1,1,1,1};
+  RankCoords nRanksPerDir;
+  switch (Mpi::nRanks)
+    {
+    case 1:
+      nRanksPerDir={1,1,1,1};
+      break;
+    case 2:
+      nRanksPerDir={1,1,1,2};
+      break;
+    default:
+      CRASH<<"Unknown number of ranks, "<<Mpi::nRanks;
+    }
+  
   SimdRankCoords nSimdRanksPerDir;
   switch(maxAvailableSimdSize)
     {
@@ -132,6 +144,7 @@ void test()
       {
 	totPlaq+=plaquette(parity,simdLocEoSite,simdRank);
       });
+  MPI_Allreduce(MPI_IN_PLACE,&totPlaq,1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
   
   totPlaq/=lattice.glbVol*6*3;
   LOGGER<<"Plaquette: "<<totPlaq;
