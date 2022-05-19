@@ -9,6 +9,7 @@
 
 #include <expr/comps/compLoops.hpp>
 #include <expr/nodes/dynamicTens.hpp>
+#include <lattice/fieldDeclaration.hpp>
 #include <lattice/universe.hpp>
 #include <metaprogramming/forEachInTuple.hpp>
 #include <resources/mathOperations.hpp>
@@ -72,6 +73,9 @@ namespace grill
   template <int NDims>
   struct Lattice<Universe<NDims>>
   {
+    /// Keeps track of whether the lattice is initialized
+    bool inited;
+    
     /// Corresponding universe
     using U=
       Universe<NDims>;
@@ -521,7 +525,7 @@ namespace grill
 			eoHaloOffsets(parity,oppositeOri(ori),dir)-eoHaloOffsets(parity,ori,dir);
 		      list.emplace_back(eoSite,excess+flippingOriOffset,ori,dir);
 		      
-		      LOGGER<<"parity "<<parity<<" eoSite "<<eoSite<<" ori "<<ori<<" dir "<<dir<<" must be copied in "<<excess;
+		      //LOGGER<<"parity "<<parity<<" eoSite "<<eoSite<<" ori "<<ori<<" dir "<<dir<<" must be copied in "<<excess;
 		    }
 		}
 	  
@@ -937,22 +941,22 @@ namespace grill
 		});
     }
     
-    // /// Initializes all directions as wrapping
-    // static constexpr DirTens<bool> allDirWraps()
-    // {
-    //   return true;
-    // }
-    
-    /// Initialize a lattice
-    Lattice(const GlbCoords& glbSides,
-	    const RankCoords& nRanksPerDir,
-	    const SimdRankCoords& nSimdRanksPerDir,
-	    const Dir& parityDir) :
-      glbSides(glbSides),
-      nRanksPerDir(nRanksPerDir),
-      nSimdRanksPerDir(nSimdRanksPerDir),
-      parityDir(parityDir)
+    /// Initialize the lattice
+    void init(const GlbCoords& _glbSides,
+	 const RankCoords& _nRanksPerDir,
+	 const SimdRankCoords& _nSimdRanksPerDir,
+	 const Dir& _parityDir)
     {
+      if(inited)
+	CRASH<<"Trying to initialize an already initialized lattice";
+      
+      inited=true;
+      
+      glbSides=_glbSides;
+      nRanksPerDir=_nRanksPerDir;
+      nSimdRanksPerDir=_nSimdRanksPerDir;
+      parityDir=_parityDir;
+    
       DirTens<SimdRank> nGlbSimdRanks=
 	~nRanksPerDir*
 	~nSimdRanksPerDir;
@@ -1236,8 +1240,39 @@ namespace grill
       // 	      }
       // });
     }
+    
+    void assertInited() const
+    {
+      if(not inited)
+	CRASH<<"Lattice "<<this<<" Not inited";
+    }
+    
+    /// Construct knowing the parameters
+    Lattice(const GlbCoords& _glbSides,
+	    const RankCoords& _nRanksPerDir,
+	    const SimdRankCoords& _nSimdRanksPerDir,
+	    const Dir& _parityDir)
+    {
+      init(_glbSides,_nRanksPerDir,_nSimdRanksPerDir,_parityDir);
+    }
+    
+    /// Default constructor
+    Lattice()
+      : inited{false}
+    {
+    }
+    
+    /// Destructor
+    ~Lattice()
+    {
+      inited=false;
+    }
+    
+    /// Returns an even/odd field living on current lattice
+    template <typename Comps,
+	      typename Fund=double>
+    auto getField(const HaloPresence haloPresence=HaloPresence::WITHOUT_HALO);
   };
-  
   
 #undef PROVIDE_ASSERT_IS_SITE
 #undef PROVIDE_ASSERT_IS_COORD
