@@ -124,10 +124,6 @@ namespace grill
       return out;
     }
   };
-  
-  /// 4-D universe
-  using U4D=
-    Universe<4>;
 }
 
 #endif
