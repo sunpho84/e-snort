@@ -112,7 +112,8 @@ namespace grill
   template <typename Type>						\
   [[ maybe_unused ]]							\
   constexpr bool hasMember_ ## TAG=					\
-    impl::HasMember_ ## TAG<Type,std::is_class<Type>::value>::value
+    impl::HasMember_ ## TAG<std::decay_t<Type>,				\
+			    std::is_class<std::decay_t<Type>>::value>::value
 }
 
 #endif
