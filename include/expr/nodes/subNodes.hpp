@@ -8,6 +8,7 @@
 #include <tuple>
 
 #include <expr/exprRefOrVal.hpp>
+#include <metaprogramming/hasMember.hpp>
 
 /// \file expr/subNodes.hpp
 ///
@@ -15,6 +16,8 @@
 
 namespace grill
 {
+  PROVIDE_HAS_MEMBER(subNodes);
+  
   /// Holds the subnodes
   template <typename..._E>
   struct SubNodes

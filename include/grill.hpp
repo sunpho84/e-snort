@@ -35,6 +35,7 @@
 
 #include <lattice/field.hpp>
 #include <lattice/lattice.hpp>
+#include <lattice/latticeGetter.hpp>
 #include <lattice/universe.hpp>
 
 #include <ios/file.hpp>
