@@ -812,6 +812,8 @@ namespace grill
     
 #undef IMPORT_SUBLATTICE_TYPES
     
+    using SpaceTimeComps=std::tuple<SimdRank,LocEoSite,SimdLocEoSite,Parity>;
+    
     /////////////////////////////////////////////////////////////////
     
     DynamicTens<OfComps<Parity,LocEoSite>,std::tuple<LocEoSite,LocEoSite,Ori,Dir>,ExecSpace::HOST> eoHaloFillerTable;
