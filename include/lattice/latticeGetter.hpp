@@ -43,9 +43,7 @@ namespace grill
     
     constexpr int nLattice=std::tuple_size_v<decltype(tmp)>;
     
-    static_assert(nLattice>0,"");
-    
-    if constexpr(nLattice>=1)
+    if constexpr(nLattice>1)
       {
 	auto lattice=std::get<0>(tmp);
 	

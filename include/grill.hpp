@@ -35,9 +35,12 @@
 
 #include <expr/operations/dagger.hpp>
 
-#include <lattice/field.hpp>
+#include <lattice/fieldLayoutGetter.hpp>
 #include <lattice/lattice.hpp>
+#include <lattice/latticeCoverage.hpp>
 #include <lattice/latticeGetter.hpp>
+#include <lattice/latticeCoverageGetter.hpp>
+#include <lattice/parityProvider.hpp>
 #include <lattice/universe.hpp>
 
 #include <ios/file.hpp>
