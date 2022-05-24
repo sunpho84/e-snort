@@ -30,11 +30,11 @@ namespace grill
 	    typename _Comps,
 	    typename _Fund,
 	    typename L,
-	    LatticeCoverage LC>
+	    LatticeCoverage TLC>
   struct Shifter;
   
 #define THIS					\
-  Shifter<std::tuple<_E...>,CompsList<C...>,_Fund,LATTICE,LC>
+  Shifter<std::tuple<_E...>,CompsList<C...>,_Fund,LATTICE,TLC>
   
 #define BASE					\
     Node<THIS>
@@ -44,12 +44,12 @@ namespace grill
 	    typename...C,
 	    typename _Fund,
 	    int NDims,
-	    LatticeCoverage LC>
+	    LatticeCoverage TLC>
   struct THIS :
     DynamicCompsProvider<CompsList<C...>>,
     DetectableAsShifter,
     SubNodes<_E...>,
-    ParityProvider<LATTICE,LC>,
+    ParityProvider<LATTICE,TLC>,
     BASE
   {
     /// Import the base expression
@@ -74,7 +74,7 @@ namespace grill
     
     using L=LATTICE;
     
-    static constexpr LatticeCoverage latticeCoverage=LC;
+    static constexpr LatticeCoverage latticeCoverage=TLC;
     
 #undef LATTICE
     
@@ -158,15 +158,15 @@ namespace grill
       constexpr bool parityIsPassed=
 	(std::is_same_v<std::decay_t<TD>,Parity> or...);
       
-      Parity innerParity;
+      Parity outerParity;
       
       if constexpr(parityIsPassed)
-	innerParity=std::get<typename L::Parity>(std::make_tuple(td...));
+	outerParity=std::get<typename L::Parity>(std::make_tuple(td...));
       else
-	innerParity=L::oppositeParity(this->parity);
+	outerParity=this->parity;
       
       auto compTransform=
-	[this,&innerParity](const auto& c) INLINE_ATTRIBUTE
+	[this,&outerParity](const auto& c) INLINE_ATTRIBUTE
       {
 	const auto lattice=SUBNODE(0).lattice;
 	
@@ -176,12 +176,15 @@ namespace grill
 	const Ori inverseOri=1-ori;
 	
 	if constexpr(std::is_same_v<I,typename L::LocEoSite>)
-	  return lattice->loc.eoNeighbours(innerParity,c,inverseOri,dir);
+	  return lattice->loc.eoNeighbours(outerParity,c,inverseOri,dir);
 	else
 	  if constexpr(std::is_same_v<I,typename L::SimdLocEoSite>)
-	    return lattice->simdLoc.eoNeighbours(innerParity,c,inverseOri,dir);
+	    return lattice->simdLoc.eoNeighbours(outerParity,c,inverseOri,dir);
 	  else
-	    return c;
+	    if constexpr(std::is_same_v<I,Parity>)
+	      return L::oppositeParity(outerParity);
+	    else
+	      return c;
       };
       
       return SUBNODE(0)(compTransform(td)...);
