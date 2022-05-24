@@ -8,6 +8,20 @@
 
 using namespace grill;
 
+template <typename U,
+	  typename O>
+auto covShiftBw(U&& conf,O&& o,const QCD::U4D::Dir& dir)
+{
+    return conf(dir)*shift(o,BW,dir);
+}
+
+template <typename U,
+	  typename O>
+auto covShiftFw(U&& conf,O&& o,const QCD::U4D::Dir& dir)
+{
+  return dag(shift(conf(dir),FW,dir))*shift(o,FW,dir);
+}
+
 void test()
 {
   using namespace QCD;
@@ -107,8 +121,8 @@ void test()
   for(Dir dir=0;dir<4;dir++)
     for(Dir othDir=dir+1;othDir<4;othDir++)
       {
-	const Su3Field prod1=(conf(dir)*(shift(conf,FW,dir)(othDir))).closeAs<Su3Field>(lattice);
-	const Su3Field prod2=(conf(othDir)*(shift(conf,FW,othDir)(dir))).closeAs<Su3Field>(lattice);
+	const Su3Field prod1=covShiftBw(conf,conf(othDir),dir).closeAs<Su3Field>(lattice);
+	const Su3Field prod2=covShiftBw(conf,conf(dir),othDir).closeAs<Su3Field>(lattice);
 	plaquette=plaquette+real(trace(prod1*dag(prod2)));
       }
   

@@ -246,6 +246,7 @@ DONE
 - Added lattice -> getField
 - Added LatticeCoverage to the shifter
 - Closing a node infer via sticky mechanism if to store as stacktens, dynamictens, or field
+- Covariant shifter
 
 TODO
 ---

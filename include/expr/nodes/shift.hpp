@@ -172,11 +172,14 @@ namespace grill
 	
 	using I=std::decay_t<decltype(c)>;
 	
+	/// We need to store the inverce direction
+	const Ori inverseOri=1-ori;
+	
 	if constexpr(std::is_same_v<I,typename L::LocEoSite>)
-	  return lattice->loc.eoNeighbours(innerParity,c,ori,dir);
+	  return lattice->loc.eoNeighbours(innerParity,c,inverseOri,dir);
 	else
 	  if constexpr(std::is_same_v<I,typename L::SimdLocEoSite>)
-	    return lattice->simdLoc.eoNeighbours(innerParity,c,ori,dir);
+	    return lattice->simdLoc.eoNeighbours(innerParity,c,inverseOri,dir);
 	  else
 	    return c;
       };
@@ -197,7 +200,9 @@ namespace grill
     }
   };
   
-  /// Shifts an expression
+  /// Shifts an expression, returning a view as shifted in the given direction and orientation
+  ///
+  /// NB: when shifting forward, we need to look for backward neighbours
   template <typename _E,
 	    typename D,
 	    ENABLE_THIS_TEMPLATE_IF(isNode<_E>)>
@@ -206,7 +211,10 @@ namespace grill
   {
     using E=std::decay_t<_E>;
     
-    return Shifter<std::tuple<_E>,typename E::Comps,typename E::Fund,typename E::L,oppositeLatticeCoverage(E::latticeCoverage)>(std::forward<_E>(e),ori,dir);
+    if constexpr(isCompsBinder<_E>)
+      return std::apply(shift(e.template subNode<0>(),ori,dir),e.boundComps);
+    else
+      return Shifter<std::tuple<_E>,typename E::Comps,typename E::Fund,typename E::L,oppositeLatticeCoverage(E::latticeCoverage)>(std::forward<_E>(e),ori,dir);
   }
 }
 
