@@ -1,7 +1,6 @@
 #ifndef _SHIFT_HPP
 #define _SHIFT_HPP
 
-#include "lattice/lattice.hpp"
 #ifdef HAVE_CONFIG_H
 # include <config.hpp>
 #endif
@@ -12,22 +11,30 @@
 #include <expr/nodes/node.hpp>
 #include <expr/nodes/subNodes.hpp>
 #include <expr/comps/comps.hpp>
+#include <lattice/lattice.hpp>
+#include <lattice/parityProvider.hpp>
 #include <metaprogramming/detectableAs.hpp>
 
 namespace grill
 {
   PROVIDE_DETECTABLE_AS(Shifter);
   
+#define UNIVERSE Universe<NDims>
+  
+#define LATTICE Lattice<UNIVERSE>
+  
   /// Shifter
   ///
   /// Forward declaration to capture the components
   template <typename _E,
 	    typename _Comps,
-	    typename _Fund>
+	    typename _Fund,
+	    typename L,
+	    LatticeCoverage LC>
   struct Shifter;
   
 #define THIS					\
-  Shifter<std::tuple<_E...>,CompsList<C...>,_Fund>
+  Shifter<std::tuple<_E...>,CompsList<C...>,_Fund,LATTICE,LC>
   
 #define BASE					\
     Node<THIS>
@@ -35,11 +42,14 @@ namespace grill
   /// Shifter
   template <typename..._E,
 	    typename...C,
-	    typename _Fund>
+	    typename _Fund,
+	    int NDims,
+	    LatticeCoverage LC>
   struct THIS :
     DynamicCompsProvider<CompsList<C...>>,
     DetectableAsShifter,
     SubNodes<_E...>,
+    ParityProvider<LATTICE,LC>,
     BASE
   {
     /// Import the base expression
@@ -62,7 +72,11 @@ namespace grill
     /// Fundamental tye
     using Fund=_Fund;
     
-    using L=std::decay_t<decltype(*SubNode<0>::lattice)>;
+    using L=LATTICE;
+    
+    static constexpr LatticeCoverage latticeCoverage=LC;
+    
+#undef LATTICE
     
     using Dir=typename L::Dir;
     
@@ -144,30 +158,27 @@ namespace grill
       constexpr bool parityIsPassed=
 	(std::is_same_v<std::decay_t<TD>,Parity> or...);
       
-      Parity parity;
+      Parity innerParity;
       
       if constexpr(parityIsPassed)
-	parity=std::get<typename L::Parity>(std::make_tuple(td...));
+	innerParity=std::get<typename L::Parity>(std::make_tuple(td...));
       else
-	parity=SUBNODE(0).parity;
+	innerParity=L::oppositeParity(this->parity);
       
       auto compTransform=
-	[this,&parity](const auto& c) INLINE_ATTRIBUTE
+	[this,&innerParity](const auto& c) INLINE_ATTRIBUTE
       {
 	const auto lattice=SUBNODE(0).lattice;
 	
 	using I=std::decay_t<decltype(c)>;
 	
 	if constexpr(std::is_same_v<I,typename L::LocEoSite>)
-	  return lattice->loc.eoNeighbours(parity,c,ori,dir);
+	  return lattice->loc.eoNeighbours(innerParity,c,ori,dir);
 	else
 	  if constexpr(std::is_same_v<I,typename L::SimdLocEoSite>)
-	    return lattice->simdLoc.eoNeighbours(parity,c,ori,dir);
+	    return lattice->simdLoc.eoNeighbours(innerParity,c,ori,dir);
 	  else
-	    if constexpr(std::is_same_v<I,Parity>)
-	      return L::oppositeParity(parity);
-	    else
-	      return c;
+	    return c;
       };
       
       return SUBNODE(0)(compTransform(td)...);
@@ -195,7 +206,7 @@ namespace grill
   {
     using E=std::decay_t<_E>;
     
-    return Shifter<std::tuple<_E>,typename E::Comps,typename E::Fund>(std::forward<_E>(e),ori,dir);
+    return Shifter<std::tuple<_E>,typename E::Comps,typename E::Fund,typename E::L,oppositeLatticeCoverage(E::latticeCoverage)>(std::forward<_E>(e),ori,dir);
   }
 }
 
