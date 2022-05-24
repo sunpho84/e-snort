@@ -22,8 +22,10 @@ namespace grill
   template <typename..._E>
   struct SubNodes
   {
+    using type=std::tuple<NodeRefOrVal<_E>...>;
+    
     /// Subnodes
-    std::tuple<NodeRefOrVal<_E>...> subNodes;
+    type subNodes;
     
 #define PROVIDE_SUBNODE(ATTRIB)				\
     /*! Proxy for the I-subexpression */		\
