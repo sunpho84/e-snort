@@ -8,12 +8,11 @@
 /// \file lattice/fieldDeclaration.hpp
 
 #include <expr/assign/executionSpace.hpp>
+#include <lattice/latticeCoverage.hpp>
+#include <tuples/tupleHasType.hpp>
 
 namespace grill
 {
-  /// Specifies whether we cover the full lattice, the even or odd part
-  enum class LatticeCoverage{EVEN,ODD,EVEN_ODD};
-  
   /// Layout to be used for organizing internal data
   enum class FieldLayout{SERIAL,SIMDIFIABLE,SIMDIFIED,GPU};
   
@@ -33,6 +32,8 @@ namespace grill
     SIMDIFIABLE
 #endif
     ;
+  
+  PROVIDE_HAS_MEMBER(fieldLayout);
   
   /// Field, forward declaration
   template <typename InnerComps,
