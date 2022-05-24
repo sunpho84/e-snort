@@ -250,6 +250,7 @@ DONE
 
 TODO
 ---
+- rebind expression to allow to reform after processing the data
 - halo state tracking
 - unify simdified and non simdified halo communications
 - put together orientation and dir for filling halo, to simplify

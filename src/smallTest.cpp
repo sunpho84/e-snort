@@ -12,7 +12,7 @@ template <typename U,
 	  typename O>
 auto covShiftBw(U&& conf,O&& o,const QCD::U4D::Dir& dir)
 {
-    return conf(dir)*shift(o,BW,dir);
+  return conf(dir)*shift(o,BW,dir);
 }
 
 template <typename U,

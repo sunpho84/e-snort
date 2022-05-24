@@ -1253,7 +1253,8 @@ namespace grill
     Lattice(const GlbCoords& _glbSides,
 	    const RankCoords& _nRanksPerDir,
 	    const SimdRankCoords& _nSimdRanksPerDir,
-	    const Dir& _parityDir)
+	    const Dir& _parityDir) :
+      Lattice()
     {
       init(_glbSides,_nRanksPerDir,_nSimdRanksPerDir,_parityDir);
     }
