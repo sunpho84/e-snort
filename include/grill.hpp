@@ -24,6 +24,8 @@
 #include <expr/nodes/conj.hpp>
 #include <expr/nodes/cWiseCombine.hpp>
 #include <expr/nodes/dynamicTens.hpp>
+#include <expr/nodes/node.hpp>
+#include <expr/nodes/nodeCloser.hpp>
 #include <expr/nodes/prod.hpp>
 #include <expr/nodes/stackTens.hpp>
 #include <expr/nodes/shift.hpp>

@@ -163,6 +163,22 @@ namespace grill
     /// Returns the expression as a dynamic tensor
     auto fillDynamicTens() const;
     
+    /// Close the expression into an appropriate tensor or field
+    template <typename Res,
+	      typename...Args>
+    INLINE_FUNCTION
+    Res closeAs(Args&&...args) const
+    {
+      Res res(std::forward<Args>(args)...);
+      
+      res=*this;
+      
+      return res;
+    }
+    
+    /// Returns the closed expression
+    auto close() const;
+    
 #define PROVIDE_SUBSCRIBE(ATTRIB)					\
     template <typename...C>						\
     constexpr INLINE_FUNCTION						\
