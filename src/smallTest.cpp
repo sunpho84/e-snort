@@ -45,7 +45,9 @@ void test()
   
   using Lat=Lattice<U4D>;
   
+  
   Lattice<U4D> lattice(glbSides,nRanksPerDir,nSimdRanksPerDir,parityDir);
+  auto fff=getTens<std::tuple<QCD::SimdLocEoSite>,double>(lattice.simdLoc.eoVol);
   using GaugeConf=Field<SU3LinksFieldComps,double,Lat>;
   using Su3Field=Field<OfComps<ColRow,ColCln,ComplId>,double,Lat,LatticeCoverage::EVEN_ODD,FieldLayout::SIMDIFIABLE,ExecSpace::HOST>;
   using ScalarField=Field<OfComps<>,double,Lat,LatticeCoverage::EVEN_ODD,FieldLayout::SIMDIFIABLE,ExecSpace::HOST>;
@@ -57,10 +59,9 @@ void test()
   if(fin==nullptr)
     CRASH<<"Unable to open the file "<<path;
 
-  const auto t=getTens<OfComps<Col>,double>();
+  // const auto t=getTens<OfComps<Col>,double>();
   const auto f=lattice.getField<OfComps<Col>>();
-    
-
+  
   for(int t=0;t<Nt;t++)
     for(int x=0;x<Ns;x++)
       for(int y=0;y<Ns;y++)
@@ -100,17 +101,14 @@ void test()
 				       LOGGER<<" "<<conf(parity,simdLocEoSite,dir,colRow,colCln,ri,simdRank);
 				     });
   
-  ScalarField plaquette(lattice,HaloPresence::WITH_HALO);
+  ScalarField plaquette(lattice);
   plaquette=0;
   
   for(Dir dir=0;dir<4;dir++)
     for(Dir othDir=dir+1;othDir<4;othDir++)
       {
-	Su3Field prod1(lattice,HaloPresence::WITH_HALO);
-	prod1=conf(dir)*(shift(conf,FW,dir)(othDir));
-	Su3Field prod2(lattice,HaloPresence::WITH_HALO);
-	prod2=conf(othDir)*(shift(conf,FW,othDir)(dir));;
-	
+	const Su3Field prod1=(conf(dir)*(shift(conf,FW,dir)(othDir))).closeAs<Su3Field>(lattice);
+	const Su3Field prod2=(conf(othDir)*(shift(conf,FW,othDir)(dir))).closeAs<Su3Field>(lattice);
 	plaquette=plaquette+real(trace(prod1*dag(prod2)));
       }
   

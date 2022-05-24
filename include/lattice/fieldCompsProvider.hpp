@@ -8,6 +8,7 @@
 /// \file lattice/fieldCompsProvider.hpp
 
 #include <lattice/fieldDeclaration.hpp>
+#include <metaprogramming/constnessChanger.hpp>
 #include <expr/comps/comps.hpp>
 
 namespace grill
@@ -60,13 +61,13 @@ namespace grill
       typename FieldCompsProvider<CompsList<C...>,F,L,CO,FieldLayout::SIMDIFIABLE>::Comps;
     
     using Traits=
-      CompsListSimdifiableTraits<NonSimdComps,F>;
+      CompsListSimdifiableTraits<NonSimdComps,std::decay_t<F>>;
     
     using Comps=
       typename Traits::Comps;
     
     using Fund=
-      typename Traits::SimdFund;
+      ConstIf<std::is_const_v<F>,typename Traits::SimdFund>;
   };
 }
 

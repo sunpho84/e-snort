@@ -185,7 +185,7 @@ namespace grill
     {									\
       if constexpr(FL==FieldLayout::SIMDIFIABLE)			\
 	return Field<CompsList<C...>,ATTRIB _Fund,L,LC,FieldLayout::SIMDIFIED,ES,true> \
-	  (*lattice,haloPresence,(ATTRIB void*)data.storage,data.nElements,data.getDynamicSizes()); \
+	  (*lattice,haloPresence,(void*)data.storage,data.nElements,data.getDynamicSizes()); \
       else								\
 	{								\
 	  using Traits=CompsListSimdifiableTraits<CompsList<C...>,_Fund>; \

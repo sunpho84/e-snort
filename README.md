@@ -243,13 +243,12 @@ DONE
 - Comps now cannot mix anymore, strict cast needed
 - Simdified halo
 - Shifter
+- Added lattice -> getField
+- Added LatticeCoverage to the shifter
+- Closing a node infer via sticky mechanism if to store as stacktens, dynamictens, or field
 
 TODO
 ---
-- add lattice -> getField<Coverage,Comps,Fund,ExecSpace> method
-- we might add LatticeCoverage to the shifter, so we can check whan combining two fields, if they have wrong parity
-- closing should infer via sticky mechanism if to store as stacktens, dynamictens, or field
-stacktens, dynamictens, eoField, should we infer from the comps?
 - halo state tracking
 - unify simdified and non simdified halo communications
 - put together orientation and dir for filling halo, to simplify

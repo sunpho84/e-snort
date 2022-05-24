@@ -216,6 +216,7 @@ namespace grill
 #undef PROVIDE_EVAL
   };
   
+  /// Fill a dynamic tensor and returns it
   template <typename T>
   INLINE_FUNCTION
   auto Node<T>::fillDynamicTens() const
