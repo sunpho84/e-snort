@@ -145,7 +145,7 @@ namespace grill
     INLINE_FUNCTION						\
     decltype(auto) recreateFromExprs(T&& t) ATTRIB		\
     {								\
-      return bind(t,std::get<Bc>(boundComps)...);		\
+      return t(std::get<Bc>(boundComps)...);			\
     }
     
     PROVIDE_RECREATE_FROM_EXPR(/* non const */);

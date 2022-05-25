@@ -19,7 +19,7 @@ template <typename U,
 	  typename O>
 auto covShiftFw(U&& conf,O&& o,const QCD::U4D::Dir& dir)
 {
-  return dag(shift(conf(dir),FW,dir))*shift(o,FW,dir);
+  return shift(dag(conf(dir))*o,FW,dir);
 }
 
 void test()

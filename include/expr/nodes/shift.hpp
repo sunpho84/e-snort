@@ -11,6 +11,9 @@
 #include <expr/nodes/node.hpp>
 #include <expr/nodes/subNodes.hpp>
 #include <expr/comps/comps.hpp>
+#include <expr/nodes/conj.hpp>
+#include <expr/nodes/producerDeclaration.hpp>
+#include <expr/nodes/transp.hpp>
 #include <lattice/lattice.hpp>
 #include <lattice/parityProvider.hpp>
 #include <metaprogramming/detectableAs.hpp>
@@ -230,10 +233,14 @@ namespace grill
   {
     using E=std::decay_t<_E>;
     
-    if constexpr(isCompsBinder<_E>)
-      return std::apply(shift(e.template subNode<0>(),ori,dir),e.boundComps);
+    if constexpr(isCompsBinder<_E> or isConjugator<_E> or isTransposer<_E>)
+      return e.recreateFromExprs(shift(e.template subNode<0>(),ori,dir));
     else
-      return Shifter<std::tuple<_E>,typename E::Comps,typename E::Fund,typename E::L,oppositeLatticeCoverage(E::latticeCoverage)>(std::forward<_E>(e),ori,dir);
+      if constexpr(isProducer<_E>)
+	return e.recreateFromExprs(shift(e.template subNode<0>(),ori,dir),
+				   shift(e.template subNode<1>(),ori,dir));
+      else
+	return Shifter<std::tuple<_E>,typename E::Comps,typename E::Fund,typename E::L,oppositeLatticeCoverage(E::latticeCoverage)>(std::forward<_E>(e),ori,dir);
   }
 }
 
