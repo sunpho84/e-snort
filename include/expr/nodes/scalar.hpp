@@ -77,6 +77,17 @@ namespace grill
       return value;
     }
     
+    /////////////////////////////////////////////////////////////////
+    
+    /// Returns from another F
+    INLINE_FUNCTION
+    Scalar<F> recreateFromExprs(F& val) const
+    {
+      return scalar(val);
+    }
+    
+    /////////////////////////////////////////////////////////////////
+    
     /// Constructor
     constexpr Scalar(const F& value) :
       value(value)

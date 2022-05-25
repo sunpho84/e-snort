@@ -104,6 +104,8 @@ namespace grill
     using SimdifyingComp=
       typename SubNode<0>::SimdifyingComp;
     
+    /////////////////////////////////////////////////////////////////
+    
 #define PROVIDE_SIMDIFY(ATTRIB)					\
     /*! Returns a ATTRIB simdified view */			\
     INLINE_FUNCTION						\
@@ -118,6 +120,18 @@ namespace grill
     
 #undef PROVIDE_SIMDIFY
     
+    /////////////////////////////////////////////////////////////////
+    
+    //// Returns a tracer on a different expression
+    template <typename T>
+    INLINE_FUNCTION
+    decltype(auto) recreateFromExprs(T&& t) const
+    {
+      return trace(std::forward<T>(t));
+    }
+    
+    /////////////////////////////////////////////////////////////////
+    
 #define PROVIDE_GET_REF(ATTRIB)					\
     /*! Returns a reference */					\
     INLINE_FUNCTION						\
@@ -131,6 +145,8 @@ namespace grill
     PROVIDE_GET_REF(/* non const */);
     
 #undef PROVIDE_GET_REF
+    
+    /////////////////////////////////////////////////////////////////
     
     /// Evaluate
     template <typename...NTc>

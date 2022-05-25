@@ -175,9 +175,25 @@ namespace grill
     
     PROVIDE_GET_REF(/* non const */);
     
+#undef PROVIDE_GET_REF
+    
     /////////////////////////////////////////////////////////////////
     
-#undef PROVIDE_GET_REF
+#define PROVIDE_RECREATE_FROM_EXPR(ATTRIB)			\
+    /*! Returns itself */					\
+    INLINE_FUNCTION						\
+    decltype(auto) recreateFromExprs() ATTRIB			\
+    {								\
+      return *this;						\
+    }
+    
+    PROVIDE_RECREATE_FROM_EXPR(/* non const */);
+    
+    PROVIDE_RECREATE_FROM_EXPR(const);
+    
+#undef PROVIDE_RECREATE_FROM_EXPR
+    
+    /////////////////////////////////////////////////////////////////
     
 #define PROVIDE_SIMDIFY(ATTRIB)						\
     INLINE_FUNCTION							\

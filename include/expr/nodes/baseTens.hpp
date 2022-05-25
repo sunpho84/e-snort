@@ -111,6 +111,24 @@ namespace grill
 #endif
       _SimdifyTraits::canSimdify;
     
+    /////////////////////////////////////////////////////////////////
+    
+#define PROVIDE_RECREATE_FROM_EXPR(ATTRIB)			\
+    /*! Returns itself */					\
+    INLINE_FUNCTION						\
+    decltype(auto) recreateFromExprs() ATTRIB			\
+    {								\
+      return DE_CRTPFY(ATTRIB T,this);				\
+    }
+    
+    PROVIDE_RECREATE_FROM_EXPR(/* non const */);
+    
+    PROVIDE_RECREATE_FROM_EXPR(const);
+    
+#undef PROVIDE_RECREATE_FROM_EXPR
+    
+    /////////////////////////////////////////////////////////////////
+    
     /// Returns a const reference
     auto getRef() const;
     

@@ -119,6 +119,8 @@ namespace grill
     using SimdifyingComp=
       std::conditional_t<canSimdify,typename SubNode<0>::SimdifyingComp,void>;
     
+    /////////////////////////////////////////////////////////////////
+    
 #define PROVIDE_SIMDIFY(ATTRIB)					\
     /*! Returns a ATTRIB simdified view */			\
     INLINE_FUNCTION						\
@@ -133,6 +135,8 @@ namespace grill
     
 #undef PROVIDE_SIMDIFY
     
+    /////////////////////////////////////////////////////////////////
+    
 #define PROVIDE_GET_REF(ATTRIB)					\
     /*! Returns a reference */					\
     INLINE_FUNCTION						\
@@ -146,6 +150,18 @@ namespace grill
     PROVIDE_GET_REF(/* non const */);
     
 #undef PROVIDE_GET_REF
+    
+    /////////////////////////////////////////////////////////////////
+    
+    //// Returns a similar shifter on a different orientation and direction
+    template <typename T>
+    INLINE_FUNCTION
+    decltype(auto) recreateFromExprs(T&& t) const
+    {
+      return shift(std::forward<T>(t),ori,dir);
+    }
+    
+    /////////////////////////////////////////////////////////////////
     
     /// Evaluate
     template <typename...TD>

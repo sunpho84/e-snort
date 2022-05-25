@@ -40,6 +40,7 @@ namespace grill
     PROVIDE_HAS_MEMBER(SimdifyingComp);
     PROVIDE_HAS_MEMBER(hasDynamicComps);
     PROVIDE_HAS_MEMBER(canAssignAtCompileTime);
+    PROVIDE_HAS_MEMBER(recreateFromExprs);
   }
   
   template <typename T>
@@ -76,6 +77,7 @@ namespace grill
 		    hasMember_SimdifyingComp<T> and
 		    hasMember_canAssignAtCompileTime<T> and
 		    hasMember_hasDynamicComps<T> and
+		    hasMember_recreateFromExprs<T> and
 		    hasMember_storeByRef<T>,
 		    "Incomplete node type");
    }

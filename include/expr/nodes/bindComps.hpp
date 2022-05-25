@@ -137,6 +137,25 @@ namespace grill
     
 #undef PROVIDE_SIMDIFY
     
+    /////////////////////////////////////////////////////////////////
+    
+#define PROVIDE_RECREATE_FROM_EXPR(ATTRIB)			\
+    /*! Returns a ATTRIB similar version */			\
+    template <typename T>					\
+    INLINE_FUNCTION						\
+    decltype(auto) recreateFromExprs(T&& t) ATTRIB		\
+    {								\
+      return bind(t,std::get<Bc>(boundComps)...);		\
+    }
+    
+    PROVIDE_RECREATE_FROM_EXPR(/* non const */);
+    
+    PROVIDE_RECREATE_FROM_EXPR(const);
+    
+#undef PROVIDE_RECREATE_FROM_EXPR
+    
+    /////////////////////////////////////////////////////////////////
+    
 #define PROVIDE_GET_REF(ATTRIB)					\
     /*! Returns a reference */					\
     INLINE_FUNCTION						\
@@ -150,6 +169,8 @@ namespace grill
     PROVIDE_GET_REF(/* non const */);
     
 #undef PROVIDE_GET_REF
+    
+    /////////////////////////////////////////////////////////////////
     
 #define PROVIDE_EVAL(ATTRIB)						\
     template <typename...U>						\

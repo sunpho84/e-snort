@@ -140,6 +140,25 @@ namespace grill
     
 #undef PROVIDE_SIMDIFY
     
+    /////////////////////////////////////////////////////////////////
+    
+#define PROVIDE_RECREATE_FROM_EXPR(ATTRIB)			\
+    /*! Returns a ATTRIB similar version */			\
+    template <typename...T>					\
+    INLINE_FUNCTION						\
+    decltype(auto) recreateFromExprs(T&&...t) ATTRIB		\
+    {								\
+      return Comb::compute(std::forward<T>(t)...);		\
+    }
+    
+    PROVIDE_RECREATE_FROM_EXPR(/* non const */);
+    
+    PROVIDE_RECREATE_FROM_EXPR(const);
+    
+#undef PROVIDE_RECREATE_FROM_EXPR
+    
+    /////////////////////////////////////////////////////////////////
+    
 #define PROVIDE_GET_REF(ATTRIB)					\
     /*! Returns a reference */					\
     INLINE_FUNCTION						\

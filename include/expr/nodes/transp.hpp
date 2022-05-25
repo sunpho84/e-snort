@@ -119,6 +119,18 @@ namespace grill
     
 #undef PROVIDE_SIMDIFY
     
+    /////////////////////////////////////////////////////////////////
+    
+    //// Returns a transposer on a different expression
+    template <typename T>
+    INLINE_FUNCTION
+    decltype(auto) recreateFromExprs(T&& t) const
+    {
+      return transp(std::forward<T>(t));
+    }
+    
+    /////////////////////////////////////////////////////////////////
+    
 #define PROVIDE_GET_REF(ATTRIB)					\
     /*! Returns a reference */					\
     INLINE_FUNCTION						\
@@ -132,6 +144,8 @@ namespace grill
     PROVIDE_GET_REF(/* non const */);
     
 #undef PROVIDE_GET_REF
+    
+    /////////////////////////////////////////////////////////////////
     
     /// Evaluate
     template <typename...TD>
