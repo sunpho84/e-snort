@@ -246,9 +246,25 @@ namespace grill
     /// Determine whether the halos are allocated
     const HaloPresence haloPresence;
     
+    enum class HaloStatus{NOT_UPDATED,UPDATED};
+    
+    HaloStatus haloStatus;
+    
+    void invalidateHalo()
+    {
+      haloStatus=HaloStatus::NOT_UPDATED;
+    }
+    
     /// Updates the halo when the layout is simdifiable
     void updateSimdifiableHalo()
     {
+      if(haloStatus==HaloStatus::UPDATED)
+	{
+	  LOGGER<<"No need to update the halo";
+	  
+	  return ;
+	}
+      
       LOGGER<<" updateSimdifiableHalo";
       
       using SimdLocEoSite=typename L::SimdLoc::EoSite;
@@ -257,14 +273,14 @@ namespace grill
       
       const SimdLocEoSite& simdLocEoHalo=lattice->simdLoc.eoHalo;
       
-      for(Ori ori=0;ori<2;ori++)
-	for(typename L::Dir dir=0;dir<NDims;dir++)
-	  {
-	    LOGGER<<"Ori "<<ori<<" dir "<<dir;
+      // for(Ori ori=0;ori<2;ori++)
+      // 	for(typename L::Dir dir=0;dir<NDims;dir++)
+      // 	  {
+      // 	    LOGGER<<"Ori "<<ori<<" dir "<<dir;
 	    
-	    for(SimdRank simdRank=0;simdRank<lattice->nSimdRanks;simdRank++)
-	      LOGGER<<"simdRank "<<lattice->simdRankNeighbours(simdRank,ori,dir)<<" will be copied to "<<simdRank;
-	  }
+      // 	    for(SimdRank simdRank=0;simdRank<lattice->nSimdRanks;simdRank++)
+      // 	      LOGGER<<"simdRank "<<lattice->simdRankNeighbours(simdRank,ori,dir)<<" will be copied to "<<simdRank;
+      // 	  }
       
       auto fillLocHalo=
 	[this,simdLocEoHalo](auto&& data,const Parity& parity)
@@ -290,10 +306,10 @@ namespace grill
 						       const SimdLocEoSite dest=std::get<1>(r)+lattice->simdLoc.eoVol;
 						       const Ori ori=std::get<2>(r);
 						       const typename L::Dir dir=std::get<3>(r);
-						       LOGGER<<"Filling halo, id "<<eoHaloSite<<" parity "<<parity<<" ori "<<ori<<" dir "<<dir<<" dest "<<std::get<0>(r)<<" lattice->simdLoc.eoVol "<<lattice->simdLoc.eoVol<<"full dest "<<dest<<" with source "<<source;
+						       // LOGGER<<"Filling halo, id "<<eoHaloSite<<" parity "<<parity<<" ori "<<ori<<" dir "<<dir<<" dest "<<std::get<0>(r)<<" lattice->simdLoc.eoVol "<<lattice->simdLoc.eoVol<<"full dest "<<dest<<" with source "<<source;
 						       
-						       for(SimdRank simdRank=0;simdRank<lattice->nSimdRanks;simdRank++)
-							 LOGGER<<"simdRank "<<lattice->simdRankNeighbours(simdRank,ori,dir)<<" will be copied to "<<simdRank;
+						       // for(SimdRank simdRank=0;simdRank<lattice->nSimdRanks;simdRank++)
+						       // 	 LOGGER<<"simdRank "<<lattice->simdRankNeighbours(simdRank,ori,dir)<<" will be copied to "<<simdRank;
 						       
 						       loopOnAllComps<CompsList<C...>>(this->getDynamicSizes(),[this,&data,&dest,&source,&r,&ori,&dir](const auto&...cs)
 						       {
@@ -302,7 +318,7 @@ namespace grill
 							     const SimdRank& sourceSimdRank=simdRank;
 							     const SimdRank destSimdRank=lattice->simdRankNeighbours(simdRank,ori,dir);
 							     data(dest,cs...,destSimdRank)=data(source,cs...,sourceSimdRank);
-							     LOGGER<<" Copying "<<sourceSimdRank<<" simd rank into "<<destSimdRank;
+							     // LOGGER<<" Copying "<<sourceSimdRank<<" simd rank into "<<destSimdRank;
 							   }
 						       });
 						     });
@@ -494,12 +510,21 @@ namespace grill
 	  
 	  fillHaloParity(data,bufferIn,this->parity);
 	}
+      
+      haloStatus=HaloStatus::UPDATED;
     }
     
     /// Updates the halo when the layout is serial or gpu
     void updateNonSimdifiableHalo()
     {
-      ALLOW_ALL_RANKS_TO_PRINT_FOR_THIS_SCOPE;
+      if(haloStatus==HaloStatus::UPDATED)
+	{
+	  LOGGER<<"No need to update the halo";
+	  
+	  return ;
+	}
+      
+      // ALLOW_ALL_RANKS_TO_PRINT_FOR_THIS_SCOPE;
       
       LOGGER<<"updateNonSimdifiableHalo";
       
@@ -547,7 +572,7 @@ namespace grill
 		  int dest=~lattice->rankNeighbours(ori,dir);
 		  int source=dest;
 		  
-		  LOGGER<<"Rank "<<Mpi::rank<<" parity "<<parity<<" ori "<<ori<<" dir "<<dir<<" sending to rank "<<dest<<" with tag "<<sendtag<<" receiving from "<<source<<" with tag "<<recvtag<<" nbytes: "<<sendcount;
+		  // LOGGER<<"Rank "<<Mpi::rank<<" parity "<<parity<<" ori "<<ori<<" dir "<<dir<<" sending to rank "<<dest<<" with tag "<<sendtag<<" receiving from "<<source<<" with tag "<<recvtag<<" nbytes: "<<sendcount;
 		  
 		  MPI_Isend(sendbuf,sendcount,MPI_CHAR,dest,sendtag,MPI_COMM_WORLD,&requests[iRequest++]);
 		  MPI_Irecv(recvbuf,recvcount,MPI_CHAR,source,recvtag,MPI_COMM_WORLD,&requests[iRequest++]);
@@ -619,6 +644,8 @@ namespace grill
 	  
 	  fillHaloParity(data,bufferIn,this->parity);
 	}
+      
+      haloStatus=HaloStatus::UPDATED;
     }
     
     /// Updates the halo
@@ -646,6 +673,8 @@ namespace grill
       static_assert(not IsRef,"Can allocate only if not a reference");
       
       data.allocate(std::make_tuple(getNAllocatedSites(haloPresence)));
+      
+      invalidateHalo();
     }
     
     /// Create a refence to a field
@@ -666,7 +695,8 @@ namespace grill
     Field(const Field& oth) :
       lattice(oth.lattice),
       data(oth.data),
-      haloPresence(oth.haloPresence)
+      haloPresence(oth.haloPresence),
+      haloStatus(oth.haloStatus)
     {
     }
   };
