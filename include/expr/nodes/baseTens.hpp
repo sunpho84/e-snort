@@ -15,6 +15,7 @@
 #include <metaprogramming/crtp.hpp>
 #include <resources/memory.hpp>
 #include <resources/SIMD.hpp>
+#include <resources/Mpi.hpp>
 
 namespace grill
 {
@@ -158,6 +159,19 @@ namespace grill
     /// Gets a copy on a specific execution space
     template <ExecSpace OES>
     DynamicTens<CompsList<C...>,F,OES> getCopyOnExecSpace() const;
+    
+    /// Reduce across all nodes
+    auto nodeReduce() const
+    {
+      const auto& self=
+	DE_CRTPFY(const T,this);
+      
+      T res(self.getDynamicSizes());
+      
+      Mpi::allReduce(res.storage,self.storage,self.nElements);
+      
+      return res;
+    }
     
     /// Default constructor
     constexpr BaseTens()
