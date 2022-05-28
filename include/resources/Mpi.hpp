@@ -80,17 +80,35 @@ namespace grill::Mpi
   
   /// Reduces among all MPI process
   template <typename T>
+  void allReduce(T* out,const T* in,const int n)
+  {
+#ifdef ENABLE_MPI
+    MPI_CRASH_ON_ERROR(MPI_Allreduce(in,out,n,type<T>(),MPI_SUM,MPI_COMM_WORLD),"Reducing among all processes");
+#else
+    if(out!=in)
+      memcpy(out,in,n*sizeof(T));
+#endif
+  }
+  
+  /// Reduces among all MPI process
+  template <typename T>
+  void allReduce(T* out,const int n)
+  {
+#ifdef ENABLE_MPI
+    allReduce(out,(const T*)MPI_IN_PLACE,n);
+#endif
+  }
+  
+  /// Reduces among all MPI process
+  template <typename T>
   T allReduce(const T& in)
   {
-    
 #ifdef ENABLE_MPI
     
     /// Result
     T out;
     
-    minimalLogger("%p %d",&out,rank);
-    
-    MPI_CRASH_ON_ERROR(MPI_Allreduce(&in,&out,1,type<T>(),MPI_SUM,MPI_COMM_WORLD),"Reducing among all processes");
+    allReduce(&out,&in,1);
     
     return
       out;
@@ -101,7 +119,6 @@ namespace grill::Mpi
       in;
     
 #endif
-    
   }
   
   /// Barrier among all MPI process
