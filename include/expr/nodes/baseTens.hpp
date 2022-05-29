@@ -136,10 +136,10 @@ namespace grill
     /// Returns a reference
     auto getRef();
     
-    /// Returns a const cast to base fundamental
+    /// Returns a const cast to base fundamental of the Fund
     auto operator~() const;
     
-    /// Returns a cast to base fundamental
+    /// Returns a cast to base fundamental of the fund
     auto operator~();
     
     /// Returns a const reference with different type
@@ -161,16 +161,13 @@ namespace grill
     DynamicTens<CompsList<C...>,F,OES> getCopyOnExecSpace() const;
     
     /// Reduce across all nodes
-    auto nodeReduce() const
+    void nodeReduce()
     {
-      const auto& self=
-	DE_CRTPFY(const T,this);
+      auto& self=
+	DE_CRTPFY(T,this);
       
-      T res(self.getDynamicSizes());
-      
-      Mpi::allReduce(res.storage,self.storage,self.nElements);
-      
-      return res;
+      Mpi::allReduce(self.storage,self.nElements);
+      static_assert(not std::is_const_v<decltype(self.storage)>,"");
     }
     
     /// Default constructor

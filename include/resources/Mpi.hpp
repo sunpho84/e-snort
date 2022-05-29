@@ -46,7 +46,7 @@ namespace grill::Mpi
 		   const char* format,     ///< Additional error message
 		   ...);
   
-#ifdef ENABLE_MPI
+#if ENABLE_MPI
   /// Provides the \c MPI_Datatype of an any unknown type
   template <typename T>
   inline MPI_Datatype type()
@@ -82,7 +82,7 @@ namespace grill::Mpi
   template <typename T>
   void allReduce(T* out,const T* in,const int n)
   {
-#ifdef ENABLE_MPI
+#if ENABLE_MPI
     MPI_CRASH_ON_ERROR(MPI_Allreduce(in,out,n,type<T>(),MPI_SUM,MPI_COMM_WORLD),"Reducing among all processes");
 #else
     if(out!=in)
@@ -94,7 +94,7 @@ namespace grill::Mpi
   template <typename T>
   void allReduce(T* out,const int n)
   {
-#ifdef ENABLE_MPI
+#if ENABLE_MPI
     allReduce(out,(const T*)MPI_IN_PLACE,n);
 #endif
   }
@@ -103,7 +103,7 @@ namespace grill::Mpi
   template <typename T>
   T allReduce(const T& in)
   {
-#ifdef ENABLE_MPI
+#if ENABLE_MPI
     
     /// Result
     T out;
@@ -124,7 +124,7 @@ namespace grill::Mpi
   /// Barrier among all MPI process
   inline void barrier()
   {
-#ifdef ENABLE_MPI
+#if ENABLE_MPI
     MPI_CRASH_ON_ERROR(MPI_Barrier(MPI_COMM_WORLD),"Waiting");
 #endif
   }
@@ -138,7 +138,7 @@ namespace grill::Mpi
 		 const size_t& size,     ///< Size of the quantity to broadcast
 		 int root=MASTER_RANK)   ///< Rank from which to broadcast
   {
-#ifdef ENABLE_MPI
+#if ENABLE_MPI
     minimalLogger("%p %d",x,rank);
     MPI_CRASH_ON_ERROR(MPI_Bcast(x,size,MPI_CHAR,root,MPI_COMM_WORLD),"Broadcasting");
 #endif
@@ -164,7 +164,7 @@ namespace grill::Mpi
 		 int root=MASTER_RANK)   ///< Rank from which to broadcast
   {
     
-#ifdef ENABLE_MPI
+#if ENABLE_MPI
     Binarizer bin=
       val.binarize();
     
