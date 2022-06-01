@@ -87,6 +87,8 @@ namespace grill
   struct CompsListSimdifiableTraits<CompsList<>,F>
   {
     using LastComp=void;
+    
+    static constexpr bool canSimdify=false;
   };
   
   /// Returns whether the last component can simdify
