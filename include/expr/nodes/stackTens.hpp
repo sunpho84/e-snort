@@ -93,7 +93,7 @@ namespace grill
       indexMaxValue<C...>();
     
     /// Data
-    Fund storage[nElements];
+    Fund storage[nElements]  __attribute__ (( __aligned__(Base::canSimdify?32:16)));
     
     /// We store the reference to the tensor
     static constexpr bool storeByRef=true;

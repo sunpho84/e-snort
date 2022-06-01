@@ -248,6 +248,7 @@ DONE
 - Closing a node infer via sticky mechanism if to store as stacktens, dynamictens, or field
 - Covariant shifter
 - Rebind expression to allow to reform after processing the data
+- Node can reduce a tens
 
 TODO
 ---

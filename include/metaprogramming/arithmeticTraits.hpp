@@ -174,7 +174,7 @@ namespace grill
   
   DEFINE_BINARY_OPERATOR_IMPLEMENTATION_CHECK(canAssign,CanAssign,=);
   
-    /// Assign two elements
+  /// Assign two elements
   template <typename T1,
 	    typename T2,
 	    ENABLE_THIS_TEMPLATE_IF(canAssign<T1,T2>)>
