@@ -9,6 +9,7 @@
 
 #include <expr/assign/executionSpace.hpp>
 #include <expr/comps/comps.hpp>
+#include <expr/nodes/tens.hpp>
 #include <expr/nodes/tensRef.hpp>
 #include <lattice/fieldCompsProvider.hpp>
 #include <lattice/parityProvider.hpp>
@@ -271,7 +272,7 @@ namespace grill
       using SimdRank=typename L::SimdRank;
       using Parity=typename L::Parity;
       
-      const SimdLocEoSite& simdLocEoHalo=lattice->simdLoc.eoHalo;
+      //const SimdLocEoSite& simdLocEoHalo=lattice->simdLoc.eoHalo;
       
       // for(Ori ori=0;ori<2;ori++)
       // 	for(typename L::Dir dir=0;dir<NDims;dir++)
@@ -283,7 +284,7 @@ namespace grill
       // 	  }
       
       auto fillLocHalo=
-	[this,simdLocEoHalo](auto&& data,const Parity& parity)
+	[this](auto&& data,const Parity& parity)
 	{
 	  // for(Ori ori=0;ori<2;ori++)
 	  // for(typename L::Dir dir=0;dir<NDims;dir++)
@@ -311,16 +312,17 @@ namespace grill
 						       // for(SimdRank simdRank=0;simdRank<lattice->nSimdRanks;simdRank++)
 						       // 	 LOGGER<<"simdRank "<<lattice->simdRankNeighbours(simdRank,ori,dir)<<" will be copied to "<<simdRank;
 						       
-						       loopOnAllComps<CompsList<C...>>(this->getDynamicSizes(),[this,&data,&dest,&source,&r,&ori,&dir](const auto&...cs)
-						       {
-							 for(SimdRank simdRank=0;simdRank<lattice->nSimdRanks;simdRank++)
-							   {
-							     const SimdRank& sourceSimdRank=simdRank;
-							     const SimdRank destSimdRank=lattice->simdRankNeighbours(simdRank,ori,dir);
-							     data(dest,cs...,destSimdRank)=data(source,cs...,sourceSimdRank);
-							     // LOGGER<<" Copying "<<sourceSimdRank<<" simd rank into "<<destSimdRank;
-							   }
-						       });
+						       loopOnAllComps<CompsList<C...>>(this->getDynamicSizes(),
+										       [this,&data,&dest,&source,&ori,&dir](const auto&...cs)
+										       {
+											 for(SimdRank simdRank=0;simdRank<lattice->nSimdRanks;simdRank++)
+											   {
+											     const SimdRank& sourceSimdRank=simdRank;
+											     const SimdRank destSimdRank=lattice->simdRankNeighbours(simdRank,ori,dir);
+											     data(dest,cs...,destSimdRank)=data(source,cs...,sourceSimdRank);
+											     // LOGGER<<" Copying "<<sourceSimdRank<<" simd rank into "<<destSimdRank;
+											   }
+										       });
 						     });
 	  }
 	};
@@ -342,7 +344,7 @@ namespace grill
       const LocEoSite& locEoHalo=lattice->loc.eoHalo;
       
       auto fillBufferParity=
-	[this,locEoHalo](auto&& out,const auto& in,const Parity& parity)
+	[this](auto&& out,const auto& in,const Parity& parity)
 	{
 	  for(Ori ori=0;ori<2;ori++)
 	    for(Dir dir=0;dir<NDims;dir++)
@@ -357,16 +359,14 @@ namespace grill
 		  loopOnAllComps<CompsList<SimdLocEoSite>>(std::make_tuple(nPerDir),
 							   [out=out.getRef(),
 							    in=in.getRef(),
-							    parity,
-							    ori,
 							    nPerDir,
 							    nNlsr,
 							    nLlist=lattice->nonLocSimdRanks(ori,dir),
 							    sourceOffset=lattice->simdLoc.eoVol+
 							    lattice->simdLoc.eoHaloOffsets(parity,ori,dir),
-							    destOffset=lattice->loc.eoHaloOffsets(parity,oppositeOri(ori),dir),
-							    dir,     //locEoHalo,
-							    this](const SimdLocEoSite& simdEoHaloPerDirSite) MUTABLE_INLINE_ATTRIBUTE
+							    destOffset=lattice->loc.eoHaloOffsets(parity,oppositeOri(ori),dir)
+							    //locEoHalo,
+							    ](const SimdLocEoSite& simdEoHaloPerDirSite) MUTABLE_INLINE_ATTRIBUTE
 							   {
 							     for(typename L::NonLocSimdRank nLsr=0;nLsr<nNlsr;nLsr++)
 							       {
@@ -421,7 +421,7 @@ namespace grill
 	};
       
       auto fillHaloParity=
-	[this,locEoHalo](auto&& out,const auto& in,const Parity& parity)
+	[this](auto&& out,const auto& in,const Parity& parity)
 	{
 	  for(Ori ori=0;ori<2;ori++)
 	    for(Dir dir=0;dir<NDims;dir++)
@@ -436,17 +436,13 @@ namespace grill
 		  loopOnAllComps<CompsList<SimdLocEoSite>>(std::make_tuple(nPerDir),
 							   [out=out.getRef(),
 							    in=in.getRef(),
-							    parity,
-							    ori,
 							    nPerDir,
 							    nNlsr,
 							    sourceOffset=lattice->loc.eoHaloOffsets(parity,ori,dir),
 							    nList=lattice->nonLocSimdRanks(ori,dir),
 							    destOffset=
 							    lattice->simdLoc.eoVol+
-							    lattice->simdLoc.eoHaloOffsets(parity,ori,dir),
-							    dir,
-							    this](const SimdLocEoSite& simdEoHaloPerDirSite) MUTABLE_INLINE_ATTRIBUTE
+							    lattice->simdLoc.eoHaloOffsets(parity,ori,dir)](const SimdLocEoSite& simdEoHaloPerDirSite) MUTABLE_INLINE_ATTRIBUTE
 							   {
 							     for(typename L::NonLocSimdRank nLsr=0;nLsr<nNlsr;nLsr++)
 							       {
@@ -583,7 +579,7 @@ namespace grill
 	[this,locEoHalo](auto&& out,const auto& in,const Parity& parity)
 	{
 	  loopOnAllComps<CompsList<LocEoSite>>(std::make_tuple(locEoHalo),
-					       [this,out=out.getRef(),in=in.getRef(),parity](const LocEoSite& haloSite) MUTABLE_INLINE_ATTRIBUTE
+					       [this,out=out.getRef(),in=in.getRef()](const LocEoSite& haloSite) MUTABLE_INLINE_ATTRIBUTE
 					       {
 						 const LocEoSite dest=haloSite+lattice->loc.eoVol;
 						 // const _Fund& p=data(parity,dest,C(0)...);
