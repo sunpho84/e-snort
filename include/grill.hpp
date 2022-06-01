@@ -34,6 +34,7 @@
 #include <expr/nodes/transp.hpp>
 
 #include <expr/operations/dagger.hpp>
+#include <expr/operations/reduce.hpp>
 
 #include <lattice/fieldLayoutGetter.hpp>
 #include <lattice/lattice.hpp>

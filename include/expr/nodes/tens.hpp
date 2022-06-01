@@ -34,12 +34,12 @@ namespace grill
 	    ExecSpace ES=defaultExecSpace,
 	    Dynamicity D=inferDynamicity<Comps>(),
 	    typename...DynamicSize>
-  auto getTens(DynamicSize&&...dynamicSize)
+  auto getTens(const std::tuple<DynamicSize...>& dynamicSize=std::tuple<>())
   {
     if constexpr(D==Dynamicity::NOT_DYNAMICAL)
       return StackTens<Comps,Fund>();
     else
-      return DynamicTens<Comps,Fund,ES>(std::make_tuple(dynamicSize...));
+      return DynamicTens<Comps,Fund,ES>(dynamicSize);
   }
 }
 
