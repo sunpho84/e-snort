@@ -74,6 +74,7 @@ namespace grill
       SubNode<0>::execSpace;
     
     /// Returns the dynamic sizes
+    INLINE_FUNCTION HOST_DEVICE_ATTRIB
     const auto getDynamicSizes() const
     {
       return tupleGetSubset<typename CompsBinder::DynamicComps>(SUBNODE(0).getDynamicSizes());

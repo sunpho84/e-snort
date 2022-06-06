@@ -687,7 +687,6 @@ namespace grill
     }
     
     /// Copy constructor
-    INLINE_FUNCTION HOST_DEVICE_ATTRIB
     Field(const Field& oth) :
       lattice(oth.lattice),
       data(oth.data),

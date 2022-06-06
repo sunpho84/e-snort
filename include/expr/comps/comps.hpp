@@ -191,7 +191,7 @@ namespace grill
   /// Combine the dynamic components of a tuple of dynamic comps, filling with each occurrence
   template <typename DcsOut,
 	    typename..._DcsIn>
-  INLINE_FUNCTION constexpr
+  INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB
   auto dynamicCompsCombiner(const std::tuple<_DcsIn...>& dcsIns)
   {
     using DcsIns=
