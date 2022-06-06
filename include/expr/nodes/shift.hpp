@@ -145,7 +145,7 @@ namespace grill
     INLINE_FUNCTION						\
     auto getRef() ATTRIB					\
     {								\
-      return shift(SUBNODE(0).getRef());				\
+      return recreateFromExprs(SUBNODE(0).getRef());		\
     }
     
     PROVIDE_GET_REF(const);
