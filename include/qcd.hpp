@@ -35,6 +35,9 @@ namespace grill::QCD
   using RankCoords=
     GlbLattice::RankCoords;
   
+  using LocEoSite=
+    GlbLattice::LocEoSite;
+  
   using SimdRankCoords=
     GlbLattice::SimdRankCoords;
   
