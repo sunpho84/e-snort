@@ -15,6 +15,46 @@
 
 namespace grill
 {
+  namespace internal
+  {
+    template <typename C>
+    struct MostSuitableCompForDeviceParallelAssign;
+    
+    template <typename...C>
+    struct MostSuitableCompForDeviceParallelAssign<CompsList<C...>>
+    {
+      static constexpr INLINE_FUNCTION auto idLargerComp()
+      {
+	int s[]={~C::sizeAtCompileTime...};
+	
+	int i=0;
+	
+	for(int j=0;j<sizeof...(C);j++)
+	  i=std::max(i,s[j]);
+	
+	return i;
+      }
+      
+      template <typename Ds>
+      constexpr INLINE_FUNCTION
+      auto get(const Ds& dynamicSize) const
+      {
+	constexpr int nDynamicComps=((C::sizeAtCompileTime==0)+...);
+	
+	static_assert(nDynamicComps<=1,"Needs at most one dynamic comps to run on device, got too many");
+	
+	if constexpr(nDynamicComps==1)
+	  return std::get<0>(dynamicSize);
+	else
+	  {
+	    using Res=std::tuple_element_t<idLargerComp(),std::tuple<C...>>;
+	    
+	    return (Res)Res::sizeAtCompileTime;
+	  }
+      }
+    };
+  }
+  
   /// Assign two expressions using device
   template <typename Lhs,
 	    typename Rhs>
@@ -22,26 +62,19 @@ namespace grill
   void deviceAssign(Lhs& lhs,
 		    const Rhs& rhs)
   {
-    constexpr int nDynamicComps=Lhs::nDynamicComps;
-    
-    static_assert(nDynamicComps==1,"Needs exactly one dynamic comps to run on device");
-    
-    /// For the time being, we assume that there is a single
-    /// dynamic component, and we loop with the gpu threads on
-    /// it, then we loop internally on the others
-    LOGGER<<"Using device kernel";
-    
     const auto dynamicSizes=lhs.getDynamicSizes();
     
-    const auto dynamicSize=std::get<0>(dynamicSizes);
-    
-    using DC=std::tuple_element_t<0,typename Lhs::DynamicComps>;
+    const auto lc=internal::MostSuitableCompForDeviceParallelAssign<typename Lhs::Comps>().get(dynamicSizes);
+    using Lc=std::decay_t<decltype(lc)>;
     
     auto lhsRef=lhs.getRef();
     const auto rhsRef=rhs.getRef();
     
-    DEVICE_LOOP(dc,DC(0),dynamicSize,
-		deviceLoopOnAllComps<typename Lhs::StaticComps>(dynamicSizes,
+    using OrthComps=TupleFilterAllTypes<typename Lhs::Comps,
+					CompsList<Lc>>;
+    
+    DEVICE_LOOP(dc,Lc(0),lc,
+		deviceLoopOnAllComps<OrthComps>(dynamicSizes,
 								[lhsRef,rhsRef] DEVICE_ATTRIB (const auto&...comps) MUTABLE_INLINE_ATTRIBUTE
 								{
 								  lhsRef(comps...)=rhsRef(comps...);
