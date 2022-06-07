@@ -42,9 +42,7 @@ namespace grill
   void _execForAllTupleIds(F&& f,
 			   std::index_sequence<Is...>)
   {
-    [[maybe_unused]]
-    auto l=
-      {grill::internal::call(std::forward<F>(f),std::integral_constant<int,Is>())...,0};
+    (f(std::integral_constant<int,Is>()),...);
   }
   
 #define EXEC_FOR_ALL_TUPLE_IDS(I,TP,CORE...)			\

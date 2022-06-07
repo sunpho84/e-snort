@@ -29,7 +29,7 @@ namespace grill
   void tupleFillWithSubset(std::tuple<Tout...>& out,
 			   const std::tuple<Tin...>& in)
   {
-    out=tupleGetMany<Tout...>(in);
+    ((std::get<Tout>(out)=std::get<Tout>(in)),...);
   }
   
   /// Get the list elements of the passed tuple
