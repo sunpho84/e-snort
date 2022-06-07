@@ -70,6 +70,7 @@ namespace grill
 #undef PROVIDE_OPERATOR
     
 #define PROVIDE_SELF_OPERATOR(OP)					\
+    INLINE_FUNCTION constexpr HOST_DEVICE_ATTRIB			\
     ReturnedType& operator OP ##=(const ArithmeticOperators& oth)	\
     {									\
       const auto& Oth=DE_CRTPFY(const ReturnedType,&oth);		\
