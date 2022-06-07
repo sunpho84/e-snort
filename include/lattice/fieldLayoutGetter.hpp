@@ -49,7 +49,7 @@ namespace grill
     else
       {
 	static_assert(hasMember_subNodes<Arg>,"Not field layout found so far, no subnodes present");
-	constexpr std::pair<bool,FieldLayout> res=internal::_tupleGetFieldLayout((typename Arg::SubNodes::type*){});
+	constexpr std::pair<bool,FieldLayout> res=internal::_tupleGetFieldLayout((typename Arg::SubNodes::type*)nullptr);
 	static_assert(res.first,"No field layout found");
 	
 	return res.second;
