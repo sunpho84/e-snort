@@ -126,7 +126,9 @@ namespace grill
 	    return vol;
 	    break;
 	    default:
+#ifndef __CUDA_ARCH__
 	    CRASH<<"impossible condition";
+#endif
 	    return {};
 	    }
 	};
