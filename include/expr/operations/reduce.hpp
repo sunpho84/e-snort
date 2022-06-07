@@ -13,6 +13,46 @@
 
 namespace grill
 {
+  template <typename T,
+	    typename Buf,
+	    typename Index,
+	    typename...Args>
+  INLINE_FUNCTION
+  void hostReduce(Buf&& buf,const Index& nReductions,const Index& stride,Args&&...args)
+  {
+#if ENABLE_THREADS
+# pragma omp parallel for
+#endif
+    for(Index first=0;first<nReductions;first++)
+      {
+	const Index second=first+stride;
+	
+	buf((T)first,std::forward<Args>(args)...)+=
+	  // buf(first,cs...)+
+	  buf((T)second,std::forward<Args>(args)...);
+      }
+  }
+  
+  template <typename T,
+	    typename Buf,
+	    typename Index,
+	    typename...Args>
+  INLINE_FUNCTION
+  void deviceReduce(Buf&& buf,const Index& nReductions,const Index& stride,Args&&...args)
+  {
+    auto bufRef=buf.getRef();
+    
+    const auto avoidComplain=std::make_tuple(args...);
+    
+    DEVICE_LOOP(first,0,nReductions,
+		const Index second=first+stride;
+		
+		// lambda function cannot capture a pack... boh!
+		
+		std::apply(bufRef((T)first),avoidComplain)+=
+		std::apply(bufRef((T)second),avoidComplain);
+		);
+  }
   
   template <typename T,
 	    typename _R,
@@ -47,34 +87,45 @@ namespace grill
 			     {
 			       (void)&dynamicSizes;
 			       
-			       T n=T::sizeAtCompileTime;
+			       using Index=typename T::Index;
+			       
+			       Index n=~T::sizeAtCompileTime;
 			       
 			       if constexpr(T::sizeAtCompileTime==0)
-				     n=std::get<T>(dynamicSizes);
+				 n=~std::get<T>(dynamicSizes);
 			       
 			       while(n>1)
 				 {
-				   const T stride=(n+1)/2;
-				   const T nreductions=n/2;
+				   const Index stride=(n+1)/2;
+				   const Index nReductions=n/2;
 				   
-				   for(T first=0;first<nreductions;first++)
-				     {
-				       const T second=first+stride;
-				       
-				       buf(first,cs...)+=
-					 // buf(first,cs...)+
-					 buf(second,cs...);
-				     }
+				   if constexpr(Es==ExecSpace::HOST or (Es==ExecSpace::DEVICE and not ENABLE_DEVICE_CODE))
+				     hostReduce<T>(buf,nReductions,stride,cs...);
+				   else
+#if ENABLE_DEVICE_CODE
+				     if constexpr(Es==ExecSpace::DEVICE)
+				       deviceReduce<T>(buf,nReductions,stride,cs...);
+				     else
+#endif
+				       CRASH<<"Cannot reduce if the execution space is not clear";
 				   
 				   n=stride;
 				 }
 			     });
     
-    res=buf(T(0));
+    if constexpr(Es==ExecSpace::DEVICE and std::decay_t<decltype(res)>::execSpace!=ExecSpace::DEVICE)
+      {
+	DynamicTens<ResComps,typename R::Fund,ExecSpace::DEVICE> tmp;
+	tmp=buf(T(0));
+	res=tmp;
+      }
+    else
+      res=buf(T(0));
   }
   
   template <typename T,
-	    typename E>
+	    typename E,
+	    ExecSpace TargEs=ExecSpace::HOST>
   auto reduceOnComp(const Node<E>& _e)
   {
     const E& e=DE_CRTPFY(const E,&_e);
@@ -82,7 +133,7 @@ namespace grill
     using Comps=typename E::Comps;
     
     static_assert(tupleHasType<Comps,T>,"Cannot reduce on not present comps");
-	
+    
     using ResComps=TupleFilterAllTypes<Comps,CompsList<T>>;
     
     [[maybe_unused]]
@@ -90,9 +141,9 @@ namespace grill
     
     using Fund=typename E::Fund;
     
-    constexpr ExecSpace Es=E::execSpace;
+    // constexpr ExecSpace Es=E::execSpace;
     
-    auto res=getTens<ResComps,Fund,Es>(dynamicSizes);
+    auto res=getTens<ResComps,Fund,TargEs>(dynamicSizes);
     
     if constexpr(E::canSimdify and not std::is_same_v<typename E::SimdifyingComp,T>)
       {

@@ -183,7 +183,7 @@ namespace grill
     
 #define PROVIDE_SUBSCRIBE(ATTRIB)					\
     template <typename...C>						\
-    constexpr INLINE_FUNCTION						\
+    constexpr INLINE_FUNCTION HOST_DEVICE_ATTRIB			\
     decltype(auto) operator()(const C&...cs) ATTRIB			\
     {									\
       using Comps=typename T::Comps;					\
