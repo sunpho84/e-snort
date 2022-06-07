@@ -121,7 +121,7 @@ namespace grill::device
   void finalize();
   
 #define DEVICE_LOOP(INDEX,EXT_START,EXT_END,BODY...)			\
-  device::launchKernel(__LINE__,__FILE__,EXT_START,EXT_END,[=] DEVICE_ATTRIB (const std::common_type_t<decltype((EXT_END)),decltype((EXT_START))>& INDEX) mutable {BODY})
+  device::launchKernel(__LINE__,__FILE__,EXT_START,EXT_END,[=] DEVICE_ATTRIB (const std::common_type_t<std::decay_t<decltype((EXT_END))>,std::decay_t<decltype((EXT_START))>>& INDEX) mutable {BODY})
   
   template <ExecSpace Dest,
 	    ExecSpace Src>
