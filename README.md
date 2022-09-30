@@ -2,6 +2,27 @@
 
 A grid with more taste
 
+An example of the tensor algebra that we have as a target:
+
+```
+Field<OfComps<ColorRow,ComplId>> v(locVol);	
+Tensor<OfComps<ColorRow,ComplId>> z(locVol); 
+
+/// Scalar product on color index
+Field<NoComps> res1(locVol);
+res1=real(dag(v)*z);
+
+/// Outer product on color index
+Field<OfComps<ColorRow,ColorCln,ComplId>> res2(locVol);
+res2=v*dag(z);
+
+/// Comp by comp product on color index
+Field<OfComps<ColorRow,ComplId>> res3(locVol);
+res3=v*z;
+
+```
+
+
 We need to fresh up our mind.
 
 MemoryManager
