@@ -2,25 +2,12 @@
 
 A grid with more taste
 
-An example of the tensor algebra that we have as a target:
+A few examples of the tensor algebra that we have as a target:
 
-```
-Field<OfComps<ColorRow,ComplId>> v(locVol);	
-Tensor<OfComps<ColorRow,ComplId>> z(locVol); 
+![image](https://user-images.githubusercontent.com/1705462/193244344-1f54c2c4-cb98-4318-af14-6d680a3b238d.png)
 
-/// Scalar product on color index
-Field<NoComps> res1(locVol);
-res1=real(dag(v)*z);
+![image](https://user-images.githubusercontent.com/1705462/193244569-310b647d-38f2-4a9f-83ee-d29f6493f7d2.png)
 
-/// Outer product on color index
-Field<OfComps<ColorRow,ColorCln,ComplId>> res2(locVol);
-res2=v*dag(z);
-
-/// Comp by comp product on color index
-Field<OfComps<ColorRow,ComplId>> res3(locVol);
-res3=v*z;
-
-```
 
 
 We need to fresh up our mind.
